@@ -4,14 +4,15 @@
 
 **Always lowercase**: `betterhomes` and `bh`. Never `Betterhomes`, `BetterHomes`, `BH`, or `B.H.` — even at the start of a sentence, even in headings, even in tile labels. The brand is consistently lowercase.
 
+**Always uppercase**: `H&H` (the partner agency). Never `h&h` or `H&h`.
+
 Examples:
-- ✅ `bh let`, `BH Let` *(only when paired with another acronym like H&H Let for visual symmetry — but prefer `bh let`)*
-- ✅ `betterhomes`, `betterhomes × h&h`
-- ❌ `Betterhomes`, `BH Let` (alone), `BH brokers`
+- ✅ `bh let`, `H&H Let`, `betterhomes × H&H`, `Reserved · bh`, `Reserved · H&H`
+- ❌ `Betterhomes`, `BH Let`, `h&h let`, `bh × h&h`
 
 This applies to:
 - HTML files (`CT1 Visualiser.html`, `CT1 Visualizer Mobile.html`)
-- Status labels (`STATUS_LABEL.reserved_bh = 'Reserved · bh'`)
+- Status labels (`STATUS_LABEL.reserved_bh = 'Reserved · bh'`, `STATUS_LABEL.reserved_hh = 'Reserved · H&H'`)
 - KPI card titles
 - Comments and copy
 - Any new code I write
@@ -38,11 +39,11 @@ Status column values map to internal codes via `classifyJS` (mobile + desktop bo
 - `viewing` → "Viewing" — viewing booked/held
 - `inflight` → "Pipeline" — offer received / negotiating
 - `reserved_bh` → "Reserved · bh" — off the leasing pipeline, claimed by bh
-- `reserved_hh` → "Reserved · h&h"
+- `reserved_hh` → "Reserved · H&H"
 - `signed_bh` → "Signed · bh"
-- `signed_hh` → "Signed · h&h"
+- `signed_hh` → "Signed · H&H"
 - `occupied_bh` → "Occupied · bh"
-- `occupied_hh` → "Occupied · h&h"
+- `occupied_hh` → "Occupied · H&H"
 - `show_flat` → "Show flat" — designated show flat (can also overlap with Marketing)
 - `lost` → "Lost"
 
