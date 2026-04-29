@@ -118,12 +118,13 @@
   .stat-card {
     background: rgba(244,242,238,0.04);
     border: 1px solid rgba(215,168,111,0.22);
-    padding: 22px 20px;
+    padding: 22px 20px; text-align: left;
     cursor: pointer; transition: transform 0.1s ease;
   }
   .stat-card:active { transform: scale(0.985); }
   .stat-card.primary {
-    border-left: 3px solid var(--ct-gold);
+    text-align: center;
+    border: 1px solid rgba(215,168,111,0.35);
     background: rgba(215,168,111,0.08);
     margin-bottom: 12px;
   }
@@ -507,8 +508,9 @@
   .tw-cell.s-marketing    { background: #B39470; }
   .tw-cell.s-viewing      { background: var(--sand); }
   .tw-cell.s-inflight     { background: #BF956E; }
-  .tw-cell.s-reserved_bh  { background: var(--sand); box-shadow: inset 0 0 0 1.5px var(--slate); }
-  .tw-cell.s-reserved_hh  { background: var(--sand); box-shadow: inset 0 0 0 1.5px var(--powder); }
+  /* Reserved is OFF the leasing pipeline - render as empty fill with a bold BH/H&H border so brokers can see at a glance who claimed it */
+  .tw-cell.s-reserved_bh  { background: white; box-shadow: inset 0 0 0 2px var(--slate); }
+  .tw-cell.s-reserved_hh  { background: white; box-shadow: inset 0 0 0 2px var(--powder); }
   .tw-cell.s-signed_bh    { background: var(--slate); }
   .tw-cell.s-signed_hh    { background: var(--powder); }
   .tw-cell.s-occupied_bh  { background: var(--slate); box-shadow: inset 0 0 0 1px var(--sand); }
@@ -599,16 +601,38 @@
 
   /* Show flat marker on the unit card */
   .badge.show-combo { background: var(--denim); color: var(--ct-haze); }
+
+  /* Touch-and-drag preview tooltip on the tower (mobile only) */
+  .tw-tip {
+    position: fixed; z-index: 60; pointer-events: none;
+    background: var(--slate); color: var(--ct-haze);
+    padding: 10px 14px; border-radius: 12px; font-size: 12px; line-height: 1.45;
+    box-shadow: 0 12px 28px -10px rgba(31,52,63,0.5), 0 2px 6px rgba(31,52,63,0.18);
+    transform: translate(-50%, -100%);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+    opacity: 0;
+    min-width: 180px; max-width: 240px;
+    border: 1px solid rgba(215,168,111,0.4);
+  }
+  .tw-tip.visible { opacity: 1; transform: translate(-50%, calc(-100% - 14px)); }
+  .tw-tip::after {
+    content: ''; position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%);
+    width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent;
+    border-top: 7px solid var(--slate);
+  }
+  .tw-tip .tt-uid { font-family: Georgia, serif; color: var(--ct-gold); font-size: 16px; line-height: 1; }
+  .tw-tip .tt-meta { color: var(--ct-haze); margin-top: 4px; opacity: 0.92; }
+  .tw-tip .tt-rent { color: var(--ct-gold); margin-top: 6px; font-weight: 600; }
+  .tw-tip .tt-status { display: inline-block; margin-top: 6px; padding: 2px 8px; border-radius: 999px; font-size: 10px; letter-spacing: 0.04em; background: rgba(244,242,238,0.14); }
+  .tw-tip .tt-hint { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(244,242,238,0.18); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ct-sun); opacity: 0.85; text-align: center; }
+  .tw-cell.preview-active { transform: scaleY(1.8) scaleX(1.4); z-index: 6; box-shadow: inset 0 0 0 1.5px var(--ct-gold), 0 0 0 1.5px var(--ct-gold); }
 </style>
 </head>
 <body>
 
 <header class="topbar">
   <div class="brand-mark"><span>b</span></div>
-  <div class="topbar-title">
-    <div class="topbar-eyebrow">Betterhomes × H&amp;H</div>
-    <div class="topbar-name">City Tower 1 · Live</div>
-  </div>
+  <div class="topbar-title"></div>
   <div class="live-pill" id="live-pill">
     <span class="live-dot"></span><span id="live-status">Connecting</span>
   </div>
@@ -619,17 +643,14 @@
   <!-- TAB 1 — OVERVIEW -->
   <section class="tab active" id="tab-tower">
     <div class="hero">
-      <div class="hero-eyebrow">CT1 · Broker Live Board · 695 residences</div>
-      <h1>City Tower <em>One</em><span class="period">.</span></h1>
       <div class="ct-lock"><svg viewBox="490 340 930 400" xmlns="http://www.w3.org/2000/svg" aria-label="City Tower" role="img"><path fill="currentColor" d="M843,347.8l-4.5,12.1s-7.2-5.5-19.7-5.5h-27.9v148.6s-.5,6.9,4.4,10.5v.2h-21.8v-.2c4.9-3.6,4.4-10.5,4.4-10.5v-148.6h-28c-12.5,0-19.7,5.5-19.7,5.5l-4.5-12.1h117.1ZM725.9,566.3l4.5,12.1s7.2-5.5,19.7-5.5h28v148.6s.5,6.9-4.4,10.5v.2h21.8v-.2c-4.9-3.6-4.4-10.5-4.4-10.5v-148.6h27.9c12.5,0,19.7,5.5,19.7,5.5l4.5-12.1h-117.1ZM1144.7,566.3c2.3,5.7.5,12.2.5,12.2l-50.2,138.5c0-.2-25.7-70.2-25.7-70.2,10.9-31.4,21-60.5,22.3-64.5,3.2-9.4,10.3-15.9,10.3-15.9h-18c2.3,5.7.5,12.2.5,12.2l-19.9,55.3-17.2-47s-.7-1.8-1.8-6.2c-1.6-6.3.2-14.2.2-14.2h-25.2c5.4,2.7,9.6,12,9.6,12l27.2,75.5-22.6,63.2c0-.2-16.2-43.4-21.9-58.6-7-18.7-12.8-38.2-23.6-55.2-7.7-12-17.6-22.1-29.7-29.7-12.7-8-28.4-10.7-43.2-10.7-48.7,0-88.2,38.8-88.2,86.6s39.5,86.6,88.2,86.6,63.4-18.8,78.2-46.4l-7.5-17.8c-8.7,33.8-37,58.6-70.7,58.6s-73.4-36-73.4-80.4,32.9-80.3,73.4-80.3,43.3,11.6,56.5,29.3c9.1,12.3,13.5,26.7,18.4,40.9,3.6,10.3,7.1,20.7,10.5,31.1l21.7,61.3h15.8s13.3-37.6,22.8-65l23.1,65h14.4s49.9-141.6,52.7-150c3.2-9.5,10.3-15.9,10.3-15.9h-18,0ZM1233.6,723.7h-40.6v-75c7.4.3,20,1,31.9,2.9,14,2.2,27.4,5.7,27.4,5.7l5.7-13.6h-65v-69.6h51.1c14.2,0,25.7,4.9,25.7,4.9v-12.6h-94.2v.2c4.9,3.6,4.4,10.5,4.4,10.5v144.4s.5,6.9-4.4,10.5v.2h94.8l10.9-20.2s-15.5,11.7-47.8,11.7h0ZM1410,732v.2h-27c-3.5-8.4-11.9-24.6-11.9-24.6l-22.1-42.8c-19.1.9-35-4.6-40.5-6.8v63.5s-.6,6.9,4.3,10.5v.2h-21.7v-.2c4.9-3.6,4.4-10.5,4.4-10.5v-144.4s.5-6.9-4.4-10.5v-.2h42.6c8.4,0,17.5,0,25.8,1.3,17.8,2.8,33.8,13,39.6,30.5,1.8,5.5,2.6,11.3,2.6,17.1,0,16.2-13.1,41.4-40.5,48,2.6,5.3,7.4,15.4,16.4,32.1,13.8,25.4,29.7,35.3,32.3,36.8h0ZM1357.6,656.2c10.4-3,18.8-10,23.8-19.6,5.8-11.2,7.4-28.3,1.9-40-4.2-8.8-12.6-15.3-21.7-18.7-10.6-4-21.7-3.9-32.8-3.9,0,0-18.4,0-20.2,0v77c15.4,5.7,32.9,9.8,49,5.2h0ZM710,348v-.2h-21.8v.2c3.7,2.7,4.4,7.4,4.4,9.5,0,.7,0,1.1,0,1.1v144.4s0,.4,0,1.1c0,2.1-.7,6.7-4.4,9.5v.2h21.8v-.2c-3.7-2.7-4.3-7.4-4.4-9.5v-145.5s0-.4,0-1.1c0-2.1.7-6.7,4.4-9.5ZM962.2,364.2c4.9-8.7,13.1-16.4,13.1-16.4h-20.8c3.1,5.7.5,12.1.5,12.1l-35.9,66.1c-10.1-18.1-34.8-59-36.5-63.8-2.9-7.7,0-14.5,0-14.5h-23.7c5.5,3.3,9.6,12,9.6,12l42.5,74.9v68.3s0,.4,0,1.1c0,2.1-.7,6.7-4.4,9.5v.2h21.8v-.2c-3.7-2.7-4.3-7.4-4.4-9.5v-69.4c20.3-39.9,35.4-65.5,38.2-70.5h0ZM663,481.9c-18,21.4-38.8,29.8-64.8,29.8-40.5,0-73.4-36-73.4-80.4s32.9-80.4,73.4-80.4,36.5,11.6,49.8,26.4l10.5-10c-15.8-14.5-37-23.4-60.3-23.4-48.7,0-88.2,38.8-88.2,86.6s39.5,86.6,88.2,86.6,52.3-12.5,68.5-32l-3.8-3.4h0Z"/></svg></div>
-      <div class="ct-tag">Know the floor. Own the launch.</div>
     </div>
 
     <div class="stat-hero">
       <button class="stat-card primary" id="card-avail">
-        <div class="stat-lbl">Available</div>
+        <div class="stat-lbl">Listed</div>
         <div class="stat-val" id="kpi-avail">0</div>
-        <div class="stat-sub" id="kpi-avail-sub">All bedroom types · Tap to browse</div>
+        <div class="stat-sub" id="kpi-avail-sub">Tap to browse listed units</div>
       </button>
       <div class="stat-row">
         <button class="stat-card dim" id="card-bh">
@@ -924,16 +945,18 @@ function renderOverview() {
   const get = k => counts[k] || 0;
   const bhLet = get('reserved_bh') + get('signed_bh') + get('occupied_bh');
   const hhLet = get('reserved_hh') + get('signed_hh') + get('occupied_hh');
-  const avail = AVAILABLE_STATES.reduce((s,k) => s + get(k), 0);
+  const reservedBh = get('reserved_bh');
+  const reservedHh = get('reserved_hh');
+  const listed = get('marketing');
+  const inViewing = get('viewing') + get('inflight');
 
-  document.getElementById('kpi-avail').textContent = avail;
+  document.getElementById('kpi-avail').textContent = listed;
   document.getElementById('kpi-bh').textContent = bhLet;
   document.getElementById('kpi-hh').textContent = hhLet;
 
-  const total = UNITS.length;
   const availParts = [];
-  if (get('marketing')) availParts.push(`${get('marketing')} listed`);
-  if (get('not_launched')) availParts.push(`${get('not_launched')} not launched`);
+  if (inViewing) availParts.push(`${inViewing} in viewing`);
+  if (reservedBh + reservedHh) availParts.push(`${reservedBh + reservedHh} reserved`);
   const showFlatCount = UNITS.filter(u => u.showFlat || u.s === 'show_flat').length;
   if (showFlatCount) availParts.push(`${showFlatCount} show flat${showFlatCount === 1 ? '' : 's'}`);
   document.getElementById('kpi-avail-sub').textContent = availParts.join(' · ') + ' · Tap to browse';
@@ -1229,10 +1252,100 @@ function renderTower() {
   });
   legend.innerHTML = legendForMode(towerView.mode);
 
-  // Cell taps → unit detail
+  // Cell taps → unit detail (desktop / non-touch). Touch is handled by setupTowerTouchPreview.
   frame.querySelectorAll('.tw-cell').forEach(c => {
     c.addEventListener('click', () => openUnit(c.dataset.uid));
   });
+  setupTowerTouchPreview();
+}
+
+// Touch-and-drag preview: tower cells are tiny on mobile, so a finger-down shows
+// a floating tooltip with unit info. Drag to scan neighbouring cells; release to
+// open whatever you're hovering. Quick taps still feel instant.
+let _twTouchInit = false;
+function setupTowerTouchPreview() {
+  if (_twTouchInit) return;
+  const frame = document.getElementById('tower-frame');
+  if (!frame) return;
+  _twTouchInit = true;
+
+  let tip = document.getElementById('tw-tip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = 'tw-tip';
+    tip.className = 'tw-tip';
+    document.body.appendChild(tip);
+  }
+  let activeCell = null;
+
+  function getCellAt(x, y) {
+    const el = document.elementFromPoint(x, y);
+    return el && el.classList && el.classList.contains('tw-cell') ? el : null;
+  }
+  function setActive(cell, x, y) {
+    if (cell !== activeCell) {
+      if (activeCell) activeCell.classList.remove('preview-active');
+      activeCell = cell;
+      if (cell) {
+        cell.classList.add('preview-active');
+        const u = UNITS.find(u => u.uid === cell.dataset.uid);
+        if (u) {
+          const m = TYPE_META[u.t];
+          const view = VIEW_NAMES[u.v] || u.v;
+          const showFlat = u.showFlat || u.s === 'show_flat';
+          tip.innerHTML = `
+            <div class="tt-uid">Unit ${u.uid}</div>
+            <div class="tt-meta">${m.label}${u.d ? ' Duplex' : ''} · Floor ${u.f} · ${view}</div>
+            <div class="tt-meta">${fmtN(u.sq)} sq ft${u.b ? ' · balcony' : ''}</div>
+            <div class="tt-rent">${fmtAED(u.pr)} p.a.</div>
+            <div class="tt-status">${STATUS_LABEL[u.s] || u.s}${(showFlat && u.s !== 'show_flat') ? ' · Show flat' : ''}</div>
+            <div class="tt-hint">Release to open</div>
+          `;
+          tip.classList.add('visible');
+        }
+      }
+    }
+    if (cell) {
+      // Clamp to viewport so the tooltip never disappears off the edge
+      const vw = window.innerWidth;
+      const cx = Math.max(110, Math.min(vw - 10, x));
+      tip.style.left = cx + 'px';
+      tip.style.top = (y - 8) + 'px';
+    } else {
+      tip.classList.remove('visible');
+    }
+  }
+  function clearPreview() {
+    if (activeCell) activeCell.classList.remove('preview-active');
+    activeCell = null;
+    tip.classList.remove('visible');
+  }
+
+  frame.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    const cell = getCellAt(t.clientX, t.clientY);
+    if (cell) {
+      e.preventDefault();
+      setActive(cell, t.clientX, t.clientY);
+    }
+  }, { passive: false });
+  frame.addEventListener('touchmove', e => {
+    if (!activeCell) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    const cell = getCellAt(t.clientX, t.clientY);
+    setActive(cell, t.clientX, t.clientY);
+  }, { passive: false });
+  frame.addEventListener('touchend', () => {
+    if (activeCell) {
+      const uid = activeCell.dataset.uid;
+      clearPreview();
+      openUnit(uid);
+    } else {
+      clearPreview();
+    }
+  });
+  frame.addEventListener('touchcancel', clearPreview);
 }
 
 function unitMatchesTowerFilter() {
@@ -1289,8 +1402,10 @@ function chipsForMode(mode) {
 function legendForMode(mode) {
   const item = (sw, label, ring) => `<span class="legend-item"><span class="legend-sw ${ring?'ring':''}" style="${ring?'color:'+sw:'background:'+sw}"></span>${label}</span>`;
   if (mode === 'status') return [
-    item('#B39470', 'Marketing'),
-    item('#D9B9A0', 'Available / Reserved'),
+    item('#B39470', 'Listed'),
+    item('#D9B9A0', 'In viewing'),
+    item('#1F343F', 'Reserved · BH', true),
+    item('#7BA0B2', 'Reserved · H&H', true),
     item('#1F343F', 'BH Signed/Occupied'),
     item('#7BA0B2', 'H&H Signed/Occupied'),
     item('#2C537A', 'Show flat'),

@@ -237,8 +237,9 @@
   }
   .unit-cell.s-viewing      { background: var(--sand); }                         /* active showing (legacy) */
   .unit-cell.s-inflight     { background: #BF956E; }                             /* offer/negotiating/pipeline (legacy) */
-  .unit-cell.s-reserved_bh  { background: var(--sand);  box-shadow: inset 0 0 0 1.5px var(--slate);  }
-  .unit-cell.s-reserved_hh  { background: var(--sand);  box-shadow: inset 0 0 0 1.5px var(--powder); }
+  /* Reserved sits OFF the leasing pipeline - render as empty fill with a bold BH/H&H border */
+  .unit-cell.s-reserved_bh  { background: white; box-shadow: inset 0 0 0 2px var(--slate);  }
+  .unit-cell.s-reserved_hh  { background: white; box-shadow: inset 0 0 0 2px var(--powder); }
   .unit-cell.s-signed_bh    { background: var(--slate);  }
   .unit-cell.s-signed_hh    { background: var(--powder); }
   .unit-cell.s-occupied_bh  { background: var(--slate);  box-shadow: inset 0 0 0 1px var(--sand);  }
@@ -1054,7 +1055,7 @@ const HH_LET_STATES    = ['reserved_hh','signed_hh','occupied_hh'];
 
 const STATUS_LABEL = {
   not_launched: 'Not launched',
-  marketing:    'Marketing',
+  marketing:    'Listed',
   viewing:      'Viewing',
   inflight:     'In flight',
   reserved_bh:  'Reserved · BH',
@@ -1229,7 +1230,7 @@ function buildHeadlines() {
     : `${total ? (hhLet/total*100).toFixed(1) : '0'}% of stock`;
 
   const avParts = [];
-  if (get('marketing'))    avParts.push(`${get('marketing')} marketed`);
+  if (get('marketing'))    avParts.push(`${get('marketing')} listed`);
   if (get('viewing'))      avParts.push(`${get('viewing')} in viewing`);
   if (get('inflight'))     avParts.push(`${get('inflight')} in flight`);
   if (get('not_launched')) avParts.push(`${get('not_launched')} not launched`);
