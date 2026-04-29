@@ -245,6 +245,9 @@
   .unit-cell.s-occupied_hh  { background: var(--powder); box-shadow: inset 0 0 0 1px var(--slate); }
   .unit-cell.s-show_flat    { background: var(--denim);  box-shadow: inset 0 0 0 1.5px white; }
   .unit-cell.s-lost         { background: var(--salmon); }
+  /* Show-flat marker: a unit can be Marketing/etc AND a designated show flat at the same time.
+     The white inner border lets brokers spot show flats over any underlying status colour. */
+  .unit-cell.is-show        { box-shadow: inset 0 0 0 1.5px white; }
 
   /* Centre dot reinforces BH/H&H on signed + occupied (colour-blind safety) */
   .unit-cell.s-signed_bh::before,
@@ -1102,6 +1105,8 @@ function buildTower() {
       cell.dataset.sq = u.sq;
       cell.dataset.status = u.s || 'marketing';
       cell.dataset.premium = u.d ? '1' : '0';
+      cell.dataset.showFlat = u.showFlat ? '1' : '0';
+      if (u.showFlat) cell.classList.add('is-show');
       cell.setAttribute('aria-label', `Unit ${u.uid}`);
       row.appendChild(cell);
     });
@@ -1185,7 +1190,8 @@ function buildHeadlines() {
   if (get('viewing'))      avParts.push(`${get('viewing')} in viewing`);
   if (get('inflight'))     avParts.push(`${get('inflight')} in flight`);
   if (get('not_launched')) avParts.push(`${get('not_launched')} not launched`);
-  if (get('show_flat'))    avParts.push(`${get('show_flat')} show flats`);
+  const showFlatTotal = UNITS.filter(u => u.showFlat || u.s === 'show_flat').length;
+  if (showFlatTotal)       avParts.push(`${showFlatTotal} show flat${showFlatTotal === 1 ? '' : 's'}`);
   if (lost)                avParts.push(`${lost} lost`);
   document.getElementById('kpi-avail-sub').textContent = avParts.join(' · ') || 'Across all bedrooms';
 }
@@ -1250,7 +1256,7 @@ function buildMix() {
 function buildShowFlats() {
   const host = document.getElementById('showflats-grid');
   const tag  = document.getElementById('showflats-tag');
-  const showFlats = UNITS.filter(u => u.s === 'show_flat').sort((a,b) => a.f - b.f || a.p - b.p);
+  const showFlats = UNITS.filter(u => u.showFlat || u.s === 'show_flat').sort((a,b) => a.f - b.f || a.p - b.p);
   const totalShow = showFlats.length;
   if (totalShow === 0) {
     tag.textContent = 'None designated yet · Lobby Mon–Sun 10:00–19:00';
@@ -1295,13 +1301,13 @@ function setupFilters() {
   });
 }
 
-function statusMatchesView(unitStatus, view) {
+function statusMatchesView(unitStatus, view, showFlat) {
   if (!view) return true;
   if (view === 'available') return AVAILABLE_STATES.includes(unitStatus);
   if (view === 'bh_let')    return BH_LET_STATES.includes(unitStatus);
   if (view === 'hh_let')    return HH_LET_STATES.includes(unitStatus);
   if (view === 'lost')      return unitStatus === 'lost';
-  if (view === 'show_flat') return unitStatus === 'show_flat';
+  if (view === 'show_flat') return unitStatus === 'show_flat' || showFlat === true;
   return false;
 }
 
@@ -1317,7 +1323,7 @@ function applyTowerFilter() {
     document.querySelectorAll('.unit-cell').forEach(c => {
       let ok = true;
       if (bed !== 'all' && c.dataset.type !== bed) ok = false;
-      if (st && !statusMatchesView(c.dataset.status, st)) ok = false;
+      if (st && !statusMatchesView(c.dataset.status, st, c.dataset.showFlat === '1')) ok = false;
       c.classList.toggle('match', ok);
     });
   }
@@ -1381,7 +1387,7 @@ function unitMatchesListFilters(u) {
 }
 
 function unitsForView(view) {
-  return UNITS.filter(u => statusMatchesView(u.s, view));
+  return UNITS.filter(u => statusMatchesView(u.s, view, u.showFlat));
 }
 
 function sortUnits(list, col, dir) {
@@ -1705,6 +1711,7 @@ function renderDetail(uid) {
         <div class="d-sub">${m.label}${u.d ? ' · Duplex' : ''} · Floor ${u.f} · Tranche ${u.tr}</div>
         <div class="d-status-row">
           <span class="pill s-${u.s}">${STATUS_LABEL[u.s]||u.s}</span>
+          ${(u.showFlat && u.s !== 'show_flat') ? '<span class="pill s-show_flat">Show flat</span>' : ''}
           ${u.d ? '<span class="pill" style="background:var(--ct-gold);color:var(--slate);font-weight:600;">Duplex</span>' : ''}
           ${u.b ? `<span class="pill" style="background:var(--ct-sun);color:var(--slate);">Balcony · ${fmtN(u.bsq)} sq ft</span>` : '<span class="pill" style="background:var(--mist);color:var(--denim);">No balcony</span>'}
           <span class="pill" style="background:var(--paper);color:var(--denim);border:1px solid var(--rule);">Unfurnished</span>
@@ -1833,7 +1840,7 @@ function renderDetail(uid) {
 }
 
 function renderDetailOwnership(u) {
-  if (!AVAILABLE_STATES.includes(u.s) && u.s !== 'show_flat') return '';
+  if (!AVAILABLE_STATES.includes(u.s) && u.s !== 'show_flat' && !u.showFlat) return '';
   const lines = [];
   if (u.br) lines.push(`<div class="label-row"><span>BH Broker owner</span><span>${u.br}</span></div>`);
   if (u.dom != null && u.dom > 0) lines.push(`<div class="label-row"><span>Days on market</span><span>${Math.round(u.dom)}</span></div>`);
@@ -1943,6 +1950,8 @@ window.ctUnitsLoaded = function(resp) {
     const iSgnR = ix('signed_rent_aed'), iSgnD = ix('signed_date');
     const iAvA = ix('asking_vs_achieved_pct'), iLt = ix('lost_to'), iLr = ix('lost_reason');
     const iBalc = ix('balcony'), iBsq = ix('balcony_sqft');
+    const iSf = ix('show_flat');
+    const isYes = v => /^(y|yes|true|1)$/i.test(String(v == null ? '' : v).trim());
     if ([iFloor,iUnit,iBed,iView,iTr,iSt].some(i => i < 0)) {
       throw new Error('Expected column missing in 07_HTML_Export. Got: ' + cols.join(', '));
     }
@@ -1987,6 +1996,7 @@ window.ctUnitsLoaded = function(resp) {
         tr: String(parseCell(row, iTr)||'').trim(),
         b:  String(parseCell(row, iBalc)||'').toUpperCase() === 'Y',
         bsq: parseFloat(parseCell(row, iBsq)) || 0,
+        showFlat: isYes(parseCell(row, iSf)) || status === 'Show Flat',
         s, st: status, ag: agency || null,
         br: parseCell(row, iBr) ? String(parseCell(row, iBr)).trim() : null,
         dom: isFinite(rawDom) && rawDom > 0 ? rawDom : null,

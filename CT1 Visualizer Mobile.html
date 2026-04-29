@@ -693,7 +693,8 @@ function renderOverview() {
   const availParts = [];
   if (get('marketing')) availParts.push(`${get('marketing')} listed`);
   if (get('not_launched')) availParts.push(`${get('not_launched')} not launched`);
-  if (get('show_flat')) availParts.push(`${get('show_flat')} show flats`);
+  const showFlatCount = UNITS.filter(u => u.showFlat || u.s === 'show_flat').length;
+  if (showFlatCount) availParts.push(`${showFlatCount} show flat${showFlatCount === 1 ? '' : 's'}`);
   document.getElementById('kpi-avail-sub').textContent = availParts.join(' · ') + ' · Tap to browse';
   document.getElementById('kpi-bh-sub').textContent = total ? `${(bhLet/total*100).toFixed(1)}% of stock` : '—';
   document.getElementById('kpi-hh-sub').textContent = total ? `${(hhLet/total*100).toFixed(1)}% of stock` : '—';
@@ -717,8 +718,8 @@ function renderOverview() {
     });
   });
 
-  // Show flats
-  const showFlats = UNITS.filter(u => u.s === 'show_flat').sort((a,b) => a.f - b.f);
+  // Show flats — flagged via the show_flat column OR the legacy "Show Flat" status
+  const showFlats = UNITS.filter(u => u.showFlat || u.s === 'show_flat').sort((a,b) => a.f - b.f);
   const sStrip = document.getElementById('show-strip');
   if (!showFlats.length) {
     sStrip.innerHTML = `<div style="padding:14px 16px;color:var(--denim);font-style:italic;font-size:12px;">No show flats designated yet.</div>`;
@@ -747,11 +748,13 @@ document.getElementById('card-hh').addEventListener('click', () => { /* no list 
 // AVAILABLE LIST
 // ============================================================
 function unitMatches(u) {
-  // Always available stock by default; toggle "Show flats" lets in show_flat
+  const isShow = u.showFlat || u.s === 'show_flat';
+  // Default view: any available stock OR a show flat (since they're often available too).
+  // "Show flats" toggle narrows to show flats only.
   if (filter.extras.has('show')) {
-    if (u.s !== 'show_flat') return false;
+    if (!isShow) return false;
   } else {
-    if (!AVAILABLE_STATES.includes(u.s)) return false;
+    if (!AVAILABLE_STATES.includes(u.s) && !isShow) return false;
   }
   if (filter.bed !== 'all' && u.t !== filter.bed) return false;
   if (filter.extras.has('balcony') && !u.b) return false;
@@ -782,11 +785,11 @@ function renderList() {
           <span class="uc-bedr-dot ${m.cls}"></span>${m.label}${u.d ? ' Duplex' : ''} · Floor ${u.f} · ${view} · ${fmtN(u.sq)} sq ft
         </div>
         <div class="uc-bot">
-          ${u.s === 'show_flat' ? '<span class="badge show">Show flat</span>' : ''}
+          ${(u.showFlat || u.s === 'show_flat') ? '<span class="badge show">Show flat</span>' : ''}
           ${u.d ? '<span class="badge duplex">Duplex</span>' : ''}
           ${u.b ? `<span class="badge balc">Balcony · ${fmtN(u.bsq)} sq ft</span>` : ''}
           ${cut ? `<span class="badge cut">Price cut ${cutPct}%</span>` : ''}
-          ${!u.d && !u.b && u.s !== 'show_flat' && !cut ? '<span style="opacity:0.5;">Unfurnished</span>' : ''}
+          ${!u.d && !u.b && !(u.showFlat || u.s === 'show_flat') && !cut ? '<span style="opacity:0.5;">Unfurnished</span>' : ''}
         </div>
       </div>
     `;
@@ -841,7 +844,7 @@ function openUnit(uid) {
       <div class="um-rent">${fmtAED(u.pr)}<span class="pa">p.a.</span></div>
       <div class="um-psf">${u.psf ? 'AED ' + Math.round(u.psf) + ' psf' : ''}${cut ? ' · was AED ' + fmtN(u.orig) : ''}</div>
       <div class="um-pills">
-        ${u.s === 'show_flat' ? '<span class="pill denim">Show flat</span>' : ''}
+        ${(u.showFlat || u.s === 'show_flat') ? '<span class="pill denim">Show flat</span>' : ''}
         ${u.d ? '<span class="pill gold">Duplex</span>' : ''}
         ${u.b ? `<span class="pill sun">Balcony · ${fmtN(u.bsq)} sq ft</span>` : '<span class="pill outline">No balcony</span>'}
         <span class="pill outline">Unfurnished</span>
@@ -952,6 +955,8 @@ window.ctMobileLoaded = function(resp) {
     const need = ['unit_id','floor','unit_no','bedroom_type','is_duplex','view_code','total_sqft','asking_rent_aed','current_asking_aed','asking_psf','status','agency_won','tranche'];
     if (need.some(n => ix(n) < 0)) throw new Error('Expected column missing');
     const iBalc = ix('balcony'), iBsq = ix('balcony_sqft');
+    const iSf = ix('show_flat');
+    const isYes = v => /^(y|yes|true|1)$/i.test(String(v == null ? '' : v).trim());
     const get = (row, i) => (i < 0 || !row.c[i]) ? null : row.c[i].v;
     const fresh = [];
     for (const row of resp.table.rows) {
@@ -976,6 +981,7 @@ window.ctMobileLoaded = function(resp) {
         b: String(get(row, iBalc)||'').toUpperCase() === 'Y',
         bsq: parseFloat(get(row, iBsq)) || 0,
         s: classifyJS(status, agency),
+        showFlat: isYes(get(row, iSf)) || status === 'Show Flat',
       });
     }
     if (fresh.length < 100) throw new Error(`only ${fresh.length} rows`);
