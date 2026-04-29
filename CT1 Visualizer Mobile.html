@@ -118,12 +118,13 @@
   .stat-card {
     background: rgba(244,242,238,0.04);
     border: 1px solid rgba(215,168,111,0.22);
-    padding: 22px 20px;
+    padding: 22px 20px; text-align: left;
     cursor: pointer; transition: transform 0.1s ease;
   }
   .stat-card:active { transform: scale(0.985); }
   .stat-card.primary {
-    border-left: 3px solid var(--ct-gold);
+    text-align: center;
+    border: 1px solid rgba(215,168,111,0.35);
     background: rgba(215,168,111,0.08);
     margin-bottom: 12px;
   }
@@ -427,16 +428,211 @@
     .unit-list { padding: 12px 22px 28px; }
     .stat-card .stat-val { font-size: 64px; }
   }
+
+  /* ==========================================================
+   * TOWER VIZ — mobile
+   * ========================================================== */
+  .tower-shell { padding: 16px 16px 28px; }
+  .tower-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--rule); margin-bottom: 14px; }
+  .tower-eyebrow { font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--denim); margin-bottom: 4px; }
+  .tower-title { font-family: Georgia, serif; font-size: 22px; color: var(--slate); }
+  .tower-key { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--denim); text-align: right; max-width: 50%; line-height: 1.4; }
+  .tower-filters { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .seg {
+    display: inline-flex; padding: 3px;
+    background: rgba(31,52,63,0.06); border-radius: 10px; align-self: flex-start;
+  }
+  .seg-btn {
+    border: 0; background: transparent; padding: 8px 14px;
+    font: 600 12px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--slate); border-radius: 8px; cursor: pointer; transition: all 0.18s ease;
+    letter-spacing: 0.04em;
+  }
+  .seg-btn.active { background: white; color: var(--ct-afterlight); box-shadow: 0 1px 2px rgba(31,52,63,0.12); }
+  .tower-chip-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+  .tower-chip-row::-webkit-scrollbar { display: none; }
+  .tower-chip-row .chip { flex-shrink: 0; }
+  .tower-stage {
+    position: relative; padding: 22px 16px 22px 56px;
+    background: linear-gradient(180deg, #E8E4DE 0%, #F7F2EB 28%, #FDFAF4 100%);
+    border: 1px solid var(--rule); border-radius: 14px;
+    overflow: hidden; box-shadow: 0 1px 2px rgba(31,52,63,0.05), 0 8px 24px -10px rgba(31,52,63,0.10);
+  }
+  .tower-stage::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 8px;
+    background: linear-gradient(180deg, var(--ct-afterlight) 0%, var(--ct-afterlight2) 100%);
+    box-shadow: inset 0 -1px 0 var(--ct-gold-dark);
+  }
+  .tower-stage::after {
+    content: ''; position: absolute; left: 50%; top: -12px;
+    width: 2px; height: 16px;
+    background: linear-gradient(180deg, var(--ct-gold) 0%, var(--ct-afterlight) 100%);
+    transform: translateX(-50%);
+  }
+  .tower-bands {
+    position: absolute; left: 8px; top: 22px; bottom: 22px;
+    display: flex; flex-direction: column; align-items: stretch; gap: 0;
+    pointer-events: none;
+  }
+  .band-marker {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--denim); border-left: 2px solid var(--sand); padding: 4px 2px;
+    opacity: 0.7;
+  }
+  .band-marker.b-mid       { border-left-color: var(--powder); }
+  .band-marker.b-upper     { border-left-color: var(--denim); }
+  .band-marker.b-penthouse { border-left-color: var(--terra); }
+  .tower-frame { display: flex; flex-direction: column-reverse; gap: 1px; padding-top: 12px; }
+  .tw-row { display: flex; align-items: center; gap: 2px; height: 8px; position: relative; }
+  .tw-row.tranche-divider { margin-top: 4px; padding-top: 2px; height: 10px; border-top: 1px dashed rgba(31,52,63,0.22); }
+  .tw-num {
+    position: absolute; right: calc(100% + 4px);
+    font-size: 8px; color: var(--denim); opacity: 0;
+    font-variant-numeric: tabular-nums; font-weight: 600;
+  }
+  .tw-row.show-num .tw-num { opacity: 1; }
+  .tw-cell {
+    flex: 1; min-width: 6px; max-width: 18px; height: 8px;
+    border: 0; padding: 0; cursor: pointer; position: relative;
+    transition: transform 0.16s ease, opacity 0.18s ease;
+  }
+  .tw-cell:active { transform: scaleY(1.6); z-index: 5; }
+  .tw-cell.t-studio::after { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: rgba(122,160,178,0.85); }
+  .tw-cell.t-1br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: var(--denim); }
+  .tw-cell.t-2br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: rgba(31,52,63,0.65); }
+  .tw-cell.t-3br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: var(--terra); opacity: 0.85; }
+  .tw-cell.t-4br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2.5px; background: var(--terra); }
+  .tw-cell.s-not_launched { background: #E8DBC8; box-shadow: inset 0 0 0 0.5px rgba(31,52,63,0.18); }
+  .tw-cell.s-marketing    { background: #B39470; }
+  .tw-cell.s-viewing      { background: var(--sand); }
+  .tw-cell.s-inflight     { background: #BF956E; }
+  /* Reserved is OFF the leasing pipeline - render as empty fill with a bold BH/H&H border so brokers can see at a glance who claimed it */
+  .tw-cell.s-reserved_bh  { background: white; box-shadow: inset 0 0 0 2px var(--slate); }
+  .tw-cell.s-reserved_hh  { background: white; box-shadow: inset 0 0 0 2px var(--powder); }
+  .tw-cell.s-signed_bh    { background: var(--slate); }
+  .tw-cell.s-signed_hh    { background: var(--powder); }
+  .tw-cell.s-occupied_bh  { background: var(--slate); box-shadow: inset 0 0 0 1px var(--sand); }
+  .tw-cell.s-occupied_hh  { background: var(--powder); box-shadow: inset 0 0 0 1px var(--slate); }
+  .tw-cell.s-show_flat,
+  .tw-cell.is-show        { box-shadow: inset 0 0 0 1.5px white; }
+  .tw-cell.s-show_flat    { background: var(--denim); }
+  .tw-cell.s-lost         { background: var(--salmon); }
+  .tw-cell.is-duplex { outline: 1.2px solid var(--ct-gold); outline-offset: -1px; z-index: 2; }
+  .tw-cell.is-balcony::before { content:''; position:absolute; left:0; top:0; bottom:0; width:1.5px; background: var(--ct-sun); }
+  .tower-frame.filtered .tw-cell:not(.match) { opacity: 0.14; }
+  .tower-legend {
+    display: flex; flex-wrap: wrap; gap: 8px 14px; padding: 16px 4px 0;
+    font-size: 11px; color: var(--denim);
+  }
+  .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+  .legend-sw { width: 10px; height: 10px; border-radius: 2px; }
+  .legend-sw.ring { background: transparent !important; outline: 1.5px solid currentColor; outline-offset: -1px; }
+
+  /* ==========================================================
+   * BROWSE — search + view chips + price slider + sort
+   * ========================================================== */
+  .search-wrap {
+    position: relative; margin-bottom: 12px;
+    background: var(--paper); border: 1px solid var(--rule); border-radius: 12px;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+  .search-wrap:focus-within { border-color: var(--ct-gold-dark); box-shadow: 0 0 0 3px rgba(215,168,111,0.18); }
+  .search-icon {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    font-size: 16px; color: var(--denim); opacity: 0.7; pointer-events: none;
+  }
+  .search-input {
+    width: 100%; border: 0; background: transparent;
+    font: 400 15px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 12px 36px 12px 36px; color: var(--slate); border-radius: 12px;
+  }
+  .search-input::placeholder { color: var(--denim); opacity: 0.55; }
+  .search-input:focus { outline: none; }
+  .search-clear {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    width: 24px; height: 24px; border: 0; border-radius: 50%; background: rgba(31,52,63,0.10);
+    color: var(--slate); font-size: 16px; line-height: 1; cursor: pointer; display: none;
+  }
+  .search-input:not(:placeholder-shown) ~ .search-clear { display: block; }
+  .price-wrap {
+    margin: 8px 4px 4px; padding: 10px 4px;
+  }
+  .price-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .price-label { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim); }
+  .price-vals { font-size: 13px; color: var(--slate); font-variant-numeric: tabular-nums; }
+  .price-vals b { font-weight: 700; color: var(--ct-gold-dark); }
+  .price-track { position: relative; height: 28px; }
+  .price-rail {
+    position: absolute; top: 50%; left: 0; right: 0; height: 4px;
+    background: rgba(31,52,63,0.12); border-radius: 2px; transform: translateY(-50%);
+  }
+  .price-fill {
+    position: absolute; top: 50%; height: 4px; transform: translateY(-50%);
+    background: var(--ct-gold); border-radius: 2px;
+  }
+  .price-track input[type="range"] {
+    position: absolute; top: 0; left: 0; width: 100%; height: 28px;
+    background: transparent; pointer-events: none; -webkit-appearance: none; appearance: none;
+  }
+  .price-track input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: white; border: 2px solid var(--ct-gold-dark);
+    box-shadow: 0 1px 3px rgba(31,52,63,0.25);
+    pointer-events: auto; cursor: pointer;
+  }
+  .price-track input[type="range"]::-moz-range-thumb {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: white; border: 2px solid var(--ct-gold-dark);
+    box-shadow: 0 1px 3px rgba(31,52,63,0.25);
+    pointer-events: auto; cursor: pointer; border-color: var(--ct-gold-dark);
+  }
+  .sort-wrap {
+    display: flex; align-items: center; gap: 10px; margin: 6px 4px 0;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--denim);
+  }
+  .sort-wrap select {
+    flex: 1; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 10px;
+    background: var(--paper); color: var(--slate); font: 500 13px/1 -apple-system, sans-serif;
+    letter-spacing: normal; text-transform: none;
+  }
+
+  /* Show flat marker on the unit card */
+  .badge.show-combo { background: var(--denim); color: var(--ct-haze); }
+
+  /* Touch-and-drag preview tooltip on the tower (mobile only) */
+  .tw-tip {
+    position: fixed; z-index: 60; pointer-events: none;
+    background: var(--slate); color: var(--ct-haze);
+    padding: 10px 14px; border-radius: 12px; font-size: 12px; line-height: 1.45;
+    box-shadow: 0 12px 28px -10px rgba(31,52,63,0.5), 0 2px 6px rgba(31,52,63,0.18);
+    transform: translate(-50%, -100%);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+    opacity: 0;
+    min-width: 180px; max-width: 240px;
+    border: 1px solid rgba(215,168,111,0.4);
+  }
+  .tw-tip.visible { opacity: 1; transform: translate(-50%, calc(-100% - 14px)); }
+  .tw-tip::after {
+    content: ''; position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%);
+    width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent;
+    border-top: 7px solid var(--slate);
+  }
+  .tw-tip .tt-uid { font-family: Georgia, serif; color: var(--ct-gold); font-size: 16px; line-height: 1; }
+  .tw-tip .tt-meta { color: var(--ct-haze); margin-top: 4px; opacity: 0.92; }
+  .tw-tip .tt-rent { color: var(--ct-gold); margin-top: 6px; font-weight: 600; }
+  .tw-tip .tt-status { display: inline-block; margin-top: 6px; padding: 2px 8px; border-radius: 999px; font-size: 10px; letter-spacing: 0.04em; background: rgba(244,242,238,0.14); }
+  .tw-tip .tt-hint { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(244,242,238,0.18); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ct-sun); opacity: 0.85; text-align: center; }
+  .tw-cell.preview-active { transform: scaleY(1.8) scaleX(1.4); z-index: 6; box-shadow: inset 0 0 0 1.5px var(--ct-gold), 0 0 0 1.5px var(--ct-gold); }
 </style>
 </head>
 <body>
 
 <header class="topbar">
   <div class="brand-mark"><span>b</span></div>
-  <div class="topbar-title">
-    <div class="topbar-eyebrow">Betterhomes × H&amp;H</div>
-    <div class="topbar-name">City Tower 1 · Live</div>
-  </div>
+  <div class="topbar-title"></div>
   <div class="live-pill" id="live-pill">
     <span class="live-dot"></span><span id="live-status">Connecting</span>
   </div>
@@ -447,17 +643,14 @@
   <!-- TAB 1 — OVERVIEW -->
   <section class="tab active" id="tab-tower">
     <div class="hero">
-      <div class="hero-eyebrow">CT1 · Broker Live Board · 695 residences</div>
-      <h1>City Tower <em>One</em><span class="period">.</span></h1>
       <div class="ct-lock"><svg viewBox="490 340 930 400" xmlns="http://www.w3.org/2000/svg" aria-label="City Tower" role="img"><path fill="currentColor" d="M843,347.8l-4.5,12.1s-7.2-5.5-19.7-5.5h-27.9v148.6s-.5,6.9,4.4,10.5v.2h-21.8v-.2c4.9-3.6,4.4-10.5,4.4-10.5v-148.6h-28c-12.5,0-19.7,5.5-19.7,5.5l-4.5-12.1h117.1ZM725.9,566.3l4.5,12.1s7.2-5.5,19.7-5.5h28v148.6s.5,6.9-4.4,10.5v.2h21.8v-.2c-4.9-3.6-4.4-10.5-4.4-10.5v-148.6h27.9c12.5,0,19.7,5.5,19.7,5.5l4.5-12.1h-117.1ZM1144.7,566.3c2.3,5.7.5,12.2.5,12.2l-50.2,138.5c0-.2-25.7-70.2-25.7-70.2,10.9-31.4,21-60.5,22.3-64.5,3.2-9.4,10.3-15.9,10.3-15.9h-18c2.3,5.7.5,12.2.5,12.2l-19.9,55.3-17.2-47s-.7-1.8-1.8-6.2c-1.6-6.3.2-14.2.2-14.2h-25.2c5.4,2.7,9.6,12,9.6,12l27.2,75.5-22.6,63.2c0-.2-16.2-43.4-21.9-58.6-7-18.7-12.8-38.2-23.6-55.2-7.7-12-17.6-22.1-29.7-29.7-12.7-8-28.4-10.7-43.2-10.7-48.7,0-88.2,38.8-88.2,86.6s39.5,86.6,88.2,86.6,63.4-18.8,78.2-46.4l-7.5-17.8c-8.7,33.8-37,58.6-70.7,58.6s-73.4-36-73.4-80.4,32.9-80.3,73.4-80.3,43.3,11.6,56.5,29.3c9.1,12.3,13.5,26.7,18.4,40.9,3.6,10.3,7.1,20.7,10.5,31.1l21.7,61.3h15.8s13.3-37.6,22.8-65l23.1,65h14.4s49.9-141.6,52.7-150c3.2-9.5,10.3-15.9,10.3-15.9h-18,0ZM1233.6,723.7h-40.6v-75c7.4.3,20,1,31.9,2.9,14,2.2,27.4,5.7,27.4,5.7l5.7-13.6h-65v-69.6h51.1c14.2,0,25.7,4.9,25.7,4.9v-12.6h-94.2v.2c4.9,3.6,4.4,10.5,4.4,10.5v144.4s.5,6.9-4.4,10.5v.2h94.8l10.9-20.2s-15.5,11.7-47.8,11.7h0ZM1410,732v.2h-27c-3.5-8.4-11.9-24.6-11.9-24.6l-22.1-42.8c-19.1.9-35-4.6-40.5-6.8v63.5s-.6,6.9,4.3,10.5v.2h-21.7v-.2c4.9-3.6,4.4-10.5,4.4-10.5v-144.4s.5-6.9-4.4-10.5v-.2h42.6c8.4,0,17.5,0,25.8,1.3,17.8,2.8,33.8,13,39.6,30.5,1.8,5.5,2.6,11.3,2.6,17.1,0,16.2-13.1,41.4-40.5,48,2.6,5.3,7.4,15.4,16.4,32.1,13.8,25.4,29.7,35.3,32.3,36.8h0ZM1357.6,656.2c10.4-3,18.8-10,23.8-19.6,5.8-11.2,7.4-28.3,1.9-40-4.2-8.8-12.6-15.3-21.7-18.7-10.6-4-21.7-3.9-32.8-3.9,0,0-18.4,0-20.2,0v77c15.4,5.7,32.9,9.8,49,5.2h0ZM710,348v-.2h-21.8v.2c3.7,2.7,4.4,7.4,4.4,9.5,0,.7,0,1.1,0,1.1v144.4s0,.4,0,1.1c0,2.1-.7,6.7-4.4,9.5v.2h21.8v-.2c-3.7-2.7-4.3-7.4-4.4-9.5v-145.5s0-.4,0-1.1c0-2.1.7-6.7,4.4-9.5ZM962.2,364.2c4.9-8.7,13.1-16.4,13.1-16.4h-20.8c3.1,5.7.5,12.1.5,12.1l-35.9,66.1c-10.1-18.1-34.8-59-36.5-63.8-2.9-7.7,0-14.5,0-14.5h-23.7c5.5,3.3,9.6,12,9.6,12l42.5,74.9v68.3s0,.4,0,1.1c0,2.1-.7,6.7-4.4,9.5v.2h21.8v-.2c-3.7-2.7-4.3-7.4-4.4-9.5v-69.4c20.3-39.9,35.4-65.5,38.2-70.5h0ZM663,481.9c-18,21.4-38.8,29.8-64.8,29.8-40.5,0-73.4-36-73.4-80.4s32.9-80.4,73.4-80.4,36.5,11.6,49.8,26.4l10.5-10c-15.8-14.5-37-23.4-60.3-23.4-48.7,0-88.2,38.8-88.2,86.6s39.5,86.6,88.2,86.6,52.3-12.5,68.5-32l-3.8-3.4h0Z"/></svg></div>
-      <div class="ct-tag">Know the floor. Own the launch.</div>
     </div>
 
     <div class="stat-hero">
       <button class="stat-card primary" id="card-avail">
-        <div class="stat-lbl">Available</div>
+        <div class="stat-lbl">Listed</div>
         <div class="stat-val" id="kpi-avail">0</div>
-        <div class="stat-sub" id="kpi-avail-sub">All bedroom types · Tap to browse</div>
+        <div class="stat-sub" id="kpi-avail-sub">Tap to browse listed units</div>
       </button>
       <div class="stat-row">
         <button class="stat-card dim" id="card-bh">
@@ -489,21 +682,78 @@
     <div style="height: 24px;"></div>
   </section>
 
+  <!-- TAB 1B — TOWER VIZ -->
+  <section class="tab" id="tab-tower-viz">
+    <div class="tower-shell">
+      <div class="tower-header">
+        <div>
+          <div class="tower-eyebrow">CITY TOWER 1</div>
+          <div class="tower-title">All 695 residences</div>
+        </div>
+        <div class="tower-key" id="tower-stat">—</div>
+      </div>
+      <div class="tower-filters" id="tower-filters">
+        <div class="seg" id="tower-mode">
+          <button class="seg-btn active" data-mode="status">Status</button>
+          <button class="seg-btn" data-mode="bedroom">Bedroom</button>
+          <button class="seg-btn" data-mode="view">View</button>
+          <button class="seg-btn" data-mode="features">Features</button>
+        </div>
+        <div class="tower-chip-row" id="tower-chips"></div>
+      </div>
+      <div class="tower-stage">
+        <div class="tower-bands" id="tower-bands"></div>
+        <div class="tower-frame" id="tower-frame"></div>
+      </div>
+      <div class="tower-legend" id="tower-legend"></div>
+    </div>
+  </section>
+
   <!-- TAB 2 — AVAILABLE LIST -->
   <section class="tab" id="tab-list">
     <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input id="search-input" class="search-input" type="search" inputmode="search" autocomplete="off"
+               placeholder="Search · unit, floor, view, type, price">
+        <button class="search-clear" id="search-clear" aria-label="Clear search">×</button>
+      </div>
       <div class="filter-row" id="filter-bedroom">
         <button class="chip active" data-bed="all">All</button>
         <button class="chip" data-bed="studio">Studio</button>
-        <button class="chip" data-bed="1br">1 Bedroom</button>
-        <button class="chip" data-bed="2br">2 Bedroom</button>
-        <button class="chip" data-bed="3br">3 Bedroom</button>
-        <button class="chip" data-bed="4br">4 Bedroom</button>
+        <button class="chip" data-bed="1br">1 Bed</button>
+        <button class="chip" data-bed="2br">2 Bed</button>
+        <button class="chip" data-bed="3br">3 Bed</button>
+        <button class="chip" data-bed="4br">4 Bed</button>
       </div>
+      <div class="filter-row" id="filter-view"></div>
       <div class="filter-row" id="filter-extra">
-        <button class="chip gold" data-extra="balcony">With balcony</button>
-        <button class="chip gold" data-extra="duplex">Duplex only</button>
+        <button class="chip gold" data-extra="balcony">Balcony</button>
+        <button class="chip gold" data-extra="duplex">Duplex</button>
         <button class="chip" data-extra="show">Show flats</button>
+      </div>
+      <div class="price-wrap">
+        <div class="price-head">
+          <span class="price-label">Rent</span>
+          <span class="price-vals"><b id="price-min-val">—</b> · <b id="price-max-val">—</b></span>
+        </div>
+        <div class="price-track">
+          <input type="range" id="price-min" min="0" max="100" value="0" step="1">
+          <input type="range" id="price-max" min="0" max="100" value="100" step="1">
+          <div class="price-rail"></div>
+          <div class="price-fill" id="price-fill"></div>
+        </div>
+      </div>
+      <div class="sort-wrap">
+        <label for="sort-by">Sort</label>
+        <select id="sort-by">
+          <option value="floor-asc">Floor · low → high</option>
+          <option value="floor-desc">Floor · high → low</option>
+          <option value="price-asc">Rent · low → high</option>
+          <option value="price-desc">Rent · high → low</option>
+          <option value="size-asc">Size · small → large</option>
+          <option value="size-desc">Size · large → small</option>
+        </select>
       </div>
       <div class="filter-meta">
         <span><b id="list-count">0</b> units shown</span>
@@ -555,7 +805,8 @@
 
 <nav class="tabbar">
   <button data-tab="tower" class="active"><span class="ic">⌂</span><span>Overview</span></button>
-  <button data-tab="list"><span class="ic">☰</span><span>Available</span></button>
+  <button data-tab="tower-viz"><span class="ic">▦</span><span>Tower</span></button>
+  <button data-tab="list"><span class="ic">⌕</span><span>Browse</span></button>
   <button data-tab="info"><span class="ic">ⓘ</span><span>Info</span></button>
 </nav>
 
@@ -593,7 +844,7 @@ const TYPES_ORDER = ['studio','1br','2br','3br','4br'];
 const VIEW_NAMES = { SHKZ:'Museum of the Future', SEA:'Sea View', MET:'Metro', CT2:'City Tower 2' };
 const BEDROOM_CODE = { 'Studio':'studio','1 Bedroom':'1br','2 Bedroom':'2br','3 Bedroom':'3br','4 Bedroom':'4br' };
 
-const AVAILABLE_STATES = ['not_launched','marketing','viewing','inflight'];
+const AVAILABLE_STATES = ['marketing','viewing','inflight'];
 const BH_LET_STATES    = ['reserved_bh','signed_bh','occupied_bh'];
 const HH_LET_STATES    = ['reserved_hh','signed_hh','occupied_hh'];
 
@@ -627,7 +878,17 @@ const fmtAED = n => 'AED ' + fmtN(n);
 // ============================================================
 // FILTER STATE
 // ============================================================
-const filter = { bed: 'all', extras: new Set() };
+const filter = {
+  bed: 'all',
+  view: 'all',
+  extras: new Set(),
+  search: '',
+  sort: 'floor-asc',
+  priceMin: null,
+  priceMax: null,
+};
+const towerView = { mode: 'status', value: null }; // mode: status|bedroom|view|features
+let priceBounds = { min: 0, max: 1000000 };
 
 // ============================================================
 // LIVE STATUS — robust fallback for mobile / in-app browsers
@@ -672,6 +933,7 @@ function switchTab(name) {
   document.querySelectorAll('.tabbar button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.id === 'tab-'+name));
   window.scrollTo(0, 0);
+  if (name === 'tower-viz') renderTower();
 }
 
 // ============================================================
@@ -683,17 +945,20 @@ function renderOverview() {
   const get = k => counts[k] || 0;
   const bhLet = get('reserved_bh') + get('signed_bh') + get('occupied_bh');
   const hhLet = get('reserved_hh') + get('signed_hh') + get('occupied_hh');
-  const avail = AVAILABLE_STATES.reduce((s,k) => s + get(k), 0);
+  const reservedBh = get('reserved_bh');
+  const reservedHh = get('reserved_hh');
+  const listed = get('marketing');
+  const inViewing = get('viewing') + get('inflight');
 
-  document.getElementById('kpi-avail').textContent = avail;
+  document.getElementById('kpi-avail').textContent = listed;
   document.getElementById('kpi-bh').textContent = bhLet;
   document.getElementById('kpi-hh').textContent = hhLet;
 
-  const total = UNITS.length;
   const availParts = [];
-  if (get('marketing')) availParts.push(`${get('marketing')} listed`);
-  if (get('not_launched')) availParts.push(`${get('not_launched')} not launched`);
-  if (get('show_flat')) availParts.push(`${get('show_flat')} show flats`);
+  if (inViewing) availParts.push(`${inViewing} in viewing`);
+  if (reservedBh + reservedHh) availParts.push(`${reservedBh + reservedHh} reserved`);
+  const showFlatCount = UNITS.filter(u => u.showFlat || u.s === 'show_flat').length;
+  if (showFlatCount) availParts.push(`${showFlatCount} show flat${showFlatCount === 1 ? '' : 's'}`);
   document.getElementById('kpi-avail-sub').textContent = availParts.join(' · ') + ' · Tap to browse';
   document.getElementById('kpi-bh-sub').textContent = total ? `${(bhLet/total*100).toFixed(1)}% of stock` : '—';
   document.getElementById('kpi-hh-sub').textContent = total ? `${(hhLet/total*100).toFixed(1)}% of stock` : '—';
@@ -717,8 +982,8 @@ function renderOverview() {
     });
   });
 
-  // Show flats
-  const showFlats = UNITS.filter(u => u.s === 'show_flat').sort((a,b) => a.f - b.f);
+  // Show flats — flagged via the show_flat column OR the legacy "Show Flat" status
+  const showFlats = UNITS.filter(u => u.showFlat || u.s === 'show_flat').sort((a,b) => a.f - b.f);
   const sStrip = document.getElementById('show-strip');
   if (!showFlats.length) {
     sStrip.innerHTML = `<div style="padding:14px 16px;color:var(--denim);font-style:italic;font-size:12px;">No show flats designated yet.</div>`;
@@ -744,23 +1009,50 @@ document.getElementById('card-bh').addEventListener('click', () => { /* no list 
 document.getElementById('card-hh').addEventListener('click', () => { /* no list yet for let */ });
 
 // ============================================================
-// AVAILABLE LIST
+// BROWSE — search, filters, price slider, sort, list
 // ============================================================
+function isShowFlat(u) { return u.showFlat || u.s === 'show_flat'; }
+
 function unitMatches(u) {
-  // Always available stock by default; toggle "Show flats" lets in show_flat
+  const showFlat = isShowFlat(u);
   if (filter.extras.has('show')) {
-    if (u.s !== 'show_flat') return false;
+    if (!showFlat) return false;
   } else {
-    if (!AVAILABLE_STATES.includes(u.s)) return false;
+    if (!AVAILABLE_STATES.includes(u.s) && !showFlat) return false;
   }
   if (filter.bed !== 'all' && u.t !== filter.bed) return false;
+  if (filter.view !== 'all' && u.v !== filter.view) return false;
   if (filter.extras.has('balcony') && !u.b) return false;
   if (filter.extras.has('duplex') && !u.d) return false;
+  if (filter.priceMin != null && u.pr < filter.priceMin) return false;
+  if (filter.priceMax != null && u.pr > filter.priceMax) return false;
+  if (filter.search) {
+    const q = filter.search.toLowerCase();
+    const hay = [
+      u.uid, String(u.f), String(u.p), u.t,
+      TYPE_META[u.t]?.label || '',
+      u.v, VIEW_NAMES[u.v] || '',
+      u.b ? 'balcony' : '',
+      u.d ? 'duplex' : '',
+      showFlat ? 'show flat' : '',
+      String(Math.round(u.pr)),
+      String(Math.round(u.pr/1000))+'k',
+    ].join(' ').toLowerCase();
+    if (!hay.includes(q)) return false;
+  }
   return true;
 }
 
+function sortUnits(list) {
+  const [k, dir] = filter.sort.split('-');
+  const sign = dir === 'desc' ? -1 : 1;
+  const get = u => k === 'floor' ? u.f * 100 + u.p : k === 'price' ? u.pr : k === 'size' ? u.sq : u.f;
+  return list.slice().sort((a, b) => sign * (get(a) - get(b)) || a.f - b.f || a.p - b.p);
+}
+
 function renderList() {
-  const list = UNITS.filter(unitMatches).sort((a,b) => a.f - b.f || a.p - b.p);
+  const filtered = UNITS.filter(unitMatches);
+  const list = sortUnits(filtered);
   document.getElementById('list-count').textContent = list.length;
   const host = document.getElementById('unit-list');
   if (!list.length) {
@@ -772,6 +1064,7 @@ function renderList() {
     const view = VIEW_NAMES[u.v] || u.v;
     const cut = u.orig && u.orig > u.pr;
     const cutPct = cut ? Math.round((1 - u.pr/u.orig) * 100) : 0;
+    const showFlat = isShowFlat(u);
     return `
       <div class="unit-card" data-uid="${u.uid}">
         <div class="uc-top">
@@ -782,11 +1075,11 @@ function renderList() {
           <span class="uc-bedr-dot ${m.cls}"></span>${m.label}${u.d ? ' Duplex' : ''} · Floor ${u.f} · ${view} · ${fmtN(u.sq)} sq ft
         </div>
         <div class="uc-bot">
-          ${u.s === 'show_flat' ? '<span class="badge show">Show flat</span>' : ''}
+          ${showFlat ? '<span class="badge show">Show flat</span>' : ''}
           ${u.d ? '<span class="badge duplex">Duplex</span>' : ''}
           ${u.b ? `<span class="badge balc">Balcony · ${fmtN(u.bsq)} sq ft</span>` : ''}
           ${cut ? `<span class="badge cut">Price cut ${cutPct}%</span>` : ''}
-          ${!u.d && !u.b && u.s !== 'show_flat' && !cut ? '<span style="opacity:0.5;">Unfurnished</span>' : ''}
+          ${!u.d && !u.b && !showFlat && !cut ? '<span style="opacity:0.5;">Unfurnished</span>' : ''}
         </div>
       </div>
     `;
@@ -796,6 +1089,56 @@ function renderList() {
   });
 }
 
+// View chips — built dynamically from data so adding new view codes never breaks the UI
+function buildViewChips() {
+  const counts = {};
+  for (const u of UNITS) if (u.v) counts[u.v] = (counts[u.v] || 0) + 1;
+  const codes = Object.keys(counts).sort((a,b) => counts[b] - counts[a]);
+  const host = document.getElementById('filter-view');
+  if (!host) return;
+  host.innerHTML = `<button class="chip ${filter.view==='all'?'active':''}" data-view="all">All views</button>` +
+    codes.map(c => `<button class="chip ${filter.view===c?'active':''}" data-view="${c}">${VIEW_NAMES[c] || c}</button>`).join('');
+  host.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      filter.view = chip.dataset.view;
+      host.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === chip));
+      renderList();
+    });
+  });
+}
+
+// Price slider — computed bounds rounded to 5,000 AED steps
+function setupPriceSlider() {
+  const prices = UNITS.filter(u => AVAILABLE_STATES.includes(u.s) || isShowFlat(u)).map(u => u.pr).filter(p => p > 0);
+  if (!prices.length) return;
+  const lo = Math.floor(Math.min(...prices) / 5000) * 5000;
+  const hi = Math.ceil(Math.max(...prices) / 5000) * 5000;
+  priceBounds = { min: lo, max: hi };
+  if (filter.priceMin == null) filter.priceMin = lo;
+  if (filter.priceMax == null) filter.priceMax = hi;
+  const minEl = document.getElementById('price-min');
+  const maxEl = document.getElementById('price-max');
+  minEl.min = lo; minEl.max = hi; minEl.step = 5000; minEl.value = filter.priceMin;
+  maxEl.min = lo; maxEl.max = hi; maxEl.step = 5000; maxEl.value = filter.priceMax;
+  const labelMin = document.getElementById('price-min-val');
+  const labelMax = document.getElementById('price-max-val');
+  const fill = document.getElementById('price-fill');
+  const update = () => {
+    let a = parseInt(minEl.value, 10), b = parseInt(maxEl.value, 10);
+    if (a > b - 5000) { if (event && event.target === minEl) a = b - 5000; else b = a + 5000; }
+    minEl.value = a; maxEl.value = b;
+    filter.priceMin = a; filter.priceMax = b;
+    labelMin.textContent = fmtAED(a); labelMax.textContent = fmtAED(b);
+    const range = hi - lo || 1;
+    fill.style.left = ((a - lo) / range * 100) + '%';
+    fill.style.right = (100 - (b - lo) / range * 100) + '%';
+  };
+  minEl.addEventListener('input', () => { update(); renderList(); });
+  maxEl.addEventListener('input', () => { update(); renderList(); });
+  update();
+}
+
+// Filter chip handlers
 document.getElementById('filter-bedroom').querySelectorAll('.chip').forEach(chip => {
   chip.addEventListener('click', () => {
     filter.bed = chip.dataset.bed;
@@ -811,13 +1154,280 @@ document.getElementById('filter-extra').querySelectorAll('.chip').forEach(chip =
     renderList();
   });
 });
+document.getElementById('search-input').addEventListener('input', e => {
+  filter.search = e.target.value.trim();
+  renderList();
+});
+document.getElementById('search-clear').addEventListener('click', () => {
+  document.getElementById('search-input').value = '';
+  filter.search = '';
+  renderList();
+});
+document.getElementById('sort-by').addEventListener('change', e => {
+  filter.sort = e.target.value;
+  renderList();
+});
 document.getElementById('filter-clear').addEventListener('click', () => {
-  filter.bed = 'all'; filter.extras.clear(); resetChips(); renderList();
+  filter.bed = 'all';
+  filter.view = 'all';
+  filter.extras.clear();
+  filter.search = '';
+  filter.priceMin = priceBounds.min;
+  filter.priceMax = priceBounds.max;
+  filter.sort = 'floor-asc';
+  document.getElementById('search-input').value = '';
+  document.getElementById('sort-by').value = 'floor-asc';
+  document.getElementById('price-min').value = priceBounds.min;
+  document.getElementById('price-max').value = priceBounds.max;
+  resetChips();
+  buildViewChips();
+  setupPriceSlider();
+  renderList();
 });
 function resetChips() {
   document.querySelectorAll('#filter-bedroom .chip').forEach(c => c.classList.toggle('active', c.dataset.bed === filter.bed));
   document.querySelectorAll('#filter-extra .chip').forEach(c => c.classList.remove('active'));
 }
+
+// ============================================================
+// TOWER VIZ — mobile
+// ============================================================
+function renderTower() {
+  const frame = document.getElementById('tower-frame');
+  const stat = document.getElementById('tower-stat');
+  const bandsHost = document.getElementById('tower-bands');
+  const chipRow = document.getElementById('tower-chips');
+  const legend = document.getElementById('tower-legend');
+  if (!frame) return;
+
+  // Group by floor (descending visually, but flex-col-reverse means we ascend in DOM)
+  const byFloor = {};
+  UNITS.forEach(u => { if (!byFloor[u.f]) byFloor[u.f] = []; byFloor[u.f].push(u); });
+  const floors = Object.keys(byFloor).map(Number).sort((a,b) => a - b);
+
+  // Match logic depending on towerView mode
+  const matcher = unitMatchesTowerFilter();
+
+  let matchedCount = 0;
+  frame.innerHTML = floors.map((f, idx) => {
+    const prev = floors[idx - 1];
+    const isTranche = prev && ((prev <= 25 && f > 25) || (prev <= 69 && f > 69) || (prev <= 89 && f > 89));
+    const showLabel = (f % 10 === 0) || f === 5 || f === 93;
+    const cells = byFloor[f].sort((a,b) => a.p - b.p).map(u => {
+      const cls = ['tw-cell', 's-' + (u.s || 'marketing'), 't-' + u.t];
+      if (u.d) cls.push('is-duplex');
+      if (u.b) cls.push('is-balcony');
+      if (isShowFlat(u)) cls.push('is-show');
+      const ok = matcher(u);
+      if (ok) { cls.push('match'); matchedCount++; }
+      return `<button class="${cls.join(' ')}" data-uid="${u.uid}" aria-label="Unit ${u.uid}"></button>`;
+    }).join('');
+    return `<div class="tw-row ${isTranche ? 'tranche-divider' : ''} ${showLabel ? 'show-num' : ''}" data-floor="${f}">
+              <span class="tw-num">${f}</span>${cells}
+            </div>`;
+  }).join('');
+
+  // Apply filtered class only when something is active (so the dim effect kicks in)
+  const isFiltered = !!towerView.value;
+  frame.classList.toggle('filtered', isFiltered);
+  stat.textContent = isFiltered ? `${matchedCount} highlighted of ${UNITS.length}` : `${UNITS.length} residences · 89 floors`;
+
+  // Bands (vertical labels on the left)
+  if (bandsHost && !bandsHost.dataset.built) {
+    bandsHost.innerHTML = `
+      <div class="band-marker b-penthouse">Penthouse · 90–93</div>
+      <div class="band-marker b-upper">Upper · 70–89</div>
+      <div class="band-marker b-mid">Mid · 26–69</div>
+      <div class="band-marker">Lower · 5–25</div>`;
+    bandsHost.dataset.built = '1';
+  }
+
+  // Build the chip row + legend for the active mode
+  chipRow.innerHTML = chipsForMode(towerView.mode);
+  chipRow.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      towerView.value = (towerView.value === chip.dataset.val) ? null : chip.dataset.val;
+      renderTower();
+    });
+  });
+  legend.innerHTML = legendForMode(towerView.mode);
+
+  // Cell taps → unit detail (desktop / non-touch). Touch is handled by setupTowerTouchPreview.
+  frame.querySelectorAll('.tw-cell').forEach(c => {
+    c.addEventListener('click', () => openUnit(c.dataset.uid));
+  });
+  setupTowerTouchPreview();
+}
+
+// Touch-and-drag preview: tower cells are tiny on mobile, so a finger-down shows
+// a floating tooltip with unit info. Drag to scan neighbouring cells; release to
+// open whatever you're hovering. Quick taps still feel instant.
+let _twTouchInit = false;
+function setupTowerTouchPreview() {
+  if (_twTouchInit) return;
+  const frame = document.getElementById('tower-frame');
+  if (!frame) return;
+  _twTouchInit = true;
+
+  let tip = document.getElementById('tw-tip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.id = 'tw-tip';
+    tip.className = 'tw-tip';
+    document.body.appendChild(tip);
+  }
+  let activeCell = null;
+
+  function getCellAt(x, y) {
+    const el = document.elementFromPoint(x, y);
+    return el && el.classList && el.classList.contains('tw-cell') ? el : null;
+  }
+  function setActive(cell, x, y) {
+    if (cell !== activeCell) {
+      if (activeCell) activeCell.classList.remove('preview-active');
+      activeCell = cell;
+      if (cell) {
+        cell.classList.add('preview-active');
+        const u = UNITS.find(u => u.uid === cell.dataset.uid);
+        if (u) {
+          const m = TYPE_META[u.t];
+          const view = VIEW_NAMES[u.v] || u.v;
+          const showFlat = u.showFlat || u.s === 'show_flat';
+          tip.innerHTML = `
+            <div class="tt-uid">Unit ${u.uid}</div>
+            <div class="tt-meta">${m.label}${u.d ? ' Duplex' : ''} · Floor ${u.f} · ${view}</div>
+            <div class="tt-meta">${fmtN(u.sq)} sq ft${u.b ? ' · balcony' : ''}</div>
+            <div class="tt-rent">${fmtAED(u.pr)} p.a.</div>
+            <div class="tt-status">${STATUS_LABEL[u.s] || u.s}${(showFlat && u.s !== 'show_flat') ? ' · Show flat' : ''}</div>
+            <div class="tt-hint">Release to open</div>
+          `;
+          tip.classList.add('visible');
+        }
+      }
+    }
+    if (cell) {
+      // Clamp to viewport so the tooltip never disappears off the edge
+      const vw = window.innerWidth;
+      const cx = Math.max(110, Math.min(vw - 10, x));
+      tip.style.left = cx + 'px';
+      tip.style.top = (y - 8) + 'px';
+    } else {
+      tip.classList.remove('visible');
+    }
+  }
+  function clearPreview() {
+    if (activeCell) activeCell.classList.remove('preview-active');
+    activeCell = null;
+    tip.classList.remove('visible');
+  }
+
+  frame.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    const cell = getCellAt(t.clientX, t.clientY);
+    if (cell) {
+      e.preventDefault();
+      setActive(cell, t.clientX, t.clientY);
+    }
+  }, { passive: false });
+  frame.addEventListener('touchmove', e => {
+    if (!activeCell) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    const cell = getCellAt(t.clientX, t.clientY);
+    setActive(cell, t.clientX, t.clientY);
+  }, { passive: false });
+  frame.addEventListener('touchend', () => {
+    if (activeCell) {
+      const uid = activeCell.dataset.uid;
+      clearPreview();
+      openUnit(uid);
+    } else {
+      clearPreview();
+    }
+  });
+  frame.addEventListener('touchcancel', clearPreview);
+}
+
+function unitMatchesTowerFilter() {
+  if (!towerView.value) return () => true;
+  const v = towerView.value;
+  const m = towerView.mode;
+  if (m === 'status') {
+    if (v === 'available')  return u => AVAILABLE_STATES.includes(u.s);
+    if (v === 'bh_let')     return u => BH_LET_STATES.includes(u.s);
+    if (v === 'hh_let')     return u => HH_LET_STATES.includes(u.s);
+    if (v === 'show_flat')  return u => isShowFlat(u);
+    if (v === 'lost')       return u => u.s === 'lost';
+    if (v === 'not_launched') return u => u.s === 'not_launched';
+    return () => true;
+  }
+  if (m === 'bedroom')  return u => u.t === v;
+  if (m === 'view')     return u => u.v === v;
+  if (m === 'features') {
+    if (v === 'duplex')  return u => u.d === true;
+    if (v === 'balcony') return u => u.b === true;
+    return () => true;
+  }
+  return () => true;
+}
+
+function chipsForMode(mode) {
+  if (mode === 'status') {
+    const items = [
+      { v: 'available', label: 'Available', sw: '#B39470' },
+      { v: 'bh_let',    label: 'BH Let',    sw: '#1F343F' },
+      { v: 'hh_let',    label: 'H&H Let',   sw: '#7BA0B2' },
+      { v: 'show_flat', label: 'Show flat', sw: '#2C537A' },
+      { v: 'not_launched', label: 'Not launched', sw: '#E8DBC8' },
+      { v: 'lost',      label: 'Lost',      sw: '#FF787A' },
+    ];
+    return items.map(i => `<button class="chip ${towerView.value===i.v?'active':''}" data-val="${i.v}"><span class="legend-sw" style="background:${i.sw};margin-right:6px;"></span>${i.label}</button>`).join('');
+  }
+  if (mode === 'bedroom') {
+    return TYPES_ORDER.map(t => `<button class="chip ${towerView.value===t?'active':''}" data-val="${t}">${TYPE_META[t].label}</button>`).join('');
+  }
+  if (mode === 'view') {
+    const counts = {};
+    UNITS.forEach(u => { if (u.v) counts[u.v] = (counts[u.v]||0)+1; });
+    const codes = Object.keys(counts).sort((a,b) => counts[b] - counts[a]);
+    return codes.map(c => `<button class="chip ${towerView.value===c?'active':''}" data-val="${c}">${VIEW_NAMES[c] || c}</button>`).join('');
+  }
+  if (mode === 'features') {
+    return `<button class="chip gold ${towerView.value==='duplex'?'active':''}" data-val="duplex">Duplex</button>
+            <button class="chip gold ${towerView.value==='balcony'?'active':''}" data-val="balcony">Balcony</button>`;
+  }
+  return '';
+}
+
+function legendForMode(mode) {
+  const item = (sw, label, ring) => `<span class="legend-item"><span class="legend-sw ${ring?'ring':''}" style="${ring?'color:'+sw:'background:'+sw}"></span>${label}</span>`;
+  if (mode === 'status') return [
+    item('#B39470', 'Listed'),
+    item('#D9B9A0', 'In viewing'),
+    item('#1F343F', 'Reserved · BH', true),
+    item('#7BA0B2', 'Reserved · H&H', true),
+    item('#1F343F', 'BH Signed/Occupied'),
+    item('#7BA0B2', 'H&H Signed/Occupied'),
+    item('#2C537A', 'Show flat'),
+    item('#FF787A', 'Lost'),
+    item('#D7A86F', 'Duplex (gold ring)', true),
+  ].join('');
+  if (mode === 'bedroom') return TYPES_ORDER.map(t => {
+    const colorMap = { studio: 'rgba(122,160,178,0.85)', '1br': '#2C537A', '2br': 'rgba(31,52,63,0.65)', '3br': '#A06767', '4br': '#A06767' };
+    return item(colorMap[t], TYPE_META[t].label);
+  }).join('');
+  return '<span class="legend-item">Tap a chip to highlight units</span>';
+}
+
+// Tower segmented control (Status / Bedroom / View / Features)
+document.querySelectorAll('#tower-mode .seg-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#tower-mode .seg-btn').forEach(x => x.classList.toggle('active', x === b));
+    towerView.mode = b.dataset.mode;
+    towerView.value = null;
+    renderTower();
+  });
+});
 
 // ============================================================
 // UNIT DETAIL — slide-up modal
@@ -841,7 +1451,7 @@ function openUnit(uid) {
       <div class="um-rent">${fmtAED(u.pr)}<span class="pa">p.a.</span></div>
       <div class="um-psf">${u.psf ? 'AED ' + Math.round(u.psf) + ' psf' : ''}${cut ? ' · was AED ' + fmtN(u.orig) : ''}</div>
       <div class="um-pills">
-        ${u.s === 'show_flat' ? '<span class="pill denim">Show flat</span>' : ''}
+        ${(u.showFlat || u.s === 'show_flat') ? '<span class="pill denim">Show flat</span>' : ''}
         ${u.d ? '<span class="pill gold">Duplex</span>' : ''}
         ${u.b ? `<span class="pill sun">Balcony · ${fmtN(u.bsq)} sq ft</span>` : '<span class="pill outline">No balcony</span>'}
         <span class="pill outline">Unfurnished</span>
@@ -952,6 +1562,8 @@ window.ctMobileLoaded = function(resp) {
     const need = ['unit_id','floor','unit_no','bedroom_type','is_duplex','view_code','total_sqft','asking_rent_aed','current_asking_aed','asking_psf','status','agency_won','tranche'];
     if (need.some(n => ix(n) < 0)) throw new Error('Expected column missing');
     const iBalc = ix('balcony'), iBsq = ix('balcony_sqft');
+    const iSf = ix('show_flat');
+    const isYes = v => /^(y|yes|true|1)$/i.test(String(v == null ? '' : v).trim());
     const get = (row, i) => (i < 0 || !row.c[i]) ? null : row.c[i].v;
     const fresh = [];
     for (const row of resp.table.rows) {
@@ -976,11 +1588,15 @@ window.ctMobileLoaded = function(resp) {
         b: String(get(row, iBalc)||'').toUpperCase() === 'Y',
         bsq: parseFloat(get(row, iBsq)) || 0,
         s: classifyJS(status, agency),
+        showFlat: isYes(get(row, iSf)) || status === 'Show Flat',
       });
     }
     if (fresh.length < 100) throw new Error(`only ${fresh.length} rows`);
     UNITS = fresh;
+    buildViewChips();
+    setupPriceSlider();
     renderOverview(); renderList();
+    if (document.getElementById('tab-tower-viz').classList.contains('active')) renderTower();
     const now = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
     setLive('live', `Live · ${now}`);
     document.getElementById('conn-help').style.display = 'none';
@@ -1009,6 +1625,8 @@ function refresh() {
 // ============================================================
 // BOOT
 // ============================================================
+buildViewChips();
+setupPriceSlider();
 renderOverview();
 renderList();
 setTimeout(refresh, 200);

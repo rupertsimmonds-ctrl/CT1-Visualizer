@@ -237,14 +237,18 @@
   }
   .unit-cell.s-viewing      { background: var(--sand); }                         /* active showing (legacy) */
   .unit-cell.s-inflight     { background: #BF956E; }                             /* offer/negotiating/pipeline (legacy) */
-  .unit-cell.s-reserved_bh  { background: var(--sand);  box-shadow: inset 0 0 0 1.5px var(--slate);  }
-  .unit-cell.s-reserved_hh  { background: var(--sand);  box-shadow: inset 0 0 0 1.5px var(--powder); }
+  /* Reserved sits OFF the leasing pipeline - render as empty fill with a bold BH/H&H border */
+  .unit-cell.s-reserved_bh  { background: white; box-shadow: inset 0 0 0 2px var(--slate);  }
+  .unit-cell.s-reserved_hh  { background: white; box-shadow: inset 0 0 0 2px var(--powder); }
   .unit-cell.s-signed_bh    { background: var(--slate);  }
   .unit-cell.s-signed_hh    { background: var(--powder); }
   .unit-cell.s-occupied_bh  { background: var(--slate);  box-shadow: inset 0 0 0 1px var(--sand);  }
   .unit-cell.s-occupied_hh  { background: var(--powder); box-shadow: inset 0 0 0 1px var(--slate); }
   .unit-cell.s-show_flat    { background: var(--denim);  box-shadow: inset 0 0 0 1.5px white; }
   .unit-cell.s-lost         { background: var(--salmon); }
+  /* Show-flat marker: a unit can be Marketing/etc AND a designated show flat at the same time.
+     The white inner border lets brokers spot show flats over any underlying status colour. */
+  .unit-cell.is-show        { box-shadow: inset 0 0 0 1.5px white; }
 
   /* Centre dot reinforces BH/H&H on signed + occupied (colour-blind safety) */
   .unit-cell.s-signed_bh::before,
@@ -449,6 +453,10 @@
   .drawer-filters {
     padding: 14px 26px; background: white; border-bottom: 1px solid var(--rule);
     display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    /* Sticky to the top of the drawer body so chips never scroll out of view on long lists */
+    position: sticky; top: 0; z-index: 4;
+    box-shadow: 0 1px 0 var(--rule), 0 4px 8px -6px rgba(31,52,63,0.08);
+    backdrop-filter: saturate(140%);
   }
   .drawer-filters .mini-chip {
     display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px;
@@ -471,6 +479,31 @@
     color: var(--denim); text-decoration: underline; cursor: pointer;
   }
   .drawer-filters .clear-all:hover { color: var(--slate); }
+  /* Keyboard shortcut hint + popover */
+  .kb-hint {
+    position: relative;
+    margin-left: 8px; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--denim); cursor: help; user-select: none;
+    border: 1px solid var(--rule); padding: 4px 8px; background: white;
+  }
+  .kb-hint:hover { color: var(--slate); border-color: var(--slate); }
+  .kb-hint .kb-pop {
+    display: none; position: absolute; right: 0; top: calc(100% + 6px);
+    background: var(--slate); color: var(--mist); padding: 12px 14px;
+    font-size: 11px; letter-spacing: 0.04em; text-transform: none; line-height: 1.7;
+    white-space: nowrap; z-index: 8;
+    box-shadow: 0 8px 24px -8px rgba(31,52,63,0.4);
+  }
+  .kb-hint:hover .kb-pop, .kb-hint:focus-within .kb-pop { display: block; }
+  .kb-hint .kb-pop kbd {
+    display: inline-block; min-width: 18px; padding: 1px 5px; margin: 0 2px;
+    background: rgba(244,242,238,0.18); color: var(--ct-haze);
+    border: 1px solid rgba(244,242,238,0.32); border-bottom-width: 2px;
+    border-radius: 3px; font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 10px;
+    text-align: center; vertical-align: baseline;
+  }
+  .kb-pop .kb-row { display: flex; justify-content: space-between; gap: 18px; }
+  .kb-pop .kb-row span { color: var(--ct-sun); }
 
   .drawer-toolbar {
     padding: 10px 26px; background: var(--mist); border-bottom: 1px solid var(--rule);
@@ -848,7 +881,21 @@
       </section>
 
       <section>
-        <div class="sec-head"><h2>Filter the tower</h2><div class="tag">Bedroom type</div></div>
+        <div class="sec-head">
+          <h2>Filter the tower</h2>
+          <div class="tag">
+            Bedroom type
+            <span class="kb-hint" tabindex="0" style="margin-left:10px;">⌨︎ Shortcuts
+              <span class="kb-pop">
+                <div class="kb-row"><span>Studio</span><kbd>S</kbd></div>
+                <div class="kb-row"><span>1 / 2 / 3 / 4 Bedroom</span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd></div>
+                <div class="kb-row"><span>All bedrooms</span><kbd>0</kbd></div>
+                <div class="kb-row"><span>Focus rent input (drawer open)</span><kbd>/</kbd></div>
+                <div class="kb-row"><span>Close drawer</span><kbd>Esc</kbd></div>
+              </span>
+            </span>
+          </div>
+        </div>
         <div class="filters" id="filters">
           <div class="chip active" data-filter="all">All units</div>
           <div class="chip" data-filter="studio"><span class="sw studio"></span>Studio</div>
@@ -1002,13 +1049,13 @@ const BEDROOM_CODE = {
 };
 // Granular lifecycle display states. 'Available' drawers pool the first four;
 // 'BH let' / 'H&H let' drawers pool the three agency-won states each.
-const AVAILABLE_STATES = ['not_launched','marketing','viewing','inflight'];
+const AVAILABLE_STATES = ['marketing','viewing','inflight'];
 const BH_LET_STATES    = ['reserved_bh','signed_bh','occupied_bh'];
 const HH_LET_STATES    = ['reserved_hh','signed_hh','occupied_hh'];
 
 const STATUS_LABEL = {
   not_launched: 'Not launched',
-  marketing:    'Marketing',
+  marketing:    'Listed',
   viewing:      'Viewing',
   inflight:     'In flight',
   reserved_bh:  'Reserved · BH',
@@ -1102,6 +1149,8 @@ function buildTower() {
       cell.dataset.sq = u.sq;
       cell.dataset.status = u.s || 'marketing';
       cell.dataset.premium = u.d ? '1' : '0';
+      cell.dataset.showFlat = u.showFlat ? '1' : '0';
+      if (u.showFlat) cell.classList.add('is-show');
       cell.setAttribute('aria-label', `Unit ${u.uid}`);
       row.appendChild(cell);
     });
@@ -1181,11 +1230,12 @@ function buildHeadlines() {
     : `${total ? (hhLet/total*100).toFixed(1) : '0'}% of stock`;
 
   const avParts = [];
-  if (get('marketing'))    avParts.push(`${get('marketing')} marketed`);
+  if (get('marketing'))    avParts.push(`${get('marketing')} listed`);
   if (get('viewing'))      avParts.push(`${get('viewing')} in viewing`);
   if (get('inflight'))     avParts.push(`${get('inflight')} in flight`);
   if (get('not_launched')) avParts.push(`${get('not_launched')} not launched`);
-  if (get('show_flat'))    avParts.push(`${get('show_flat')} show flats`);
+  const showFlatTotal = UNITS.filter(u => u.showFlat || u.s === 'show_flat').length;
+  if (showFlatTotal)       avParts.push(`${showFlatTotal} show flat${showFlatTotal === 1 ? '' : 's'}`);
   if (lost)                avParts.push(`${lost} lost`);
   document.getElementById('kpi-avail-sub').textContent = avParts.join(' · ') || 'Across all bedrooms';
 }
@@ -1250,7 +1300,7 @@ function buildMix() {
 function buildShowFlats() {
   const host = document.getElementById('showflats-grid');
   const tag  = document.getElementById('showflats-tag');
-  const showFlats = UNITS.filter(u => u.s === 'show_flat').sort((a,b) => a.f - b.f || a.p - b.p);
+  const showFlats = UNITS.filter(u => u.showFlat || u.s === 'show_flat').sort((a,b) => a.f - b.f || a.p - b.p);
   const totalShow = showFlats.length;
   if (totalShow === 0) {
     tag.textContent = 'None designated yet · Lobby Mon–Sun 10:00–19:00';
@@ -1295,13 +1345,13 @@ function setupFilters() {
   });
 }
 
-function statusMatchesView(unitStatus, view) {
+function statusMatchesView(unitStatus, view, showFlat) {
   if (!view) return true;
   if (view === 'available') return AVAILABLE_STATES.includes(unitStatus);
   if (view === 'bh_let')    return BH_LET_STATES.includes(unitStatus);
   if (view === 'hh_let')    return HH_LET_STATES.includes(unitStatus);
   if (view === 'lost')      return unitStatus === 'lost';
-  if (view === 'show_flat') return unitStatus === 'show_flat';
+  if (view === 'show_flat') return unitStatus === 'show_flat' || showFlat === true;
   return false;
 }
 
@@ -1317,7 +1367,7 @@ function applyTowerFilter() {
     document.querySelectorAll('.unit-cell').forEach(c => {
       let ok = true;
       if (bed !== 'all' && c.dataset.type !== bed) ok = false;
-      if (st && !statusMatchesView(c.dataset.status, st)) ok = false;
+      if (st && !statusMatchesView(c.dataset.status, st, c.dataset.showFlat === '1')) ok = false;
       c.classList.toggle('match', ok);
     });
   }
@@ -1381,7 +1431,7 @@ function unitMatchesListFilters(u) {
 }
 
 function unitsForView(view) {
-  return UNITS.filter(u => statusMatchesView(u.s, view));
+  return UNITS.filter(u => statusMatchesView(u.s, view, u.showFlat));
 }
 
 function sortUnits(list, col, dir) {
@@ -1570,6 +1620,15 @@ function renderListFilters(view) {
       <button class="mini-chip ${lf.duplex?'active':''}" data-fkind="duplex" data-v="1">Duplex only</button>
     </div>
     <span class="clear-all" id="drawer-clear">Clear</span>
+    <span class="kb-hint" tabindex="0">⌨︎ Shortcuts
+      <span class="kb-pop">
+        <div class="kb-row"><span>Studio</span><kbd>S</kbd></div>
+        <div class="kb-row"><span>1 / 2 / 3 / 4 Bedroom</span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd></div>
+        <div class="kb-row"><span>All bedrooms</span><kbd>0</kbd></div>
+        <div class="kb-row"><span>Focus rent input</span><kbd>/</kbd></div>
+        <div class="kb-row"><span>Close drawer</span><kbd>Esc</kbd></div>
+      </span>
+    </span>
   `;
 }
 
@@ -1705,6 +1764,7 @@ function renderDetail(uid) {
         <div class="d-sub">${m.label}${u.d ? ' · Duplex' : ''} · Floor ${u.f} · Tranche ${u.tr}</div>
         <div class="d-status-row">
           <span class="pill s-${u.s}">${STATUS_LABEL[u.s]||u.s}</span>
+          ${(u.showFlat && u.s !== 'show_flat') ? '<span class="pill s-show_flat">Show flat</span>' : ''}
           ${u.d ? '<span class="pill" style="background:var(--ct-gold);color:var(--slate);font-weight:600;">Duplex</span>' : ''}
           ${u.b ? `<span class="pill" style="background:var(--ct-sun);color:var(--slate);">Balcony · ${fmtN(u.bsq)} sq ft</span>` : '<span class="pill" style="background:var(--mist);color:var(--denim);">No balcony</span>'}
           <span class="pill" style="background:var(--paper);color:var(--denim);border:1px solid var(--rule);">Unfurnished</span>
@@ -1833,7 +1893,7 @@ function renderDetail(uid) {
 }
 
 function renderDetailOwnership(u) {
-  if (!AVAILABLE_STATES.includes(u.s) && u.s !== 'show_flat') return '';
+  if (!AVAILABLE_STATES.includes(u.s) && u.s !== 'show_flat' && !u.showFlat) return '';
   const lines = [];
   if (u.br) lines.push(`<div class="label-row"><span>BH Broker owner</span><span>${u.br}</span></div>`);
   if (u.dom != null && u.dom > 0) lines.push(`<div class="label-row"><span>Days on market</span><span>${Math.round(u.dom)}</span></div>`);
@@ -1902,7 +1962,29 @@ function closeDrawer() {
 document.getElementById('drawer-close').addEventListener('click', closeDrawer);
 document.getElementById('drawer-backdrop').addEventListener('click', closeDrawer);
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeDrawer();
+  if (e.key === 'Escape') { closeDrawer(); return; }
+
+  // Skip the rest if the user is typing in an input / textarea / contenteditable
+  const t = e.target;
+  const inField = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+
+  // "/" focuses the rent-min input inside the drawer (works even if the user is in another input)
+  if (e.key === '/' && !inField) {
+    const rentMin = document.getElementById('rent-min');
+    if (rentMin) { e.preventDefault(); rentMin.focus(); rentMin.select(); }
+    return;
+  }
+  if (inField) return;
+
+  // Bedroom shortcuts: 0/A = all, S = studio, 1-4 = 1-4 bedroom
+  const map = { '0':'all', 'a':'all', 's':'studio', '1':'1br', '2':'2br', '3':'3br', '4':'4br' };
+  const k = e.key.toLowerCase();
+  if (k in map) {
+    const target = map[k];
+    state.bedroomFilter = target;
+    document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.filter === target));
+    applyTowerFilter();
+  }
 });
 
 /* ============================================================
@@ -1943,6 +2025,8 @@ window.ctUnitsLoaded = function(resp) {
     const iSgnR = ix('signed_rent_aed'), iSgnD = ix('signed_date');
     const iAvA = ix('asking_vs_achieved_pct'), iLt = ix('lost_to'), iLr = ix('lost_reason');
     const iBalc = ix('balcony'), iBsq = ix('balcony_sqft');
+    const iSf = ix('show_flat');
+    const isYes = v => /^(y|yes|true|1)$/i.test(String(v == null ? '' : v).trim());
     if ([iFloor,iUnit,iBed,iView,iTr,iSt].some(i => i < 0)) {
       throw new Error('Expected column missing in 07_HTML_Export. Got: ' + cols.join(', '));
     }
@@ -1987,6 +2071,7 @@ window.ctUnitsLoaded = function(resp) {
         tr: String(parseCell(row, iTr)||'').trim(),
         b:  String(parseCell(row, iBalc)||'').toUpperCase() === 'Y',
         bsq: parseFloat(parseCell(row, iBsq)) || 0,
+        showFlat: isYes(parseCell(row, iSf)) || status === 'Show Flat',
         s, st: status, ag: agency || null,
         br: parseCell(row, iBr) ? String(parseCell(row, iBr)).trim() : null,
         dom: isFinite(rawDom) && rawDom > 0 ? rawDom : null,
