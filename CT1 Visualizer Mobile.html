@@ -427,6 +427,178 @@
     .unit-list { padding: 12px 22px 28px; }
     .stat-card .stat-val { font-size: 64px; }
   }
+
+  /* ==========================================================
+   * TOWER VIZ — mobile
+   * ========================================================== */
+  .tower-shell { padding: 16px 16px 28px; }
+  .tower-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--rule); margin-bottom: 14px; }
+  .tower-eyebrow { font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--denim); margin-bottom: 4px; }
+  .tower-title { font-family: Georgia, serif; font-size: 22px; color: var(--slate); }
+  .tower-key { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--denim); text-align: right; max-width: 50%; line-height: 1.4; }
+  .tower-filters { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .seg {
+    display: inline-flex; padding: 3px;
+    background: rgba(31,52,63,0.06); border-radius: 10px; align-self: flex-start;
+  }
+  .seg-btn {
+    border: 0; background: transparent; padding: 8px 14px;
+    font: 600 12px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--slate); border-radius: 8px; cursor: pointer; transition: all 0.18s ease;
+    letter-spacing: 0.04em;
+  }
+  .seg-btn.active { background: white; color: var(--ct-afterlight); box-shadow: 0 1px 2px rgba(31,52,63,0.12); }
+  .tower-chip-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+  .tower-chip-row::-webkit-scrollbar { display: none; }
+  .tower-chip-row .chip { flex-shrink: 0; }
+  .tower-stage {
+    position: relative; padding: 22px 16px 22px 56px;
+    background: linear-gradient(180deg, #E8E4DE 0%, #F7F2EB 28%, #FDFAF4 100%);
+    border: 1px solid var(--rule); border-radius: 14px;
+    overflow: hidden; box-shadow: 0 1px 2px rgba(31,52,63,0.05), 0 8px 24px -10px rgba(31,52,63,0.10);
+  }
+  .tower-stage::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 8px;
+    background: linear-gradient(180deg, var(--ct-afterlight) 0%, var(--ct-afterlight2) 100%);
+    box-shadow: inset 0 -1px 0 var(--ct-gold-dark);
+  }
+  .tower-stage::after {
+    content: ''; position: absolute; left: 50%; top: -12px;
+    width: 2px; height: 16px;
+    background: linear-gradient(180deg, var(--ct-gold) 0%, var(--ct-afterlight) 100%);
+    transform: translateX(-50%);
+  }
+  .tower-bands {
+    position: absolute; left: 8px; top: 22px; bottom: 22px;
+    display: flex; flex-direction: column; align-items: stretch; gap: 0;
+    pointer-events: none;
+  }
+  .band-marker {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--denim); border-left: 2px solid var(--sand); padding: 4px 2px;
+    opacity: 0.7;
+  }
+  .band-marker.b-mid       { border-left-color: var(--powder); }
+  .band-marker.b-upper     { border-left-color: var(--denim); }
+  .band-marker.b-penthouse { border-left-color: var(--terra); }
+  .tower-frame { display: flex; flex-direction: column-reverse; gap: 1px; padding-top: 12px; }
+  .tw-row { display: flex; align-items: center; gap: 2px; height: 8px; position: relative; }
+  .tw-row.tranche-divider { margin-top: 4px; padding-top: 2px; height: 10px; border-top: 1px dashed rgba(31,52,63,0.22); }
+  .tw-num {
+    position: absolute; right: calc(100% + 4px);
+    font-size: 8px; color: var(--denim); opacity: 0;
+    font-variant-numeric: tabular-nums; font-weight: 600;
+  }
+  .tw-row.show-num .tw-num { opacity: 1; }
+  .tw-cell {
+    flex: 1; min-width: 6px; max-width: 18px; height: 8px;
+    border: 0; padding: 0; cursor: pointer; position: relative;
+    transition: transform 0.16s ease, opacity 0.18s ease;
+  }
+  .tw-cell:active { transform: scaleY(1.6); z-index: 5; }
+  .tw-cell.t-studio::after { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: rgba(122,160,178,0.85); }
+  .tw-cell.t-1br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: var(--denim); }
+  .tw-cell.t-2br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: rgba(31,52,63,0.65); }
+  .tw-cell.t-3br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: var(--terra); opacity: 0.85; }
+  .tw-cell.t-4br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2.5px; background: var(--terra); }
+  .tw-cell.s-not_launched { background: #E8DBC8; box-shadow: inset 0 0 0 0.5px rgba(31,52,63,0.18); }
+  .tw-cell.s-marketing    { background: #B39470; }
+  .tw-cell.s-viewing      { background: var(--sand); }
+  .tw-cell.s-inflight     { background: #BF956E; }
+  .tw-cell.s-reserved_bh  { background: var(--sand); box-shadow: inset 0 0 0 1.5px var(--slate); }
+  .tw-cell.s-reserved_hh  { background: var(--sand); box-shadow: inset 0 0 0 1.5px var(--powder); }
+  .tw-cell.s-signed_bh    { background: var(--slate); }
+  .tw-cell.s-signed_hh    { background: var(--powder); }
+  .tw-cell.s-occupied_bh  { background: var(--slate); box-shadow: inset 0 0 0 1px var(--sand); }
+  .tw-cell.s-occupied_hh  { background: var(--powder); box-shadow: inset 0 0 0 1px var(--slate); }
+  .tw-cell.s-show_flat,
+  .tw-cell.is-show        { box-shadow: inset 0 0 0 1.5px white; }
+  .tw-cell.s-show_flat    { background: var(--denim); }
+  .tw-cell.s-lost         { background: var(--salmon); }
+  .tw-cell.is-duplex { outline: 1.2px solid var(--ct-gold); outline-offset: -1px; z-index: 2; }
+  .tw-cell.is-balcony::before { content:''; position:absolute; left:0; top:0; bottom:0; width:1.5px; background: var(--ct-sun); }
+  .tower-frame.filtered .tw-cell:not(.match) { opacity: 0.14; }
+  .tower-legend {
+    display: flex; flex-wrap: wrap; gap: 8px 14px; padding: 16px 4px 0;
+    font-size: 11px; color: var(--denim);
+  }
+  .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+  .legend-sw { width: 10px; height: 10px; border-radius: 2px; }
+  .legend-sw.ring { background: transparent !important; outline: 1.5px solid currentColor; outline-offset: -1px; }
+
+  /* ==========================================================
+   * BROWSE — search + view chips + price slider + sort
+   * ========================================================== */
+  .search-wrap {
+    position: relative; margin-bottom: 12px;
+    background: var(--paper); border: 1px solid var(--rule); border-radius: 12px;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+  .search-wrap:focus-within { border-color: var(--ct-gold-dark); box-shadow: 0 0 0 3px rgba(215,168,111,0.18); }
+  .search-icon {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    font-size: 16px; color: var(--denim); opacity: 0.7; pointer-events: none;
+  }
+  .search-input {
+    width: 100%; border: 0; background: transparent;
+    font: 400 15px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 12px 36px 12px 36px; color: var(--slate); border-radius: 12px;
+  }
+  .search-input::placeholder { color: var(--denim); opacity: 0.55; }
+  .search-input:focus { outline: none; }
+  .search-clear {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    width: 24px; height: 24px; border: 0; border-radius: 50%; background: rgba(31,52,63,0.10);
+    color: var(--slate); font-size: 16px; line-height: 1; cursor: pointer; display: none;
+  }
+  .search-input:not(:placeholder-shown) ~ .search-clear { display: block; }
+  .price-wrap {
+    margin: 8px 4px 4px; padding: 10px 4px;
+  }
+  .price-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .price-label { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim); }
+  .price-vals { font-size: 13px; color: var(--slate); font-variant-numeric: tabular-nums; }
+  .price-vals b { font-weight: 700; color: var(--ct-gold-dark); }
+  .price-track { position: relative; height: 28px; }
+  .price-rail {
+    position: absolute; top: 50%; left: 0; right: 0; height: 4px;
+    background: rgba(31,52,63,0.12); border-radius: 2px; transform: translateY(-50%);
+  }
+  .price-fill {
+    position: absolute; top: 50%; height: 4px; transform: translateY(-50%);
+    background: var(--ct-gold); border-radius: 2px;
+  }
+  .price-track input[type="range"] {
+    position: absolute; top: 0; left: 0; width: 100%; height: 28px;
+    background: transparent; pointer-events: none; -webkit-appearance: none; appearance: none;
+  }
+  .price-track input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: white; border: 2px solid var(--ct-gold-dark);
+    box-shadow: 0 1px 3px rgba(31,52,63,0.25);
+    pointer-events: auto; cursor: pointer;
+  }
+  .price-track input[type="range"]::-moz-range-thumb {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: white; border: 2px solid var(--ct-gold-dark);
+    box-shadow: 0 1px 3px rgba(31,52,63,0.25);
+    pointer-events: auto; cursor: pointer; border-color: var(--ct-gold-dark);
+  }
+  .sort-wrap {
+    display: flex; align-items: center; gap: 10px; margin: 6px 4px 0;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--denim);
+  }
+  .sort-wrap select {
+    flex: 1; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 10px;
+    background: var(--paper); color: var(--slate); font: 500 13px/1 -apple-system, sans-serif;
+    letter-spacing: normal; text-transform: none;
+  }
+
+  /* Show flat marker on the unit card */
+  .badge.show-combo { background: var(--denim); color: var(--ct-haze); }
 </style>
 </head>
 <body>
@@ -489,21 +661,78 @@
     <div style="height: 24px;"></div>
   </section>
 
+  <!-- TAB 1B — TOWER VIZ -->
+  <section class="tab" id="tab-tower-viz">
+    <div class="tower-shell">
+      <div class="tower-header">
+        <div>
+          <div class="tower-eyebrow">CITY TOWER 1</div>
+          <div class="tower-title">All 695 residences</div>
+        </div>
+        <div class="tower-key" id="tower-stat">—</div>
+      </div>
+      <div class="tower-filters" id="tower-filters">
+        <div class="seg" id="tower-mode">
+          <button class="seg-btn active" data-mode="status">Status</button>
+          <button class="seg-btn" data-mode="bedroom">Bedroom</button>
+          <button class="seg-btn" data-mode="view">View</button>
+          <button class="seg-btn" data-mode="features">Features</button>
+        </div>
+        <div class="tower-chip-row" id="tower-chips"></div>
+      </div>
+      <div class="tower-stage">
+        <div class="tower-bands" id="tower-bands"></div>
+        <div class="tower-frame" id="tower-frame"></div>
+      </div>
+      <div class="tower-legend" id="tower-legend"></div>
+    </div>
+  </section>
+
   <!-- TAB 2 — AVAILABLE LIST -->
   <section class="tab" id="tab-list">
     <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input id="search-input" class="search-input" type="search" inputmode="search" autocomplete="off"
+               placeholder="Search · unit, floor, view, type, price">
+        <button class="search-clear" id="search-clear" aria-label="Clear search">×</button>
+      </div>
       <div class="filter-row" id="filter-bedroom">
         <button class="chip active" data-bed="all">All</button>
         <button class="chip" data-bed="studio">Studio</button>
-        <button class="chip" data-bed="1br">1 Bedroom</button>
-        <button class="chip" data-bed="2br">2 Bedroom</button>
-        <button class="chip" data-bed="3br">3 Bedroom</button>
-        <button class="chip" data-bed="4br">4 Bedroom</button>
+        <button class="chip" data-bed="1br">1 Bed</button>
+        <button class="chip" data-bed="2br">2 Bed</button>
+        <button class="chip" data-bed="3br">3 Bed</button>
+        <button class="chip" data-bed="4br">4 Bed</button>
       </div>
+      <div class="filter-row" id="filter-view"></div>
       <div class="filter-row" id="filter-extra">
-        <button class="chip gold" data-extra="balcony">With balcony</button>
-        <button class="chip gold" data-extra="duplex">Duplex only</button>
+        <button class="chip gold" data-extra="balcony">Balcony</button>
+        <button class="chip gold" data-extra="duplex">Duplex</button>
         <button class="chip" data-extra="show">Show flats</button>
+      </div>
+      <div class="price-wrap">
+        <div class="price-head">
+          <span class="price-label">Rent</span>
+          <span class="price-vals"><b id="price-min-val">—</b> · <b id="price-max-val">—</b></span>
+        </div>
+        <div class="price-track">
+          <input type="range" id="price-min" min="0" max="100" value="0" step="1">
+          <input type="range" id="price-max" min="0" max="100" value="100" step="1">
+          <div class="price-rail"></div>
+          <div class="price-fill" id="price-fill"></div>
+        </div>
+      </div>
+      <div class="sort-wrap">
+        <label for="sort-by">Sort</label>
+        <select id="sort-by">
+          <option value="floor-asc">Floor · low → high</option>
+          <option value="floor-desc">Floor · high → low</option>
+          <option value="price-asc">Rent · low → high</option>
+          <option value="price-desc">Rent · high → low</option>
+          <option value="size-asc">Size · small → large</option>
+          <option value="size-desc">Size · large → small</option>
+        </select>
       </div>
       <div class="filter-meta">
         <span><b id="list-count">0</b> units shown</span>
@@ -555,7 +784,8 @@
 
 <nav class="tabbar">
   <button data-tab="tower" class="active"><span class="ic">⌂</span><span>Overview</span></button>
-  <button data-tab="list"><span class="ic">☰</span><span>Available</span></button>
+  <button data-tab="tower-viz"><span class="ic">▦</span><span>Tower</span></button>
+  <button data-tab="list"><span class="ic">⌕</span><span>Browse</span></button>
   <button data-tab="info"><span class="ic">ⓘ</span><span>Info</span></button>
 </nav>
 
@@ -593,7 +823,7 @@ const TYPES_ORDER = ['studio','1br','2br','3br','4br'];
 const VIEW_NAMES = { SHKZ:'Museum of the Future', SEA:'Sea View', MET:'Metro', CT2:'City Tower 2' };
 const BEDROOM_CODE = { 'Studio':'studio','1 Bedroom':'1br','2 Bedroom':'2br','3 Bedroom':'3br','4 Bedroom':'4br' };
 
-const AVAILABLE_STATES = ['not_launched','marketing','viewing','inflight'];
+const AVAILABLE_STATES = ['marketing','viewing','inflight'];
 const BH_LET_STATES    = ['reserved_bh','signed_bh','occupied_bh'];
 const HH_LET_STATES    = ['reserved_hh','signed_hh','occupied_hh'];
 
@@ -627,7 +857,17 @@ const fmtAED = n => 'AED ' + fmtN(n);
 // ============================================================
 // FILTER STATE
 // ============================================================
-const filter = { bed: 'all', extras: new Set() };
+const filter = {
+  bed: 'all',
+  view: 'all',
+  extras: new Set(),
+  search: '',
+  sort: 'floor-asc',
+  priceMin: null,
+  priceMax: null,
+};
+const towerView = { mode: 'status', value: null }; // mode: status|bedroom|view|features
+let priceBounds = { min: 0, max: 1000000 };
 
 // ============================================================
 // LIVE STATUS — robust fallback for mobile / in-app browsers
@@ -672,6 +912,7 @@ function switchTab(name) {
   document.querySelectorAll('.tabbar button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.id === 'tab-'+name));
   window.scrollTo(0, 0);
+  if (name === 'tower-viz') renderTower();
 }
 
 // ============================================================
@@ -745,25 +986,50 @@ document.getElementById('card-bh').addEventListener('click', () => { /* no list 
 document.getElementById('card-hh').addEventListener('click', () => { /* no list yet for let */ });
 
 // ============================================================
-// AVAILABLE LIST
+// BROWSE — search, filters, price slider, sort, list
 // ============================================================
+function isShowFlat(u) { return u.showFlat || u.s === 'show_flat'; }
+
 function unitMatches(u) {
-  const isShow = u.showFlat || u.s === 'show_flat';
-  // Default view: any available stock OR a show flat (since they're often available too).
-  // "Show flats" toggle narrows to show flats only.
+  const showFlat = isShowFlat(u);
   if (filter.extras.has('show')) {
-    if (!isShow) return false;
+    if (!showFlat) return false;
   } else {
-    if (!AVAILABLE_STATES.includes(u.s) && !isShow) return false;
+    if (!AVAILABLE_STATES.includes(u.s) && !showFlat) return false;
   }
   if (filter.bed !== 'all' && u.t !== filter.bed) return false;
+  if (filter.view !== 'all' && u.v !== filter.view) return false;
   if (filter.extras.has('balcony') && !u.b) return false;
   if (filter.extras.has('duplex') && !u.d) return false;
+  if (filter.priceMin != null && u.pr < filter.priceMin) return false;
+  if (filter.priceMax != null && u.pr > filter.priceMax) return false;
+  if (filter.search) {
+    const q = filter.search.toLowerCase();
+    const hay = [
+      u.uid, String(u.f), String(u.p), u.t,
+      TYPE_META[u.t]?.label || '',
+      u.v, VIEW_NAMES[u.v] || '',
+      u.b ? 'balcony' : '',
+      u.d ? 'duplex' : '',
+      showFlat ? 'show flat' : '',
+      String(Math.round(u.pr)),
+      String(Math.round(u.pr/1000))+'k',
+    ].join(' ').toLowerCase();
+    if (!hay.includes(q)) return false;
+  }
   return true;
 }
 
+function sortUnits(list) {
+  const [k, dir] = filter.sort.split('-');
+  const sign = dir === 'desc' ? -1 : 1;
+  const get = u => k === 'floor' ? u.f * 100 + u.p : k === 'price' ? u.pr : k === 'size' ? u.sq : u.f;
+  return list.slice().sort((a, b) => sign * (get(a) - get(b)) || a.f - b.f || a.p - b.p);
+}
+
 function renderList() {
-  const list = UNITS.filter(unitMatches).sort((a,b) => a.f - b.f || a.p - b.p);
+  const filtered = UNITS.filter(unitMatches);
+  const list = sortUnits(filtered);
   document.getElementById('list-count').textContent = list.length;
   const host = document.getElementById('unit-list');
   if (!list.length) {
@@ -775,6 +1041,7 @@ function renderList() {
     const view = VIEW_NAMES[u.v] || u.v;
     const cut = u.orig && u.orig > u.pr;
     const cutPct = cut ? Math.round((1 - u.pr/u.orig) * 100) : 0;
+    const showFlat = isShowFlat(u);
     return `
       <div class="unit-card" data-uid="${u.uid}">
         <div class="uc-top">
@@ -785,11 +1052,11 @@ function renderList() {
           <span class="uc-bedr-dot ${m.cls}"></span>${m.label}${u.d ? ' Duplex' : ''} · Floor ${u.f} · ${view} · ${fmtN(u.sq)} sq ft
         </div>
         <div class="uc-bot">
-          ${(u.showFlat || u.s === 'show_flat') ? '<span class="badge show">Show flat</span>' : ''}
+          ${showFlat ? '<span class="badge show">Show flat</span>' : ''}
           ${u.d ? '<span class="badge duplex">Duplex</span>' : ''}
           ${u.b ? `<span class="badge balc">Balcony · ${fmtN(u.bsq)} sq ft</span>` : ''}
           ${cut ? `<span class="badge cut">Price cut ${cutPct}%</span>` : ''}
-          ${!u.d && !u.b && !(u.showFlat || u.s === 'show_flat') && !cut ? '<span style="opacity:0.5;">Unfurnished</span>' : ''}
+          ${!u.d && !u.b && !showFlat && !cut ? '<span style="opacity:0.5;">Unfurnished</span>' : ''}
         </div>
       </div>
     `;
@@ -799,6 +1066,56 @@ function renderList() {
   });
 }
 
+// View chips — built dynamically from data so adding new view codes never breaks the UI
+function buildViewChips() {
+  const counts = {};
+  for (const u of UNITS) if (u.v) counts[u.v] = (counts[u.v] || 0) + 1;
+  const codes = Object.keys(counts).sort((a,b) => counts[b] - counts[a]);
+  const host = document.getElementById('filter-view');
+  if (!host) return;
+  host.innerHTML = `<button class="chip ${filter.view==='all'?'active':''}" data-view="all">All views</button>` +
+    codes.map(c => `<button class="chip ${filter.view===c?'active':''}" data-view="${c}">${VIEW_NAMES[c] || c}</button>`).join('');
+  host.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      filter.view = chip.dataset.view;
+      host.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === chip));
+      renderList();
+    });
+  });
+}
+
+// Price slider — computed bounds rounded to 5,000 AED steps
+function setupPriceSlider() {
+  const prices = UNITS.filter(u => AVAILABLE_STATES.includes(u.s) || isShowFlat(u)).map(u => u.pr).filter(p => p > 0);
+  if (!prices.length) return;
+  const lo = Math.floor(Math.min(...prices) / 5000) * 5000;
+  const hi = Math.ceil(Math.max(...prices) / 5000) * 5000;
+  priceBounds = { min: lo, max: hi };
+  if (filter.priceMin == null) filter.priceMin = lo;
+  if (filter.priceMax == null) filter.priceMax = hi;
+  const minEl = document.getElementById('price-min');
+  const maxEl = document.getElementById('price-max');
+  minEl.min = lo; minEl.max = hi; minEl.step = 5000; minEl.value = filter.priceMin;
+  maxEl.min = lo; maxEl.max = hi; maxEl.step = 5000; maxEl.value = filter.priceMax;
+  const labelMin = document.getElementById('price-min-val');
+  const labelMax = document.getElementById('price-max-val');
+  const fill = document.getElementById('price-fill');
+  const update = () => {
+    let a = parseInt(minEl.value, 10), b = parseInt(maxEl.value, 10);
+    if (a > b - 5000) { if (event && event.target === minEl) a = b - 5000; else b = a + 5000; }
+    minEl.value = a; maxEl.value = b;
+    filter.priceMin = a; filter.priceMax = b;
+    labelMin.textContent = fmtAED(a); labelMax.textContent = fmtAED(b);
+    const range = hi - lo || 1;
+    fill.style.left = ((a - lo) / range * 100) + '%';
+    fill.style.right = (100 - (b - lo) / range * 100) + '%';
+  };
+  minEl.addEventListener('input', () => { update(); renderList(); });
+  maxEl.addEventListener('input', () => { update(); renderList(); });
+  update();
+}
+
+// Filter chip handlers
 document.getElementById('filter-bedroom').querySelectorAll('.chip').forEach(chip => {
   chip.addEventListener('click', () => {
     filter.bed = chip.dataset.bed;
@@ -814,13 +1131,188 @@ document.getElementById('filter-extra').querySelectorAll('.chip').forEach(chip =
     renderList();
   });
 });
+document.getElementById('search-input').addEventListener('input', e => {
+  filter.search = e.target.value.trim();
+  renderList();
+});
+document.getElementById('search-clear').addEventListener('click', () => {
+  document.getElementById('search-input').value = '';
+  filter.search = '';
+  renderList();
+});
+document.getElementById('sort-by').addEventListener('change', e => {
+  filter.sort = e.target.value;
+  renderList();
+});
 document.getElementById('filter-clear').addEventListener('click', () => {
-  filter.bed = 'all'; filter.extras.clear(); resetChips(); renderList();
+  filter.bed = 'all';
+  filter.view = 'all';
+  filter.extras.clear();
+  filter.search = '';
+  filter.priceMin = priceBounds.min;
+  filter.priceMax = priceBounds.max;
+  filter.sort = 'floor-asc';
+  document.getElementById('search-input').value = '';
+  document.getElementById('sort-by').value = 'floor-asc';
+  document.getElementById('price-min').value = priceBounds.min;
+  document.getElementById('price-max').value = priceBounds.max;
+  resetChips();
+  buildViewChips();
+  setupPriceSlider();
+  renderList();
 });
 function resetChips() {
   document.querySelectorAll('#filter-bedroom .chip').forEach(c => c.classList.toggle('active', c.dataset.bed === filter.bed));
   document.querySelectorAll('#filter-extra .chip').forEach(c => c.classList.remove('active'));
 }
+
+// ============================================================
+// TOWER VIZ — mobile
+// ============================================================
+function renderTower() {
+  const frame = document.getElementById('tower-frame');
+  const stat = document.getElementById('tower-stat');
+  const bandsHost = document.getElementById('tower-bands');
+  const chipRow = document.getElementById('tower-chips');
+  const legend = document.getElementById('tower-legend');
+  if (!frame) return;
+
+  // Group by floor (descending visually, but flex-col-reverse means we ascend in DOM)
+  const byFloor = {};
+  UNITS.forEach(u => { if (!byFloor[u.f]) byFloor[u.f] = []; byFloor[u.f].push(u); });
+  const floors = Object.keys(byFloor).map(Number).sort((a,b) => a - b);
+
+  // Match logic depending on towerView mode
+  const matcher = unitMatchesTowerFilter();
+
+  let matchedCount = 0;
+  frame.innerHTML = floors.map((f, idx) => {
+    const prev = floors[idx - 1];
+    const isTranche = prev && ((prev <= 25 && f > 25) || (prev <= 69 && f > 69) || (prev <= 89 && f > 89));
+    const showLabel = (f % 10 === 0) || f === 5 || f === 93;
+    const cells = byFloor[f].sort((a,b) => a.p - b.p).map(u => {
+      const cls = ['tw-cell', 's-' + (u.s || 'marketing'), 't-' + u.t];
+      if (u.d) cls.push('is-duplex');
+      if (u.b) cls.push('is-balcony');
+      if (isShowFlat(u)) cls.push('is-show');
+      const ok = matcher(u);
+      if (ok) { cls.push('match'); matchedCount++; }
+      return `<button class="${cls.join(' ')}" data-uid="${u.uid}" aria-label="Unit ${u.uid}"></button>`;
+    }).join('');
+    return `<div class="tw-row ${isTranche ? 'tranche-divider' : ''} ${showLabel ? 'show-num' : ''}" data-floor="${f}">
+              <span class="tw-num">${f}</span>${cells}
+            </div>`;
+  }).join('');
+
+  // Apply filtered class only when something is active (so the dim effect kicks in)
+  const isFiltered = !!towerView.value;
+  frame.classList.toggle('filtered', isFiltered);
+  stat.textContent = isFiltered ? `${matchedCount} highlighted of ${UNITS.length}` : `${UNITS.length} residences · 89 floors`;
+
+  // Bands (vertical labels on the left)
+  if (bandsHost && !bandsHost.dataset.built) {
+    bandsHost.innerHTML = `
+      <div class="band-marker b-penthouse">Penthouse · 90–93</div>
+      <div class="band-marker b-upper">Upper · 70–89</div>
+      <div class="band-marker b-mid">Mid · 26–69</div>
+      <div class="band-marker">Lower · 5–25</div>`;
+    bandsHost.dataset.built = '1';
+  }
+
+  // Build the chip row + legend for the active mode
+  chipRow.innerHTML = chipsForMode(towerView.mode);
+  chipRow.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      towerView.value = (towerView.value === chip.dataset.val) ? null : chip.dataset.val;
+      renderTower();
+    });
+  });
+  legend.innerHTML = legendForMode(towerView.mode);
+
+  // Cell taps → unit detail
+  frame.querySelectorAll('.tw-cell').forEach(c => {
+    c.addEventListener('click', () => openUnit(c.dataset.uid));
+  });
+}
+
+function unitMatchesTowerFilter() {
+  if (!towerView.value) return () => true;
+  const v = towerView.value;
+  const m = towerView.mode;
+  if (m === 'status') {
+    if (v === 'available')  return u => AVAILABLE_STATES.includes(u.s);
+    if (v === 'bh_let')     return u => BH_LET_STATES.includes(u.s);
+    if (v === 'hh_let')     return u => HH_LET_STATES.includes(u.s);
+    if (v === 'show_flat')  return u => isShowFlat(u);
+    if (v === 'lost')       return u => u.s === 'lost';
+    if (v === 'not_launched') return u => u.s === 'not_launched';
+    return () => true;
+  }
+  if (m === 'bedroom')  return u => u.t === v;
+  if (m === 'view')     return u => u.v === v;
+  if (m === 'features') {
+    if (v === 'duplex')  return u => u.d === true;
+    if (v === 'balcony') return u => u.b === true;
+    return () => true;
+  }
+  return () => true;
+}
+
+function chipsForMode(mode) {
+  if (mode === 'status') {
+    const items = [
+      { v: 'available', label: 'Available', sw: '#B39470' },
+      { v: 'bh_let',    label: 'BH Let',    sw: '#1F343F' },
+      { v: 'hh_let',    label: 'H&H Let',   sw: '#7BA0B2' },
+      { v: 'show_flat', label: 'Show flat', sw: '#2C537A' },
+      { v: 'not_launched', label: 'Not launched', sw: '#E8DBC8' },
+      { v: 'lost',      label: 'Lost',      sw: '#FF787A' },
+    ];
+    return items.map(i => `<button class="chip ${towerView.value===i.v?'active':''}" data-val="${i.v}"><span class="legend-sw" style="background:${i.sw};margin-right:6px;"></span>${i.label}</button>`).join('');
+  }
+  if (mode === 'bedroom') {
+    return TYPES_ORDER.map(t => `<button class="chip ${towerView.value===t?'active':''}" data-val="${t}">${TYPE_META[t].label}</button>`).join('');
+  }
+  if (mode === 'view') {
+    const counts = {};
+    UNITS.forEach(u => { if (u.v) counts[u.v] = (counts[u.v]||0)+1; });
+    const codes = Object.keys(counts).sort((a,b) => counts[b] - counts[a]);
+    return codes.map(c => `<button class="chip ${towerView.value===c?'active':''}" data-val="${c}">${VIEW_NAMES[c] || c}</button>`).join('');
+  }
+  if (mode === 'features') {
+    return `<button class="chip gold ${towerView.value==='duplex'?'active':''}" data-val="duplex">Duplex</button>
+            <button class="chip gold ${towerView.value==='balcony'?'active':''}" data-val="balcony">Balcony</button>`;
+  }
+  return '';
+}
+
+function legendForMode(mode) {
+  const item = (sw, label, ring) => `<span class="legend-item"><span class="legend-sw ${ring?'ring':''}" style="${ring?'color:'+sw:'background:'+sw}"></span>${label}</span>`;
+  if (mode === 'status') return [
+    item('#B39470', 'Marketing'),
+    item('#D9B9A0', 'Available / Reserved'),
+    item('#1F343F', 'BH Signed/Occupied'),
+    item('#7BA0B2', 'H&H Signed/Occupied'),
+    item('#2C537A', 'Show flat'),
+    item('#FF787A', 'Lost'),
+    item('#D7A86F', 'Duplex (gold ring)', true),
+  ].join('');
+  if (mode === 'bedroom') return TYPES_ORDER.map(t => {
+    const colorMap = { studio: 'rgba(122,160,178,0.85)', '1br': '#2C537A', '2br': 'rgba(31,52,63,0.65)', '3br': '#A06767', '4br': '#A06767' };
+    return item(colorMap[t], TYPE_META[t].label);
+  }).join('');
+  return '<span class="legend-item">Tap a chip to highlight units</span>';
+}
+
+// Tower segmented control (Status / Bedroom / View / Features)
+document.querySelectorAll('#tower-mode .seg-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#tower-mode .seg-btn').forEach(x => x.classList.toggle('active', x === b));
+    towerView.mode = b.dataset.mode;
+    towerView.value = null;
+    renderTower();
+  });
+});
 
 // ============================================================
 // UNIT DETAIL — slide-up modal
@@ -986,7 +1478,10 @@ window.ctMobileLoaded = function(resp) {
     }
     if (fresh.length < 100) throw new Error(`only ${fresh.length} rows`);
     UNITS = fresh;
+    buildViewChips();
+    setupPriceSlider();
     renderOverview(); renderList();
+    if (document.getElementById('tab-tower-viz').classList.contains('active')) renderTower();
     const now = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
     setLive('live', `Live · ${now}`);
     document.getElementById('conn-help').style.display = 'none';
@@ -1015,6 +1510,8 @@ function refresh() {
 // ============================================================
 // BOOT
 // ============================================================
+buildViewChips();
+setupPriceSlider();
 renderOverview();
 renderList();
 setTimeout(refresh, 200);
