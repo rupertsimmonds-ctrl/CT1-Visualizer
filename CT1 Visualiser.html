@@ -891,13 +891,13 @@
         <span class="click-hint">Click for list</span>
         <div class="headline-lbl">bh let</div>
         <div class="headline-val" id="kpi-bh">0</div>
-        <div class="headline-sub" id="kpi-bh-sub">Signed · Occupied · Reserved</div>
+        <div class="headline-sub" id="kpi-bh-sub">Reserved · Signed · Occupied</div>
       </button>
       <button class="headline hh-let" data-view="hh_let">
         <span class="click-hint">Click for list</span>
         <div class="headline-lbl">H&amp;H Let</div>
         <div class="headline-val" id="kpi-hh">0</div>
-        <div class="headline-sub" id="kpi-hh-sub">Signed · Occupied · Reserved</div>
+        <div class="headline-sub" id="kpi-hh-sub">Reserved · Signed · Occupied</div>
       </button>
       <button class="headline available" data-view="available">
         <span class="click-hint">Click for list</span>
@@ -1301,16 +1301,16 @@ function buildHeadlines() {
   document.getElementById('kpi-avail').textContent = avail;
 
   const bhParts = [];
-  if (get('signed_bh'))   bhParts.push(`${get('signed_bh')} signed`);
   if (get('reserved_bh')) bhParts.push(`${get('reserved_bh')} reserved`);
+  if (get('signed_bh'))   bhParts.push(`${get('signed_bh')} signed`);
   if (get('occupied_bh')) bhParts.push(`${get('occupied_bh')} occupied`);
   document.getElementById('kpi-bh-sub').textContent = bhParts.length
     ? bhParts.join(' · ')
     : `${total ? (bhLet/total*100).toFixed(1) : '0'}% of stock`;
 
   const hhParts = [];
-  if (get('signed_hh'))   hhParts.push(`${get('signed_hh')} signed`);
   if (get('reserved_hh')) hhParts.push(`${get('reserved_hh')} reserved`);
+  if (get('signed_hh'))   hhParts.push(`${get('signed_hh')} signed`);
   if (get('occupied_hh')) hhParts.push(`${get('occupied_hh')} occupied`);
   document.getElementById('kpi-hh-sub').textContent = hhParts.length
     ? hhParts.join(' · ')
@@ -1558,7 +1558,7 @@ function renderDrawer() {
 
 const LIST_META = {
   available: { eyebrow:'Available units', subtitle:'Click a row for full detail. Sort any column.' },
-  bh_let:    { eyebrow:'Let by betterhomes', subtitle:'Signed + reserved. Sorted newest first by default.' },
+  bh_let:    { eyebrow:'Let by betterhomes', subtitle:'Reserved + signed + occupied. Sorted newest first by default.' },
   hh_let:    { eyebrow:'Let by H&H',         subtitle:'Joint-agency deals won by H&H.' },
   lost:      { eyebrow:'Lost deals',         subtitle:'Units that did not close. Sorted by floor.' },
 };
