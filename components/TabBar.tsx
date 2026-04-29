@@ -1,6 +1,6 @@
 "use client";
 
-export type TabKey = "overview" | "available" | "info";
+export type TabKey = "tower" | "overview" | "available" | "info";
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
   {

@@ -5,6 +5,7 @@ import { fmtTime } from "@/lib/format";
 import type { TabKey } from "./TabBar";
 
 const DESKTOP_TABS: { key: TabKey; label: string }[] = [
+  { key: "tower", label: "Tower" },
   { key: "overview", label: "Overview" },
   { key: "available", label: "Available" },
   { key: "info", label: "Info" },
