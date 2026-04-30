@@ -1002,9 +1002,11 @@ let UNITS = FALLBACK_UNITS;
 
 const SHEET_ID  = '1FOofWcGkSXXnBWZ70dB7tix9T5lHjV3BL8evePp-URk';
 const SHEET_TAB = '07_HTML_Export';
-const GVIZ_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq` +
-                  `?tqx=out:json` +
-                  `&sheet=${encodeURIComponent(SHEET_TAB)}`;
+// Live data is served by our own /api/units endpoint, which proxies the
+// Google Sheets gviz feed server-side. Going through the same origin avoids
+// CORS issues and the silent-JSONP failures we saw on iOS Safari + in-app
+// browsers (WhatsApp, Drive preview, etc.).
+const UNITS_URL = '/api/units';
 const REFRESH_MS = 5 * 60 * 1000;
 
 const TYPE_META = {
@@ -1099,19 +1101,22 @@ function startConnWatchdog() {
   clearTimeout(connTimer);
   connTimer = setTimeout(showOfflineHelp, 3000);
 }
-function showOfflineHelp() {
+function showOfflineHelp(reason) {
   const help = document.getElementById('conn-help');
-  if (help.dataset.shown) return;
-  help.dataset.shown = '1';
+  const safe = reason ? String(reason).replace(/[<>]/g, '').slice(0, 140) : '';
+  const detail = safe
+    ? `<br><span style="opacity:0.65;font-size:11px;letter-spacing:0.06em">Detail · ${safe}</span>`
+    : '';
   help.innerHTML = `<div class="conn-help">
-    <b>Offline — showing snapshot data.</b> Tap the live pill above to retry. If it stays offline, you may have opened this inside Drive or WhatsApp's preview — open the link in <b>Safari</b> (iPhone) or <b>Chrome</b> (Android) for live data.
+    <b>Offline — showing snapshot data.</b> Tap the live pill above to retry. If it stays offline, the sheet may not be shared as <b>Anyone with the link</b>, or you may have opened this inside Drive or WhatsApp's preview — open the link in <b>Safari</b> (iPhone) or <b>Chrome</b> (Android) for live data.${detail}
   </div>`;
+  help.dataset.shown = '1';
   help.style.display = 'block';
 }
-function fallToSnapshot() {
+function fallToSnapshot(reason) {
   clearTimeout(offlineTimer);
   setLive('offline', 'Snapshot');
-  showOfflineHelp();
+  showOfflineHelp(reason);
 }
 // Tap the pill to retry
 document.getElementById('live-pill').addEventListener('click', () => refresh());
@@ -1136,6 +1141,7 @@ function renderOverview() {
   const counts = {};
   UNITS.forEach(u => { counts[u.s] = (counts[u.s]||0) + 1; });
   const get = k => counts[k] || 0;
+  const total = UNITS.length;
   const bhLet = get('reserved_bh') + get('signed_bh') + get('occupied_bh');
   const hhLet = get('reserved_hh') + get('signed_hh') + get('occupied_hh');
   const reservedBh = get('reserved_bh');
@@ -1858,9 +1864,11 @@ function processGvizResponse(resp) {
     if (document.getElementById('tab-tower-viz').classList.contains('active')) renderTower();
     const now = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
     setLive('live', `Live · ${now}`);
-    document.getElementById('conn-help').style.display = 'none';
+    const help = document.getElementById('conn-help');
+    help.style.display = 'none';
+    delete help.dataset.shown;
   } catch (err) {
-    fallToSnapshot();
+    fallToSnapshot(err && err.message);
   }
 }
 
@@ -1883,19 +1891,18 @@ function refresh() {
     fallToSnapshot();
   }, 6000);
 
-  fetch(GVIZ_URL + '&t=' + Date.now(), { signal: ac.signal, cache: 'no-store' })
-    .then(r => {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.text();
+  fetch(UNITS_URL + '?t=' + Date.now(), { signal: ac.signal, cache: 'no-store' })
+    .then(async r => {
+      // /api/units always returns JSON. On upstream failure (sheet private,
+      // gviz down, columns missing) it returns 502 with {status, message}.
+      const body = await r.json().catch(() => null);
+      if (!r.ok || !body) {
+        throw new Error((body && body.message) || ('HTTP ' + r.status));
+      }
+      return body;
     })
-    .then(text => {
+    .then(resp => {
       if (settled) return;
-      // gviz wraps the JSON in a JSONP-style envelope:
-      //   /*O_o*/\ngoogle.visualization.Query.setResponse(<json>);
-      const start = text.indexOf('(');
-      const end   = text.lastIndexOf(')');
-      if (start < 0 || end <= start) throw new Error('bad gviz envelope');
-      const resp = JSON.parse(text.slice(start + 1, end));
       settled = true;
       clearTimeout(offlineTimer);
       clearTimeout(connTimer);
@@ -1907,7 +1914,7 @@ function refresh() {
       clearTimeout(offlineTimer);
       clearTimeout(connTimer);
       console.warn('Live sync failed:', err);
-      fallToSnapshot();
+      fallToSnapshot(err && err.message);
     });
 }
 
