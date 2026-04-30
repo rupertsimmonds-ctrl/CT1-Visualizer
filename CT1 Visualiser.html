@@ -497,6 +497,35 @@
   .hours-card .hours-val { font-family: Georgia, serif; font-size: 17px; color: var(--slate); }
   .hours-card .hours-sub { font-size: 11px; color: var(--denim); margin-top: 4px; }
 
+  /* Recently viewed strip — sits between the hero KPI grid and the show flats */
+  .recent-strip-d {
+    margin: 0 0 28px; padding: 16px 18px;
+    background: white; border: 1px solid var(--rule); border-left: 3px solid var(--ct-gold);
+  }
+  .recent-head-d {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim);
+    margin-bottom: 12px;
+  }
+  .recent-head-d button {
+    background: transparent; border: 0; color: var(--denim);
+    font: 600 10px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; padding: 4px;
+  }
+  .recent-head-d button:hover { color: var(--slate); }
+  .recent-row-d { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+  .recent-row-d::-webkit-scrollbar { display: none; }
+  .recent-card-d {
+    flex: 0 0 auto; min-width: 150px;
+    background: var(--paper); border: 1px solid var(--rule);
+    padding: 10px 14px; cursor: pointer; text-align: left;
+    transition: transform 0.1s ease, border-color 0.15s ease;
+  }
+  .recent-card-d:hover { border-color: var(--slate); }
+  .recent-card-d .r-uid { font-family: Georgia, serif; font-size: 22px; color: var(--slate); line-height: 1; }
+  .recent-card-d .r-meta { font-size: 11px; color: var(--denim); margin-top: 4px; }
+  .recent-card-d .r-rent { font-size: 13px; color: var(--ct-gold-dark); margin-top: 4px; font-weight: 600; }
+
   /* Operational info grid: lobby protocol, views note, fees, tenant requirements */
   .info-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -950,6 +979,9 @@
     </div>
   </section>
 
+  <!-- Recently viewed — last five units the broker tapped (localStorage) -->
+  <section class="recent-strip-d" id="recent-strip-d" style="display:none;"></section>
+
   <!-- Show flats — promoted -->
   <section class="showflats-row" id="showflats-row">
     <div class="showflats-head">
@@ -1131,7 +1163,7 @@
   <footer class="footer">
     <div>betterhomes · Leasing Live Board</div>
     <div class="lockup-mini"><svg viewBox="490 340 930 400" xmlns="http://www.w3.org/2000/svg" aria-label="City Tower" role="img"><path fill="currentColor" d="M843,347.8l-4.5,12.1s-7.2-5.5-19.7-5.5h-27.9v148.6s-.5,6.9,4.4,10.5v.2h-21.8v-.2c4.9-3.6,4.4-10.5,4.4-10.5v-148.6h-28c-12.5,0-19.7,5.5-19.7,5.5l-4.5-12.1h117.1ZM725.9,566.3l4.5,12.1s7.2-5.5,19.7-5.5h28v148.6s.5,6.9-4.4,10.5v.2h21.8v-.2c-4.9-3.6-4.4-10.5-4.4-10.5v-148.6h27.9c12.5,0,19.7,5.5,19.7,5.5l4.5-12.1h-117.1ZM1144.7,566.3c2.3,5.7.5,12.2.5,12.2l-50.2,138.5c0-.2-25.7-70.2-25.7-70.2,10.9-31.4,21-60.5,22.3-64.5,3.2-9.4,10.3-15.9,10.3-15.9h-18c2.3,5.7.5,12.2.5,12.2l-19.9,55.3-17.2-47s-.7-1.8-1.8-6.2c-1.6-6.3.2-14.2.2-14.2h-25.2c5.4,2.7,9.6,12,9.6,12l27.2,75.5-22.6,63.2c0-.2-16.2-43.4-21.9-58.6-7-18.7-12.8-38.2-23.6-55.2-7.7-12-17.6-22.1-29.7-29.7-12.7-8-28.4-10.7-43.2-10.7-48.7,0-88.2,38.8-88.2,86.6s39.5,86.6,88.2,86.6,63.4-18.8,78.2-46.4l-7.5-17.8c-8.7,33.8-37,58.6-70.7,58.6s-73.4-36-73.4-80.4,32.9-80.3,73.4-80.3,43.3,11.6,56.5,29.3c9.1,12.3,13.5,26.7,18.4,40.9,3.6,10.3,7.1,20.7,10.5,31.1l21.7,61.3h15.8s13.3-37.6,22.8-65l23.1,65h14.4s49.9-141.6,52.7-150c3.2-9.5,10.3-15.9,10.3-15.9h-18,0ZM1233.6,723.7h-40.6v-75c7.4.3,20,1,31.9,2.9,14,2.2,27.4,5.7,27.4,5.7l5.7-13.6h-65v-69.6h51.1c14.2,0,25.7,4.9,25.7,4.9v-12.6h-94.2v.2c4.9,3.6,4.4,10.5,4.4,10.5v144.4s.5,6.9-4.4,10.5v.2h94.8l10.9-20.2s-15.5,11.7-47.8,11.7h0ZM1410,732v.2h-27c-3.5-8.4-11.9-24.6-11.9-24.6l-22.1-42.8c-19.1.9-35-4.6-40.5-6.8v63.5s-.6,6.9,4.3,10.5v.2h-21.7v-.2c4.9-3.6,4.4-10.5,4.4-10.5v-144.4s.5-6.9-4.4-10.5v-.2h42.6c8.4,0,17.5,0,25.8,1.3,17.8,2.8,33.8,13,39.6,30.5,1.8,5.5,2.6,11.3,2.6,17.1,0,16.2-13.1,41.4-40.5,48,2.6,5.3,7.4,15.4,16.4,32.1,13.8,25.4,29.7,35.3,32.3,36.8h0ZM1357.6,656.2c10.4-3,18.8-10,23.8-19.6,5.8-11.2,7.4-28.3,1.9-40-4.2-8.8-12.6-15.3-21.7-18.7-10.6-4-21.7-3.9-32.8-3.9,0,0-18.4,0-20.2,0v77c15.4,5.7,32.9,9.8,49,5.2h0ZM710,348v-.2h-21.8v.2c3.7,2.7,4.4,7.4,4.4,9.5,0,.7,0,1.1,0,1.1v144.4s0,.4,0,1.1c0,2.1-.7,6.7-4.4,9.5v.2h21.8v-.2c-3.7-2.7-4.3-7.4-4.4-9.5v-145.5s0-.4,0-1.1c0-2.1.7-6.7,4.4-9.5ZM962.2,364.2c4.9-8.7,13.1-16.4,13.1-16.4h-20.8c3.1,5.7.5,12.1.5,12.1l-35.9,66.1c-10.1-18.1-34.8-59-36.5-63.8-2.9-7.7,0-14.5,0-14.5h-23.7c5.5,3.3,9.6,12,9.6,12l42.5,74.9v68.3s0,.4,0,1.1c0,2.1-.7,6.7-4.4,9.5v.2h21.8v-.2c-3.7-2.7-4.3-7.4-4.4-9.5v-69.4c20.3-39.9,35.4-65.5,38.2-70.5h0ZM663,481.9c-18,21.4-38.8,29.8-64.8,29.8-40.5,0-73.4-36-73.4-80.4s32.9-80.4,73.4-80.4,36.5,11.6,49.8,26.4l10.5-10c-15.8-14.5-37-23.4-60.3-23.4-48.7,0-88.2,38.8-88.2,86.6s39.5,86.6,88.2,86.6,52.3-12.5,68.5-32l-3.8-3.4h0Z"/></svg><span class="sources">Joint sole leasing · bh × H&amp;H</span></div>
-    <div>v1.0 · Live via CT1 Control Centre</div>
+    <div>v1.0 · Live via CT1 Control Centre <span id="footer-sync" style="margin-left:10px; opacity:0.7;">· Last sync —</span></div>
   </footer>
 </div>
 
@@ -1279,6 +1311,19 @@ function setLivePill(st, label) {
   pill.classList.remove('live','offline','loading');
   pill.classList.add(st);
   status.textContent = label;
+  // Mirror the sync state in the footer so the timestamp is visible after the
+  // broker has scrolled past the masthead.
+  const footer = document.getElementById('footer-sync');
+  if (footer) {
+    if (st === 'live') {
+      const now = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      footer.textContent = `· Last sync ${now}`;
+    } else if (st === 'offline') {
+      footer.textContent = '· Offline (snapshot)';
+    } else {
+      footer.textContent = '· Syncing…';
+    }
+  }
 }
 
 /* ============================================================
@@ -1349,10 +1394,17 @@ function attachUnitInteractions() {
     });
     c.addEventListener('mousemove', e => {
       const tipW = 260;
+      // Clamp the tooltip to the viewport on every axis so it never flicks
+      // off-screen near the right edge or top of the tower.
+      const tipH = tip.offsetHeight || 200;
       let x = e.clientX + 16;
-      if (x + tipW > window.innerWidth) x = e.clientX - tipW - 16;
+      if (x + tipW > window.innerWidth - 8) x = e.clientX - tipW - 16;
+      x = Math.max(8, x);
+      let y = e.clientY - 10;
+      if (y + tipH > window.innerHeight - 8) y = window.innerHeight - tipH - 8;
+      y = Math.max(8, y);
       tip.style.left = x + 'px';
-      tip.style.top = (e.clientY - 10) + 'px';
+      tip.style.top = y + 'px';
     });
     c.addEventListener('mouseleave', () => tip.classList.remove('visible'));
     c.addEventListener('click', () => openDetail(c.dataset.uid));
@@ -1876,8 +1928,45 @@ function copyListToClipboard(units, view) {
 function openDetail(uid) {
   const prev = state.drawer;
   state.drawer = { kind: 'detail', uid, returnTo: prev && prev.kind === 'list' ? prev : null };
+  pushRecent(uid);
   renderDrawer();
   openDrawer();
+}
+
+// Recently viewed: last 5 units the broker tapped, persisted in localStorage.
+const RECENT_KEY = 'ct1.recent';
+function getRecent() {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch (e) { return []; }
+}
+function pushRecent(uid) {
+  const cur = getRecent().filter(x => x !== uid);
+  cur.unshift(uid);
+  try { localStorage.setItem(RECENT_KEY, JSON.stringify(cur.slice(0, 5))); } catch (e) {}
+  renderRecentDesktop();
+}
+function renderRecentDesktop() {
+  const host = document.getElementById('recent-strip-d');
+  if (!host) return;
+  const ids = getRecent();
+  const units = ids.map(uid => UNITS.find(u => u.uid === uid)).filter(Boolean);
+  if (!units.length) { host.style.display = 'none'; return; }
+  host.style.display = 'block';
+  host.innerHTML = `
+    <div class="recent-head-d"><span>Recently viewed</span><button id="recent-clear-d" type="button">Clear</button></div>
+    <div class="recent-row-d">
+      ${units.map(u => `
+        <button class="recent-card-d" data-uid="${u.uid}">
+          <div class="r-uid">${u.uid}</div>
+          <div class="r-meta">${TYPE_META[u.t].label} · Floor ${u.f}</div>
+          <div class="r-rent">${fmtAED(u.pr)}</div>
+        </button>`).join('')}
+    </div>`;
+  host.querySelectorAll('.recent-card-d').forEach(c => c.addEventListener('click', () => openDetail(c.dataset.uid)));
+  const cb = host.querySelector('#recent-clear-d');
+  if (cb) cb.addEventListener('click', () => {
+    try { localStorage.removeItem(RECENT_KEY); } catch (e) {}
+    renderRecentDesktop();
+  });
 }
 
 function renderDetail(uid) {
@@ -2303,6 +2392,7 @@ function rebuildAll() {
   buildMix();
   buildTower();
   applyTowerFilter();
+  renderRecentDesktop();
   if (state.drawer) renderDrawer();
   requestAnimationFrame(() => requestAnimationFrame(positionTrancheMarkers));
 }
