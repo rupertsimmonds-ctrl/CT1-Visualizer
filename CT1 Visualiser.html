@@ -260,23 +260,36 @@
     position: relative;
     background: linear-gradient(180deg, #E8E4DE 0%, #F7F2EB 28%, #FDFAF4 100%);
     border: 1px solid var(--rule);
-    padding: 24px 20px 24px 90px;
+    /* Top padding == crown-band height so the dark crown sits flush above
+       the penthouse rows with no cream gap. */
+    padding: 18px 20px 24px 90px;
+    /* Shrink-wrap to the widest floor — silhouette steps in/out like the
+       actual building rather than sitting in a rectangular box. */
+    width: fit-content;
+    margin: 0 auto;
   }
   /* Horizontal banding — subtle every-10-floor structural rhythm */
   .floor-row.decade-band { box-shadow: 0 -1px 0 rgba(31,52,63,0.06); }
   .tranche-marker {
     position: absolute; left: 12px; width: 70px;
-    font-size: 10px; letter-spacing: 0.18em;
+    font-size: 10px; letter-spacing: 0.16em;
     text-transform: uppercase; color: var(--denim);
     writing-mode: vertical-rl; transform: rotate(180deg);
     text-align: center; border-left: 2px solid var(--sand);
     padding: 6px 4px 6px 8px; opacity: 0; transition: opacity 0.2s ease;
+    /* Defensively clip text: penthouse band is only 4 floors tall, the
+       label can run longer than the band's vertical space. */
+    overflow: hidden; white-space: nowrap;
   }
   .tranche-marker.placed { opacity: 0.85; }
   .tranche-marker.lower      { border-left-color: var(--mist); }
   .tranche-marker.mid        { border-left-color: var(--powder); }
   .tranche-marker.upper      { border-left-color: var(--denim); }
-  .tranche-marker.penthouse  { border-left-color: var(--terra); }
+  .tranche-marker.penthouse  {
+    border-left-color: var(--terra);
+    /* Penthouse is only 4 floors - tighten the letter-spacing so the label fits */
+    font-size: 9px; letter-spacing: 0.04em;
+  }
 
   /* Crown — CT1 Afterlight cornice + gold-tipped antenna */
   .crown-block { margin: 0 auto 3px; display: flex; flex-direction: column; align-items: center; }
@@ -284,25 +297,27 @@
   .crown-block .mech-roof { width: 42px; height: 5px; background: var(--ct-afterlight); }
   .crown-block .cornice  { width: 90px; height: 4px; background: linear-gradient(180deg, var(--ct-gold-dark) 0%, var(--ct-afterlight) 100%); }
   .tower .crown-band {
-    width: 100%; height: 8px;
+    /* Absolutely positioned to bleed across the full frame width and sit
+       immediately above the penthouse rows — no cream gap above. */
+    position: absolute; top: 0; left: 0; right: 0; height: 18px;
     background: linear-gradient(180deg, var(--ct-afterlight) 0%, var(--ct-afterlight2) 100%);
     box-shadow: inset 0 -1px 0 var(--ct-gold-dark);
-    margin-bottom: 2px;
+    z-index: 1;
   }
   .floors { display: flex; flex-direction: column-reverse; gap: 1px; }
-  .floor-row { display: flex; align-items: center; gap: 2px; height: 8px; position: relative; }
-  .floor-row.tranche-divider { margin-top: 5px; border-top: 1px dashed var(--rule-strong); padding-top: 3px; height: 11px; }
+  .floor-row { display: flex; align-items: center; gap: 2px; height: 14px; position: relative; }
+  .floor-row.tranche-divider { margin-top: 5px; border-top: 1px dashed var(--rule-strong); padding-top: 3px; height: 17px; }
   .floor-num {
-    position: absolute; right: calc(100% + 6px);
-    font-size: 9px; color: var(--denim); opacity: 0;
+    position: absolute; right: calc(100% + 8px);
+    font-size: 10px; color: var(--denim); opacity: 0;
     font-variant-numeric: tabular-nums; transition: opacity 0.15s ease;
-    font-weight: 600;
+    font-weight: 600; line-height: 1;
   }
   .floor-row:hover .floor-num,
   .floor-row.show-num .floor-num { opacity: 1; }
 
   .unit-cell {
-    width: 22px; height: 8px; cursor: pointer; position: relative;
+    width: 26px; height: 14px; cursor: pointer; position: relative;
     transition: all 0.14s ease; border: 0;
   }
   /* Lifecycle cell fills — cool (empty) → warm (active) → committed (agency).
@@ -324,11 +339,11 @@
   .unit-cell.s-inflight     { background: #BF956E; }                             /* offer/negotiating/pipeline (legacy) */
   /* Reserved sits OFF the leasing pipeline - render as empty fill with a bold BH/H&H border */
   .unit-cell.s-reserved_bh  { background: white; box-shadow: inset 0 0 0 2px var(--slate);  }
-  .unit-cell.s-reserved_hh  { background: white; box-shadow: inset 0 0 0 2px var(--powder); }
+  .unit-cell.s-reserved_hh  { background: white; box-shadow: inset 0 0 0 2px #9B2C2C; }
   .unit-cell.s-signed_bh    { background: var(--slate);  }
-  .unit-cell.s-signed_hh    { background: var(--powder); }
+  .unit-cell.s-signed_hh    { background: #9B2C2C; }
   .unit-cell.s-occupied_bh  { background: var(--slate);  box-shadow: inset 0 0 0 1px var(--sand);  }
-  .unit-cell.s-occupied_hh  { background: var(--powder); box-shadow: inset 0 0 0 1px var(--slate); }
+  .unit-cell.s-occupied_hh  { background: #9B2C2C; box-shadow: inset 0 0 0 1px var(--sand); }
   .unit-cell.s-show_flat    { background: var(--denim);  box-shadow: inset 0 0 0 1.5px white; }
   .unit-cell.s-lost         { background: var(--salmon); }
   /* Show-flat marker: a unit can be Marketing/etc AND a designated show flat at the same time.
@@ -339,22 +354,22 @@
   .unit-cell.s-signed_bh::before,
   .unit-cell.s-occupied_bh::before {
     content: ''; position: absolute; left: 50%; top: 50%;
-    width: 3px; height: 3px; background: var(--sand);
+    width: 5px; height: 5px; background: var(--sand);
     transform: translate(-50%, -50%);
   }
   .unit-cell.s-signed_hh::before,
   .unit-cell.s-occupied_hh::before {
     content: ''; position: absolute; left: 50%; top: 50%;
-    width: 3px; height: 3px; background: var(--slate);
+    width: 5px; height: 5px; background: var(--sand);
     transform: translate(-50%, -50%);
   }
 
   /* Bedroom-type overlay: right-edge stripe */
-  .unit-cell.t-studio::after { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: rgba(122,160,178,0.85); }
-  .unit-cell.t-1br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: var(--denim); }
-  .unit-cell.t-2br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: rgba(31,52,63,0.65); }
-  .unit-cell.t-3br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: var(--terra); opacity: 0.85; }
-  .unit-cell.t-4br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: var(--terra); }
+  .unit-cell.t-studio::after { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: rgba(122,160,178,0.85); }
+  .unit-cell.t-1br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: var(--denim); }
+  .unit-cell.t-2br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: rgba(31,52,63,0.65); }
+  .unit-cell.t-3br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: var(--terra); opacity: 0.85; }
+  .unit-cell.t-4br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:4px; background: var(--terra); }
   .unit-cell.premium { outline: 1.5px solid var(--ct-gold); outline-offset: -1px; z-index: 2; }
   .unit-cell:hover { transform: scale(1.4); z-index: 10; box-shadow: 0 0 0 1px var(--slate); }
   .tower.filtered .unit-cell:not(.match) { opacity: 0.12; }
@@ -385,11 +400,11 @@
   .tt-status.s-viewing      { background: var(--sand);  color: var(--slate); }
   .tt-status.s-inflight     { background: #BF956E;       color: white; }
   .tt-status.s-reserved_bh  { background: var(--sand);  color: var(--slate); border: 1px solid var(--slate); }
-  .tt-status.s-reserved_hh  { background: var(--sand);  color: var(--slate); border: 1px solid var(--powder); }
+  .tt-status.s-reserved_hh  { background: white; color: #9B2C2C; border: 1.5px solid #9B2C2C; }
   .tt-status.s-signed_bh,
   .tt-status.s-occupied_bh  { background: var(--slate); color: var(--sand); border: 1px solid var(--sand); }
   .tt-status.s-signed_hh,
-  .tt-status.s-occupied_hh  { background: var(--powder); color: var(--slate); }
+  .tt-status.s-occupied_hh  { background: #9B2C2C; color: var(--sand); }
   .tt-status.s-show_flat    { background: var(--denim); color: var(--mist); }
   .tt-status.s-lost         { background: var(--salmon); color: white; }
   .tooltip .tt-row { display: flex; justify-content: space-between; padding: 2px 0; border-top: 1px solid rgba(255,255,255,0.08); }
@@ -455,15 +470,15 @@
   .legend .swatch.viewing     { background: var(--sand); }
   .legend .swatch.inflight    { background: #BF956E; }
   .legend .swatch.reserved-bh { background: var(--sand);  box-shadow: inset 0 0 0 1.5px var(--slate); }
-  .legend .swatch.reserved-hh { background: var(--sand);  box-shadow: inset 0 0 0 1.5px var(--powder); }
+  .legend .swatch.reserved-hh { background: white;  box-shadow: inset 0 0 0 2px #9B2C2C; }
   .legend .swatch.signed-bh   { background: var(--slate); }
   .legend .swatch.signed-bh::before { content:''; position:absolute; left:50%; top:50%; width:3px; height:3px; background: var(--sand);  transform: translate(-50%,-50%); }
-  .legend .swatch.signed-hh   { background: var(--powder); }
-  .legend .swatch.signed-hh::before { content:''; position:absolute; left:50%; top:50%; width:3px; height:3px; background: var(--slate); transform: translate(-50%,-50%); }
+  .legend .swatch.signed-hh   { background: #9B2C2C; }
+  .legend .swatch.signed-hh::before { content:''; position:absolute; left:50%; top:50%; width:3px; height:3px; background: var(--sand); transform: translate(-50%,-50%); }
   .legend .swatch.occupied-bh { background: var(--slate); box-shadow: inset 0 0 0 1px var(--sand); }
   .legend .swatch.occupied-bh::before { content:''; position:absolute; left:50%; top:50%; width:3px; height:3px; background: var(--sand); transform: translate(-50%,-50%); }
-  .legend .swatch.occupied-hh { background: var(--powder); box-shadow: inset 0 0 0 1px var(--slate); }
-  .legend .swatch.occupied-hh::before { content:''; position:absolute; left:50%; top:50%; width:3px; height:3px; background: var(--slate); transform: translate(-50%,-50%); }
+  .legend .swatch.occupied-hh { background: #9B2C2C; box-shadow: inset 0 0 0 1px var(--sand); }
+  .legend .swatch.occupied-hh::before { content:''; position:absolute; left:50%; top:50%; width:3px; height:3px; background: var(--sand); transform: translate(-50%,-50%); }
   .legend .swatch.show        { background: var(--denim); box-shadow: inset 0 0 0 1.5px white; }
   .legend .swatch.lost        { background: var(--salmon); }
 
@@ -489,6 +504,35 @@
   .hours-card .hours-val { font-family: Georgia, serif; font-size: 17px; color: var(--slate); }
   .hours-card .hours-sub { font-size: 11px; color: var(--denim); margin-top: 4px; }
 
+  /* Recently viewed strip — sits between the hero KPI grid and the show flats */
+  .recent-strip-d {
+    margin: 0 0 28px; padding: 16px 18px;
+    background: white; border: 1px solid var(--rule); border-left: 3px solid var(--ct-gold);
+  }
+  .recent-head-d {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim);
+    margin-bottom: 12px;
+  }
+  .recent-head-d button {
+    background: transparent; border: 0; color: var(--denim);
+    font: 600 10px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; padding: 4px;
+  }
+  .recent-head-d button:hover { color: var(--slate); }
+  .recent-row-d { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+  .recent-row-d::-webkit-scrollbar { display: none; }
+  .recent-card-d {
+    flex: 0 0 auto; min-width: 150px;
+    background: var(--paper); border: 1px solid var(--rule);
+    padding: 10px 14px; cursor: pointer; text-align: left;
+    transition: transform 0.1s ease, border-color 0.15s ease;
+  }
+  .recent-card-d:hover { border-color: var(--slate); }
+  .recent-card-d .r-uid { font-family: Georgia, serif; font-size: 22px; color: var(--slate); line-height: 1; }
+  .recent-card-d .r-meta { font-size: 11px; color: var(--denim); margin-top: 4px; }
+  .recent-card-d .r-rent { font-size: 13px; color: var(--ct-gold-dark); margin-top: 4px; font-weight: 600; }
+
   /* Operational info grid: lobby protocol, views note, fees, tenant requirements */
   .info-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -509,6 +553,11 @@
     border-left: 3px solid var(--ct-gold); font-size: 11px;
     letter-spacing: 0.08em; color: var(--denim);
   }
+  .info-block .info-disclaimer {
+    margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--rule);
+    font-size: 11.5px; line-height: 1.5; color: var(--denim);
+  }
+  .info-block .info-disclaimer strong { color: var(--slate); }
   .info-block ul { list-style: none; padding: 0; margin: 0; }
   .info-block li {
     padding: 8px 0; border-bottom: 1px solid var(--rule);
@@ -660,11 +709,11 @@
   .pill.s-viewing      { background: var(--sand);  color: var(--slate); }
   .pill.s-inflight     { background: #BF956E;       color: white; }
   .pill.s-reserved_bh  { background: var(--sand);  color: var(--slate); border: 1px solid var(--slate); }
-  .pill.s-reserved_hh  { background: var(--sand);  color: var(--slate); border: 1px solid var(--powder); }
+  .pill.s-reserved_hh  { background: white; color: #9B2C2C; border: 1.5px solid #9B2C2C; }
   .pill.s-signed_bh,
   .pill.s-occupied_bh  { background: var(--slate); color: var(--sand); }
   .pill.s-signed_hh,
-  .pill.s-occupied_hh  { background: var(--powder); color: var(--slate); }
+  .pill.s-occupied_hh  { background: #9B2C2C; color: var(--sand); }
   .pill.s-show_flat    { background: var(--denim); color: var(--mist); }
   .pill.s-lost         { background: var(--salmon); color: white; }
   .dlist .cut { color: var(--terra); font-size: 10px; }
@@ -930,12 +979,15 @@
       </button>
       <button class="headline available" data-view="available">
         <span class="click-hint">Click for list</span>
-        <div class="headline-lbl">Listed</div>
+        <div class="headline-lbl">Available</div>
         <div class="headline-val" id="kpi-avail">0</div>
         <div class="headline-sub" id="kpi-avail-sub">—</div>
       </button>
     </div>
   </section>
+
+  <!-- Recently viewed — last five units the broker tapped (localStorage) -->
+  <section class="recent-strip-d" id="recent-strip-d" style="display:none;"></section>
 
   <!-- Show flats — promoted -->
   <section class="showflats-row" id="showflats-row">
@@ -954,15 +1006,11 @@
         <div class="hint">Click any unit</div>
       </div>
       <div class="tower-frame">
-        <div class="tranche-marker penthouse" data-min="90" data-max="93">Penthouse · 90–93</div>
+        <!-- Penthouse only spans 4 floors so we keep just "P/H" - the actual floor numbers (90-93) are visible on the rows themselves. -->
+        <div class="tranche-marker penthouse" data-min="90" data-max="93">Penthouse</div>
         <div class="tranche-marker upper"     data-min="70" data-max="89">Upper · 70–89</div>
         <div class="tranche-marker mid"       data-min="26" data-max="69">Mid · 26–69</div>
         <div class="tranche-marker lower"     data-min="5"  data-max="25">Lower · 5–25</div>
-        <div class="crown-block">
-          <div class="antenna"></div>
-          <div class="mech-roof"></div>
-          <div class="cornice"></div>
-        </div>
         <div class="tower" id="tower">
           <div class="crown-band"></div>
           <div class="floors" id="floors"></div>
@@ -1012,10 +1060,9 @@
         <div class="legend">
           <div class="legend-row">
             <span class="legend-arrow">Lifecycle →</span>
-            <div class="item"><span class="swatch nl"></span>Not launched</div>
-            <div class="item"><span class="swatch available"></span>Available</div>
-            <div class="item"><span class="swatch marketing"></span>Listed</div>
-            <div class="item"><span class="swatch show"></span>Show Flat</div>
+            <div class="item"><span class="swatch available"></span>Available · in-house</div>
+            <div class="item"><span class="swatch marketing"></span>Listed · on portals</div>
+            <div class="item"><span class="swatch show"></span>Show flat</div>
           </div>
           <div class="legend-row">
             <span class="legend-arrow">BH won</span>
@@ -1091,11 +1138,7 @@
       <p>Guest valet on arrival. Register at concierge — guests are ushered to the <strong>bh section of the lobby on the left</strong>. No sub-agents to show units; they must wait at the lobby.</p>
       <p><strong>Amenity deck:</strong> 9th floor of the parking &amp; amenity building. <strong>Skybridge from the tower:</strong> 5th floor.</p>
       <p class="info-pin">Lobby · Mon – Sun · 10:00 – 19:00 · Pre-booked appointments only</p>
-    </article>
-
-    <article class="info-block">
-      <h2>Views</h2>
-      <p>Sea View / Metro / City Tower 2 views become available <strong>from the 25th floor and above</strong>. Museum of the Future view is the exception — visible from any floor.</p>
+      <p class="info-disclaimer"><em>Sea View / Metro / City Tower 2 aspect views available <strong>from 25th floor and above</strong>. Museum of the Future view is the exception.</em></p>
     </article>
 
     <article class="info-block">
@@ -1128,7 +1171,7 @@
   <footer class="footer">
     <div>betterhomes · Leasing Live Board</div>
     <div class="lockup-mini"><svg viewBox="490 340 930 400" xmlns="http://www.w3.org/2000/svg" aria-label="City Tower" role="img"><path fill="currentColor" d="M843,347.8l-4.5,12.1s-7.2-5.5-19.7-5.5h-27.9v148.6s-.5,6.9,4.4,10.5v.2h-21.8v-.2c4.9-3.6,4.4-10.5,4.4-10.5v-148.6h-28c-12.5,0-19.7,5.5-19.7,5.5l-4.5-12.1h117.1ZM725.9,566.3l4.5,12.1s7.2-5.5,19.7-5.5h28v148.6s.5,6.9-4.4,10.5v.2h21.8v-.2c-4.9-3.6-4.4-10.5-4.4-10.5v-148.6h27.9c12.5,0,19.7,5.5,19.7,5.5l4.5-12.1h-117.1ZM1144.7,566.3c2.3,5.7.5,12.2.5,12.2l-50.2,138.5c0-.2-25.7-70.2-25.7-70.2,10.9-31.4,21-60.5,22.3-64.5,3.2-9.4,10.3-15.9,10.3-15.9h-18c2.3,5.7.5,12.2.5,12.2l-19.9,55.3-17.2-47s-.7-1.8-1.8-6.2c-1.6-6.3.2-14.2.2-14.2h-25.2c5.4,2.7,9.6,12,9.6,12l27.2,75.5-22.6,63.2c0-.2-16.2-43.4-21.9-58.6-7-18.7-12.8-38.2-23.6-55.2-7.7-12-17.6-22.1-29.7-29.7-12.7-8-28.4-10.7-43.2-10.7-48.7,0-88.2,38.8-88.2,86.6s39.5,86.6,88.2,86.6,63.4-18.8,78.2-46.4l-7.5-17.8c-8.7,33.8-37,58.6-70.7,58.6s-73.4-36-73.4-80.4,32.9-80.3,73.4-80.3,43.3,11.6,56.5,29.3c9.1,12.3,13.5,26.7,18.4,40.9,3.6,10.3,7.1,20.7,10.5,31.1l21.7,61.3h15.8s13.3-37.6,22.8-65l23.1,65h14.4s49.9-141.6,52.7-150c3.2-9.5,10.3-15.9,10.3-15.9h-18,0ZM1233.6,723.7h-40.6v-75c7.4.3,20,1,31.9,2.9,14,2.2,27.4,5.7,27.4,5.7l5.7-13.6h-65v-69.6h51.1c14.2,0,25.7,4.9,25.7,4.9v-12.6h-94.2v.2c4.9,3.6,4.4,10.5,4.4,10.5v144.4s.5,6.9-4.4,10.5v.2h94.8l10.9-20.2s-15.5,11.7-47.8,11.7h0ZM1410,732v.2h-27c-3.5-8.4-11.9-24.6-11.9-24.6l-22.1-42.8c-19.1.9-35-4.6-40.5-6.8v63.5s-.6,6.9,4.3,10.5v.2h-21.7v-.2c4.9-3.6,4.4-10.5,4.4-10.5v-144.4s.5-6.9-4.4-10.5v-.2h42.6c8.4,0,17.5,0,25.8,1.3,17.8,2.8,33.8,13,39.6,30.5,1.8,5.5,2.6,11.3,2.6,17.1,0,16.2-13.1,41.4-40.5,48,2.6,5.3,7.4,15.4,16.4,32.1,13.8,25.4,29.7,35.3,32.3,36.8h0ZM1357.6,656.2c10.4-3,18.8-10,23.8-19.6,5.8-11.2,7.4-28.3,1.9-40-4.2-8.8-12.6-15.3-21.7-18.7-10.6-4-21.7-3.9-32.8-3.9,0,0-18.4,0-20.2,0v77c15.4,5.7,32.9,9.8,49,5.2h0ZM710,348v-.2h-21.8v.2c3.7,2.7,4.4,7.4,4.4,9.5,0,.7,0,1.1,0,1.1v144.4s0,.4,0,1.1c0,2.1-.7,6.7-4.4,9.5v.2h21.8v-.2c-3.7-2.7-4.3-7.4-4.4-9.5v-145.5s0-.4,0-1.1c0-2.1.7-6.7,4.4-9.5ZM962.2,364.2c4.9-8.7,13.1-16.4,13.1-16.4h-20.8c3.1,5.7.5,12.1.5,12.1l-35.9,66.1c-10.1-18.1-34.8-59-36.5-63.8-2.9-7.7,0-14.5,0-14.5h-23.7c5.5,3.3,9.6,12,9.6,12l42.5,74.9v68.3s0,.4,0,1.1c0,2.1-.7,6.7-4.4,9.5v.2h21.8v-.2c-3.7-2.7-4.3-7.4-4.4-9.5v-69.4c20.3-39.9,35.4-65.5,38.2-70.5h0ZM663,481.9c-18,21.4-38.8,29.8-64.8,29.8-40.5,0-73.4-36-73.4-80.4s32.9-80.4,73.4-80.4,36.5,11.6,49.8,26.4l10.5-10c-15.8-14.5-37-23.4-60.3-23.4-48.7,0-88.2,38.8-88.2,86.6s39.5,86.6,88.2,86.6,52.3-12.5,68.5-32l-3.8-3.4h0Z"/></svg><span class="sources">Joint sole leasing · bh × H&amp;H</span></div>
-    <div>v1.0 · Live via CT1 Control Centre</div>
+    <div>v1.0 · Live via CT1 Control Centre <span id="footer-sync" style="margin-left:10px; opacity:0.7;">· Last sync —</span></div>
   </footer>
 </div>
 
@@ -1202,15 +1245,16 @@ const BEDROOM_CODE = {
 };
 // Granular lifecycle display states. 'Available' drawers pool the first four;
 // 'BH let' / 'H&H let' drawers pool the three agency-won states each.
-const AVAILABLE_STATES = ['marketing','viewing','inflight'];
+const AVAILABLE_STATES = ['available','marketing'];
 const BH_LET_STATES    = ['reserved_bh','signed_bh','occupied_bh'];
 const HH_LET_STATES    = ['reserved_hh','signed_hh','occupied_hh'];
 
+// Display labels. Internal `marketing` is kept as the code for backward compat
+// with snapshot data, but the sheet now uses `Listed` (= shown on portals) and
+// `Available` (= rentable, in-house only). Both count toward Available.
 const STATUS_LABEL = {
-  not_launched: 'Not launched',
+  available:    'Available',
   marketing:    'Listed',
-  viewing:      'Viewing',
-  inflight:     'In flight',
   reserved_bh:  'Reserved · bh',
   reserved_hh:  'Reserved · H&H',
   signed_bh:    'Signed · bh',
@@ -1219,21 +1263,28 @@ const STATUS_LABEL = {
   occupied_hh:  'Occupied · H&H',
   show_flat:    'Show flat',
   lost:         'Lost',
+  // Legacy codes — no longer produced by the sheet but tolerated in old snapshots.
+  not_launched: 'Not launched',
+  viewing:      'Viewing',
+  inflight:     'In flight',
 };
 
 function classifyJS(rawStatus, agencyWon) {
-  const s = (rawStatus || 'Not Launched').trim();
+  const s = (rawStatus || '').trim();
   const a = (agencyWon || '').trim();
-  if (s === 'Not Launched') return 'not_launched';
-  if (s === 'Marketing')    return 'marketing';
-  if (s === 'Viewing Booked' || s === 'Viewing Held') return 'viewing';
+  // Current sheet vocabulary
+  if (s === 'Available')                   return 'available';
+  if (s === 'Listed' || s === 'Marketing') return 'marketing';
+  if (s === 'Reserved')                    return a === 'BH' ? 'reserved_bh' : a === 'H&H' ? 'reserved_hh' : 'available';
+  if (s === 'Signed' || s === 'Invoiced')  return a === 'BH' ? 'signed_bh'   : a === 'H&H' ? 'signed_hh'   : 'available';
+  if (s === 'Occupied')                    return a === 'BH' ? 'occupied_bh' : a === 'H&H' ? 'occupied_hh' : 'signed_bh';
+  if (s === 'Show Flat')                   return 'show_flat';
+  if (s === 'Lost')                        return 'lost';
+  // Legacy fall-through (older sheet snapshots)
+  if (s === 'Not Launched')                                          return 'not_launched';
+  if (s === 'Viewing Booked' || s === 'Viewing Held')                return 'viewing';
   if (s === 'Offer Received' || s === 'Negotiating' || s === 'Pipeline') return 'inflight';
-  if (s === 'Reserved') return a === 'BH' ? 'reserved_bh' : a === 'H&H' ? 'reserved_hh' : 'inflight';
-  if (s === 'Invoiced') return a === 'BH' ? 'signed_bh'   : a === 'H&H' ? 'signed_hh'   : 'inflight';
-  if (s === 'Occupied') return a === 'BH' ? 'occupied_bh' : a === 'H&H' ? 'occupied_hh' : 'signed_bh';
-  if (s === 'Show Flat') return 'show_flat';
-  if (s === 'Lost')      return 'lost';
-  return 'marketing';
+  return 'available';
 }
 const FLOOR_BANDS = [
   { code:'lower',     label:'Lower · 5–25',    min:5,  max:25 },
@@ -1268,6 +1319,19 @@ function setLivePill(st, label) {
   pill.classList.remove('live','offline','loading');
   pill.classList.add(st);
   status.textContent = label;
+  // Mirror the sync state in the footer so the timestamp is visible after the
+  // broker has scrolled past the masthead.
+  const footer = document.getElementById('footer-sync');
+  if (footer) {
+    if (st === 'live') {
+      const now = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      footer.textContent = `· Last sync ${now}`;
+    } else if (st === 'offline') {
+      footer.textContent = '· Offline (snapshot)';
+    } else {
+      footer.textContent = '· Syncing…';
+    }
+  }
 }
 
 /* ============================================================
@@ -1338,10 +1402,17 @@ function attachUnitInteractions() {
     });
     c.addEventListener('mousemove', e => {
       const tipW = 260;
+      // Clamp the tooltip to the viewport on every axis so it never flicks
+      // off-screen near the right edge or top of the tower.
+      const tipH = tip.offsetHeight || 200;
       let x = e.clientX + 16;
-      if (x + tipW > window.innerWidth) x = e.clientX - tipW - 16;
+      if (x + tipW > window.innerWidth - 8) x = e.clientX - tipW - 16;
+      x = Math.max(8, x);
+      let y = e.clientY - 10;
+      if (y + tipH > window.innerHeight - 8) y = window.innerHeight - tipH - 8;
+      y = Math.max(8, y);
       tip.style.left = x + 'px';
-      tip.style.top = (e.clientY - 10) + 'px';
+      tip.style.top = y + 'px';
     });
     c.addEventListener('mouseleave', () => tip.classList.remove('visible'));
     c.addEventListener('click', () => openDetail(c.dataset.uid));
@@ -1360,10 +1431,12 @@ function buildHeadlines() {
   const bhLet = get('reserved_bh') + get('signed_bh') + get('occupied_bh');
   const hhLet = get('reserved_hh') + get('signed_hh') + get('occupied_hh');
   const lost = get('lost');
-  // Big KPI shows ONLY listed units (marketing). Viewing / pipeline / not-launched
-  // surface in the sub-line so brokers can still see the full pipeline at a glance.
-  const listed = get('marketing');
-  const avail = listed;
+  // Big KPI counts the full available pool: rentable in-house (Available)
+  // PLUS on-portals (Listed). Both are bookable; Listed is the sub-segment
+  // promoted online to generate enquiries.
+  const inHouse = get('available');
+  const onPortals = get('marketing');
+  const avail = inHouse + onPortals;
 
   document.getElementById('kpi-bh').textContent    = bhLet;
   document.getElementById('kpi-hh').textContent    = hhLet;
@@ -1386,8 +1459,7 @@ function buildHeadlines() {
     : `${total ? (hhLet/total*100).toFixed(1) : '0'}% of stock`;
 
   const avParts = [];
-  if (get('viewing'))      avParts.push(`${get('viewing')} in viewing`);
-  if (get('inflight'))     avParts.push(`${get('inflight')} in pipeline`);
+  if (onPortals)           avParts.push(`${onPortals} listed on portals`);
   if (get('reserved_bh') + get('reserved_hh')) avParts.push(`${get('reserved_bh') + get('reserved_hh')} reserved`);
   const showFlatTotal = UNITS.filter(u => u.showFlat || u.s === 'show_flat').length;
   if (showFlatTotal)       avParts.push(`${showFlatTotal} show flat${showFlatTotal === 1 ? '' : 's'}`);
@@ -1864,8 +1936,45 @@ function copyListToClipboard(units, view) {
 function openDetail(uid) {
   const prev = state.drawer;
   state.drawer = { kind: 'detail', uid, returnTo: prev && prev.kind === 'list' ? prev : null };
+  pushRecent(uid);
   renderDrawer();
   openDrawer();
+}
+
+// Recently viewed: last 5 units the broker tapped, persisted in localStorage.
+const RECENT_KEY = 'ct1.recent';
+function getRecent() {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch (e) { return []; }
+}
+function pushRecent(uid) {
+  const cur = getRecent().filter(x => x !== uid);
+  cur.unshift(uid);
+  try { localStorage.setItem(RECENT_KEY, JSON.stringify(cur.slice(0, 5))); } catch (e) {}
+  renderRecentDesktop();
+}
+function renderRecentDesktop() {
+  const host = document.getElementById('recent-strip-d');
+  if (!host) return;
+  const ids = getRecent();
+  const units = ids.map(uid => UNITS.find(u => u.uid === uid)).filter(Boolean);
+  if (!units.length) { host.style.display = 'none'; return; }
+  host.style.display = 'block';
+  host.innerHTML = `
+    <div class="recent-head-d"><span>Recently viewed</span><button id="recent-clear-d" type="button">Clear</button></div>
+    <div class="recent-row-d">
+      ${units.map(u => `
+        <button class="recent-card-d" data-uid="${u.uid}">
+          <div class="r-uid">${u.uid}</div>
+          <div class="r-meta">${TYPE_META[u.t].label} · Floor ${u.f}</div>
+          <div class="r-rent">${fmtAED(u.pr)}</div>
+        </button>`).join('')}
+    </div>`;
+  host.querySelectorAll('.recent-card-d').forEach(c => c.addEventListener('click', () => openDetail(c.dataset.uid)));
+  const cb = host.querySelector('#recent-clear-d');
+  if (cb) cb.addEventListener('click', () => {
+    try { localStorage.removeItem(RECENT_KEY); } catch (e) {}
+    renderRecentDesktop();
+  });
 }
 
 function renderDetail(uid) {
@@ -2223,14 +2332,15 @@ const palette = {
 
 function cellFillFor(u) {
   // Cheap inline color picker for the palette swatches — mirrors the tower CSS rules.
-  const map = { not_launched:'#E8DBC8', marketing:'#B39470', viewing:'#D9B9A0', inflight:'#BF956E',
-    reserved_bh:'#fff', reserved_hh:'#fff', signed_bh:'#1F343F', signed_hh:'#7BA0B2',
-    occupied_bh:'#1F343F', occupied_hh:'#7BA0B2', show_flat:'#2C537A', lost:'#FF787A' };
-  return map[u.s] || '#B39470';
+  const map = { available:'rgba(122,160,178,0.5)', not_launched:'#E8DBC8', marketing:'#B39470',
+    viewing:'#D9B9A0', inflight:'#BF956E',
+    reserved_bh:'#fff', reserved_hh:'#fff', signed_bh:'#1F343F', signed_hh:'#9B2C2C',
+    occupied_bh:'#1F343F', occupied_hh:'#9B2C2C', show_flat:'#2C537A', lost:'#FF787A' };
+  return map[u.s] || 'rgba(122,160,178,0.5)';
 }
 function cellRingFor(u) {
   if (u.s === 'reserved_bh') return '#1F343F';
-  if (u.s === 'reserved_hh') return '#7BA0B2';
+  if (u.s === 'reserved_hh') return '#9B2C2C';
   if (u.s === 'show_flat' || u.showFlat) return 'white';
   return null;
 }
@@ -2290,6 +2400,7 @@ function rebuildAll() {
   buildMix();
   buildTower();
   applyTowerFilter();
+  renderRecentDesktop();
   if (state.drawer) renderDrawer();
   requestAnimationFrame(() => requestAnimationFrame(positionTrancheMarkers));
 }

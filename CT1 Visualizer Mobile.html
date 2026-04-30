@@ -139,6 +139,19 @@
   .stat-card .stat-val { font-family: Georgia, serif; font-size: 56px; line-height: 0.95; color: var(--ct-gold); }
   .stat-card.dim .stat-val { color: var(--ct-haze); font-size: 36px; }
   .stat-card .stat-sub { font-size: 11px; color: var(--ct-sun); margin-top: 8px; opacity: 0.85; }
+  .stat-card .stat-sync {
+    margin-top: 12px; padding-top: 10px;
+    border-top: 1px solid rgba(215,168,111,0.18);
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ct-gold); opacity: 0.85;
+  }
+  .stat-card .stat-sync .dot {
+    display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: #7BE495; margin-right: 6px; vertical-align: 1px;
+    animation: live-pulse 2s ease-in-out infinite;
+  }
+  .stat-card .stat-sync.offline .dot { background: #FF787A; animation: none; }
+  @keyframes live-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 
   .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .stat-row .stat-card { padding: 16px 16px; }
@@ -172,13 +185,15 @@
   }
   .show-strip::-webkit-scrollbar { display: none; }
   .show-card {
-    flex: 0 0 240px; padding: 16px;
+    flex: 0 0 270px; padding: 20px 22px;
     background: var(--paper); border: 1px solid var(--rule);
-    border-left: 3px solid var(--ct-gold);
+    border-left: 4px solid var(--ct-gold);
     scroll-snap-align: start; cursor: pointer; position: relative;
     transition: transform 0.1s ease;
   }
   .show-card:active { transform: scale(0.98); }
+  .show-card .show-uid { font-size: 26px !important; }
+  .show-card .show-rent { font-size: 15px !important; }
   .show-card .show-pin {
     position: absolute; top: 14px; right: 14px;
     width: 9px; height: 9px; background: var(--ct-gold); border: 1.5px solid var(--ct-gold-dark); border-radius: 50%;
@@ -272,8 +287,41 @@
 
   .empty-state {
     padding: 60px 24px; text-align: center; color: var(--denim);
-    font-style: italic; font-size: 14px;
+    font-size: 14px;
   }
+  .recent-strip { padding: 6px 16px 0; }
+  .recent-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim);
+    margin-bottom: 8px;
+  }
+  .recent-clear {
+    background: transparent; border: 0; color: var(--denim);
+    font: 600 10px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; padding: 4px;
+  }
+  .recent-clear:active { color: var(--slate); }
+  .recent-row {
+    display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+  .recent-row::-webkit-scrollbar { display: none; }
+  .recent-card {
+    flex: 0 0 auto; min-width: 130px;
+    background: white; border: 1px solid var(--rule); border-left: 3px solid var(--ct-gold);
+    padding: 10px 12px; cursor: pointer; text-align: left; border-radius: 8px;
+    transition: transform 0.1s ease;
+  }
+  .recent-card:active { transform: scale(0.98); }
+  .recent-card .r-uid { font-family: Georgia, serif; font-size: 18px; color: var(--slate); line-height: 1; }
+  .recent-card .r-meta { font-size: 11px; color: var(--denim); margin-top: 4px; }
+  .recent-card .r-rent { font-size: 12px; color: var(--ct-gold-dark); margin-top: 4px; font-weight: 600; }
+  .btn-clear-empty {
+    border: 0; background: var(--slate); color: var(--ct-haze);
+    padding: 11px 18px; border-radius: 8px; font: 600 12px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: 0.04em; cursor: pointer;
+  }
+  .btn-clear-empty:active { transform: scale(0.97); }
 
   /* ============================================================
    * TAB 3 — INFO
@@ -296,6 +344,11 @@
     margin-top: 10px; padding: 10px 12px; background: var(--mist); border-left: 3px solid var(--ct-gold);
     font-size: 12px; line-height: 1.5; color: var(--slate);
   }
+  .info-disclaimer {
+    margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--rule);
+    font-size: 11.5px; line-height: 1.5; color: var(--denim);
+  }
+  .info-disclaimer strong { color: var(--slate); }
   .info-list {
     margin: 4px 0 0; padding: 0; list-style: none;
   }
@@ -477,17 +530,17 @@
     background: linear-gradient(180deg, #E8E4DE 0%, #F7F2EB 28%, #FDFAF4 100%);
     border: 1px solid var(--rule); border-radius: 14px;
     overflow: hidden; box-shadow: 0 1px 2px rgba(31,52,63,0.05), 0 8px 24px -10px rgba(31,52,63,0.10);
+    /* Shrink-wrap to the widest floor — silhouette steps in/out like the actual building. */
+    width: fit-content; max-width: 100%;
+    margin: 0 auto;
   }
   .tower-stage::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 8px;
+    /* Dark architectural cap above the penthouse rows. Tall enough to absorb
+       the stage's top padding so the building reads with a proper roof. */
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 22px;
     background: linear-gradient(180deg, var(--ct-afterlight) 0%, var(--ct-afterlight2) 100%);
     box-shadow: inset 0 -1px 0 var(--ct-gold-dark);
-  }
-  .tower-stage::after {
-    content: ''; position: absolute; left: 50%; top: -12px;
-    width: 2px; height: 16px;
-    background: linear-gradient(180deg, var(--ct-gold) 0%, var(--ct-afterlight) 100%);
-    transform: translateX(-50%);
+    z-index: 1;
   }
   .tower-bands {
     position: absolute; left: 8px; top: 22px; bottom: 22px;
@@ -497,44 +550,51 @@
   .band-marker {
     flex: 1; display: flex; align-items: center; justify-content: center;
     writing-mode: vertical-rl; transform: rotate(180deg);
-    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
     color: var(--denim); border-left: 2px solid var(--sand); padding: 4px 2px;
     opacity: 0.7;
+    overflow: hidden; white-space: nowrap;
   }
   .band-marker.b-mid       { border-left-color: var(--powder); }
   .band-marker.b-upper     { border-left-color: var(--denim); }
   .band-marker.b-penthouse { border-left-color: var(--terra); }
-  .tower-frame { display: flex; flex-direction: column-reverse; gap: 1px; padding-top: 12px; }
-  .tw-row { display: flex; align-items: center; gap: 2px; height: 8px; position: relative; }
-  .tw-row.tranche-divider { margin-top: 4px; padding-top: 2px; height: 10px; border-top: 1px dashed rgba(31,52,63,0.22); }
+  .tower-frame { display: flex; flex-direction: column-reverse; gap: 1px; }
+  .tw-row { display: flex; align-items: center; gap: 2px; height: 12px; position: relative; }
+  .tw-row.tranche-divider { margin-top: 4px; padding-top: 2px; height: 14px; border-top: 1px dashed rgba(31,52,63,0.22); }
   .tw-num {
-    position: absolute; right: calc(100% + 4px);
-    font-size: 8px; color: var(--denim); opacity: 0;
-    font-variant-numeric: tabular-nums; font-weight: 600;
+    position: absolute; right: calc(100% + 6px);
+    font-size: 9px; color: var(--denim); opacity: 0;
+    font-variant-numeric: tabular-nums; font-weight: 600; line-height: 1;
   }
   .tw-row.show-num .tw-num { opacity: 1; }
   .tw-cell {
-    flex: 1; min-width: 6px; max-width: 18px; height: 8px;
+    /* Fixed width — together with .tower-stage's fit-content the tower
+       silhouette tracks the actual unit count per floor. */
+    width: 16px; flex: none; height: 12px;
     border: 0; padding: 0; cursor: pointer; position: relative;
     transition: transform 0.16s ease, opacity 0.18s ease;
   }
   .tw-cell:active { transform: scaleY(1.6); z-index: 5; }
-  .tw-cell.t-studio::after { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: rgba(122,160,178,0.85); }
-  .tw-cell.t-1br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: var(--denim); }
-  .tw-cell.t-2br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: rgba(31,52,63,0.65); }
-  .tw-cell.t-3br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: var(--terra); opacity: 0.85; }
-  .tw-cell.t-4br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2.5px; background: var(--terra); }
-  .tw-cell.s-not_launched { background: #E8DBC8; box-shadow: inset 0 0 0 0.5px rgba(31,52,63,0.18); }
+  .tw-cell.t-studio::after { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: rgba(122,160,178,0.85); }
+  .tw-cell.t-1br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: var(--denim); }
+  .tw-cell.t-2br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: rgba(31,52,63,0.65); }
+  .tw-cell.t-3br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: var(--terra); opacity: 0.85; }
+  .tw-cell.t-4br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: var(--terra); }
+  /* Available — rentable in-house, NOT yet on portals. Subtle powder fill so it reads as "potential" rather than "promoted". */
+  .tw-cell.s-available    { background: rgba(122, 160, 178, 0.5); box-shadow: inset 0 0 0 0.5px rgba(31,52,63,0.15); }
+  /* Listed (internal code: marketing) — actively on portals. Bolder bronze fill so listed cells pop above the Available pool. */
   .tw-cell.s-marketing    { background: #B39470; }
+  /* Legacy — older snapshots may still have these */
+  .tw-cell.s-not_launched { background: #E8DBC8; box-shadow: inset 0 0 0 0.5px rgba(31,52,63,0.18); }
   .tw-cell.s-viewing      { background: var(--sand); }
   .tw-cell.s-inflight     { background: #BF956E; }
   /* Reserved is OFF the leasing pipeline - render as empty fill with a bold BH/H&H border so brokers can see at a glance who claimed it */
   .tw-cell.s-reserved_bh  { background: white; box-shadow: inset 0 0 0 2px var(--slate); }
-  .tw-cell.s-reserved_hh  { background: white; box-shadow: inset 0 0 0 2px var(--powder); }
+  .tw-cell.s-reserved_hh  { background: white; box-shadow: inset 0 0 0 2px #9B2C2C; }
   .tw-cell.s-signed_bh    { background: var(--slate); }
-  .tw-cell.s-signed_hh    { background: var(--powder); }
+  .tw-cell.s-signed_hh    { background: #9B2C2C; }
   .tw-cell.s-occupied_bh  { background: var(--slate); box-shadow: inset 0 0 0 1px var(--sand); }
-  .tw-cell.s-occupied_hh  { background: var(--powder); box-shadow: inset 0 0 0 1px var(--slate); }
+  .tw-cell.s-occupied_hh  { background: #9B2C2C; box-shadow: inset 0 0 0 1px var(--sand); }
   .tw-cell.s-show_flat,
   .tw-cell.is-show        { box-shadow: inset 0 0 0 1.5px white; }
   .tw-cell.s-show_flat    { background: var(--denim); }
@@ -543,9 +603,19 @@
   .tw-cell.is-balcony::before { content:''; position:absolute; left:0; top:0; bottom:0; width:1.5px; background: var(--ct-sun); }
   .tower-frame.filtered .tw-cell:not(.match) { opacity: 0.14; }
   .tower-legend {
-    display: flex; flex-wrap: wrap; gap: 8px 14px; padding: 16px 4px 0;
+    display: flex; flex-wrap: wrap; gap: 8px 14px; padding: 14px 4px 0;
     font-size: 11px; color: var(--denim);
   }
+  .legend-toggle {
+    display: inline-flex; align-items: center; gap: 6px; margin: 12px 0 0;
+    background: transparent; border: 0; padding: 6px 0;
+    font: 600 11px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--denim);
+    cursor: pointer;
+  }
+  .legend-toggle .lt-chev { font-size: 10px; transition: transform 0.18s ease; }
+  .legend-toggle[aria-expanded="true"] .lt-chev { transform: rotate(180deg); }
+  .legend-toggle[aria-expanded="true"] { color: var(--slate); }
   .legend-item { display: inline-flex; align-items: center; gap: 6px; }
   .legend-sw { width: 10px; height: 10px; border-radius: 2px; }
   .legend-sw.ring { background: transparent !important; outline: 1.5px solid currentColor; outline-offset: -1px; }
@@ -575,7 +645,7 @@
     width: 24px; height: 24px; border: 0; border-radius: 50%; background: rgba(31,52,63,0.10);
     color: var(--slate); font-size: 16px; line-height: 1; cursor: pointer; display: none;
   }
-  .search-input:not(:placeholder-shown) ~ .search-clear { display: block; }
+  .search-clear.visible { display: block; }
   .price-wrap {
     margin: 8px 4px 4px; padding: 10px 4px;
   }
@@ -610,14 +680,43 @@
     pointer-events: auto; cursor: pointer; border-color: var(--ct-gold-dark);
   }
   .sort-wrap {
+    position: relative;
     display: flex; align-items: center; gap: 10px; margin: 6px 4px 0;
     font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--denim);
   }
-  .sort-wrap select {
-    flex: 1; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 10px;
-    background: var(--paper); color: var(--slate); font: 500 13px/1 -apple-system, sans-serif;
-    letter-spacing: normal; text-transform: none;
+  .sort-label { flex-shrink: 0; }
+  .sort-trigger {
+    flex: 1; padding: 9px 12px; border: 1px solid var(--rule); border-radius: 10px;
+    background: var(--paper); color: var(--slate); font: 500 13px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: normal; text-transform: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
+  .sort-trigger:active, .sort-trigger[aria-expanded="true"] {
+    border-color: var(--ct-gold-dark); box-shadow: 0 0 0 3px rgba(215,168,111,0.14);
+  }
+  .sort-trigger .sort-chev { font-size: 11px; color: var(--denim); transition: transform 0.18s ease; }
+  .sort-trigger[aria-expanded="true"] .sort-chev { transform: rotate(180deg); }
+  .sort-menu {
+    position: absolute; right: 4px; top: calc(100% + 6px);
+    min-width: 220px; background: white; border: 1px solid var(--rule); border-radius: 12px;
+    box-shadow: 0 16px 40px -12px rgba(31,52,63,0.28), 0 4px 8px -4px rgba(31,52,63,0.10);
+    padding: 6px; z-index: 30;
+    display: none; opacity: 0; transform: translateY(-4px);
+    transition: opacity 0.16s ease, transform 0.16s ease;
+  }
+  .sort-menu.open { display: block; opacity: 1; transform: translateY(0); }
+  .sort-item {
+    width: 100%; text-align: left; border: 0; background: transparent;
+    padding: 10px 12px; border-radius: 8px; cursor: pointer;
+    font: 500 13px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--slate); letter-spacing: normal; text-transform: none;
+    display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  }
+  .sort-item span { color: var(--denim); font-size: 11px; font-weight: 400; }
+  .sort-item:hover, .sort-item:focus { background: var(--mist); outline: none; }
+  .sort-item.active { background: rgba(215,168,111,0.14); color: var(--ct-gold-dark); }
+  .sort-item.active span { color: var(--ct-gold-dark); }
 
   /* Show flat marker on the unit card */
   .badge.show-combo { background: var(--denim); color: var(--ct-haze); }
@@ -671,6 +770,7 @@
         <div class="stat-lbl">Available</div>
         <div class="stat-val" id="kpi-avail">0</div>
         <div class="stat-sub" id="kpi-avail-sub">Tap to browse</div>
+        <div class="stat-sync" id="kpi-sync">Connecting…</div>
       </button>
       <div class="stat-row">
         <button class="stat-card dim" id="card-bh">
@@ -725,7 +825,10 @@
         <div class="tower-bands" id="tower-bands"></div>
         <div class="tower-frame" id="tower-frame"></div>
       </div>
-      <div class="tower-legend" id="tower-legend"></div>
+      <button class="legend-toggle" id="legend-toggle" type="button" aria-expanded="false">
+        <span>Legend</span><span class="lt-chev">▾</span>
+      </button>
+      <div class="tower-legend" id="tower-legend" hidden></div>
     </div>
   </section>
 
@@ -765,21 +868,26 @@
         </div>
       </div>
       <div class="sort-wrap">
-        <label for="sort-by">Sort</label>
-        <select id="sort-by">
-          <option value="floor-asc">Floor · low → high</option>
-          <option value="floor-desc">Floor · high → low</option>
-          <option value="price-asc">Rent · low → high</option>
-          <option value="price-desc">Rent · high → low</option>
-          <option value="size-asc">Size · small → large</option>
-          <option value="size-desc">Size · large → small</option>
-        </select>
+        <span class="sort-label">Sort</span>
+        <button class="sort-trigger" id="sort-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+          <span id="sort-trigger-label">Floor · low → high</span>
+          <span class="sort-chev">▾</span>
+        </button>
+        <div class="sort-menu" id="sort-menu" role="menu" aria-hidden="true">
+          <button role="menuitem" data-sort="floor-asc"  class="sort-item active">Floor <span>low → high</span></button>
+          <button role="menuitem" data-sort="floor-desc" class="sort-item">Floor <span>high → low</span></button>
+          <button role="menuitem" data-sort="price-asc"  class="sort-item">Rent <span>low → high</span></button>
+          <button role="menuitem" data-sort="price-desc" class="sort-item">Rent <span>high → low</span></button>
+          <button role="menuitem" data-sort="size-asc"   class="sort-item">Size <span>small → large</span></button>
+          <button role="menuitem" data-sort="size-desc"  class="sort-item">Size <span>large → small</span></button>
+        </div>
       </div>
       <div class="filter-meta">
         <span><b id="list-count">0</b> units shown</span>
         <span class="filter-clear" id="filter-clear">Clear filters</span>
       </div>
     </div>
+    <div class="recent-strip" id="recent-strip" style="display:none;"></div>
     <div class="unit-list" id="unit-list"></div>
   </section>
 
@@ -809,11 +917,7 @@
       <div class="info-row"><span class="lbl">Booking</span><span class="val">Pre-booked appointments only</span></div>
       <div class="info-note">Guest valet on arrival. Register at concierge — guests are ushered to the bh section of the lobby on the left. No sub-agents to show units; they must wait at the lobby.</div>
       <div class="info-note"><strong>Amenity deck:</strong> 9th floor of the parking &amp; amenity building. <strong>Skybridge from the tower:</strong> 5th floor.</div>
-    </div>
-
-    <div class="info-card">
-      <h3>Views</h3>
-      <div class="info-note">Sea View / Metro / City Tower 2 views become available <strong>from the 25th floor and above</strong>. Museum of the Future view is the exception — visible from any floor.</div>
+      <div class="info-disclaimer"><em>Sea View / Metro / City Tower 2 aspect views available <strong>from 25th floor and above</strong>. Museum of the Future view is the exception.</em></div>
     </div>
 
     <div class="info-card">
@@ -840,6 +944,23 @@
         <li><strong>Internet:</strong> Etisalat &amp; DU.</li>
         <li><strong>Parking:</strong> allocation per unit type — not all studios get a bay.</li>
       </ul>
+    </div>
+
+    <div class="info-card">
+      <h3>Rent calculator</h3>
+      <div class="info-note" style="margin-top:0;">Model an effective rent without picking a unit — useful when the broker is on a call.</div>
+      <div class="calc-inputs" style="background:transparent;padding:8px 0 0;">
+        <div class="calc-row"><label>Asking rent (AED p.a.)</label><input type="number" id="ic-rent" value="100000" step="5000" inputmode="numeric"></div>
+        <div class="calc-row"><label>Initial term (months)</label><input type="number" id="ic-term" value="14" min="1" max="120" step="1" inputmode="numeric"></div>
+        <div class="calc-row"><label>Rent-free</label><input type="number" id="ic-free" value="2" min="0" step="1" inputmode="numeric"></div>
+      </div>
+      <div class="calc-out" style="margin-top:12px;">
+        <div class="calc-out-row head"><span class="lbl">Effective annual</span><span class="val" id="ic-eff">—</span></div>
+        <div class="calc-out-row"><span class="lbl">Discount vs asking</span><span class="val" id="ic-disc">—</span></div>
+        <div class="calc-out-row"><span class="lbl">Monthly equivalent</span><span class="val" id="ic-mon">—</span></div>
+        <div class="calc-out-row"><span class="lbl">Total cash for the term</span><span class="val" id="ic-tot">—</span></div>
+        <div class="calc-foot" id="ic-foot">—</div>
+      </div>
     </div>
 
     <div class="qr-card">
@@ -897,32 +1018,39 @@ const TYPES_ORDER = ['studio','1br','2br','3br','4br'];
 const VIEW_NAMES = { SHKZ:'Museum of the Future', SEA:'Sea View', MET:'Metro', CT2:'City Tower 2' };
 const BEDROOM_CODE = { 'Studio':'studio','1 Bedroom':'1br','2 Bedroom':'2br','3 Bedroom':'3br','4 Bedroom':'4br' };
 
-const AVAILABLE_STATES = ['marketing','viewing','inflight'];
+const AVAILABLE_STATES = ['available','marketing'];
 const BH_LET_STATES    = ['reserved_bh','signed_bh','occupied_bh'];
 const HH_LET_STATES    = ['reserved_hh','signed_hh','occupied_hh'];
 
+// Display labels. Internal `marketing` is kept as the code for backward compat
+// with snapshot data, but the sheet now uses `Listed` (= shown on portals)
+// and `Available` (= rentable, in-house only). Both count toward Available.
 const STATUS_LABEL = {
-  not_launched:'Not launched', marketing:'Listed', viewing:'Viewing',
-  inflight:'In flight',
+  available:'Available', marketing:'Listed',
   reserved_bh:'Reserved · bh', reserved_hh:'Reserved · H&H',
   signed_bh:'Signed · bh', signed_hh:'Signed · H&H',
   occupied_bh:'Occupied · bh', occupied_hh:'Occupied · H&H',
   show_flat:'Show flat', lost:'Lost',
+  // legacy codes (no longer produced by the sheet but tolerated in old snapshots)
+  not_launched:'Not launched', viewing:'Viewing', inflight:'In flight',
 };
 
 function classifyJS(rawStatus, agencyWon) {
-  const s = (rawStatus || 'Not Launched').trim();
+  const s = (rawStatus || '').trim();
   const a = (agencyWon || '').trim();
-  if (s === 'Not Launched') return 'not_launched';
-  if (s === 'Marketing')    return 'marketing';
-  if (s === 'Viewing Booked' || s === 'Viewing Held') return 'viewing';
+  // Current sheet vocabulary
+  if (s === 'Available')                   return 'available';
+  if (s === 'Listed' || s === 'Marketing') return 'marketing';
+  if (s === 'Reserved')                    return a === 'BH' ? 'reserved_bh' : a === 'H&H' ? 'reserved_hh' : 'available';
+  if (s === 'Signed' || s === 'Invoiced')  return a === 'BH' ? 'signed_bh'   : a === 'H&H' ? 'signed_hh'   : 'available';
+  if (s === 'Occupied')                    return a === 'BH' ? 'occupied_bh' : a === 'H&H' ? 'occupied_hh' : 'signed_bh';
+  if (s === 'Show Flat')                   return 'show_flat';
+  if (s === 'Lost')                        return 'lost';
+  // Legacy fall-through (older sheet snapshots)
+  if (s === 'Not Launched')                                          return 'not_launched';
+  if (s === 'Viewing Booked' || s === 'Viewing Held')                return 'viewing';
   if (s === 'Offer Received' || s === 'Negotiating' || s === 'Pipeline') return 'inflight';
-  if (s === 'Reserved') return a === 'BH' ? 'reserved_bh' : a === 'H&H' ? 'reserved_hh' : 'inflight';
-  if (s === 'Invoiced') return a === 'BH' ? 'signed_bh'   : a === 'H&H' ? 'signed_hh'   : 'inflight';
-  if (s === 'Occupied') return a === 'BH' ? 'occupied_bh' : a === 'H&H' ? 'occupied_hh' : 'signed_bh';
-  if (s === 'Show Flat') return 'show_flat';
-  if (s === 'Lost')      return 'lost';
-  return 'marketing';
+  return 'available';
 }
 
 const fmtN = n => Math.round(n).toLocaleString('en-GB');
@@ -951,13 +1079,25 @@ function setLive(state, label) {
   pill.classList.remove('live','offline');
   if (state) pill.classList.add(state);
   document.getElementById('live-status').textContent = label;
+  // Mirror the live state on the Overview KPI tile. Wrapped in try/catch so a
+  // DOM hiccup (e.g. element not yet in the page) can't trap the pill on
+  // "Connecting".
+  try {
+    const sync = document.getElementById('kpi-sync');
+    if (sync) {
+      sync.classList.toggle('offline', state === 'offline');
+      const count = (typeof UNITS !== 'undefined' && UNITS) ? UNITS.length : 0;
+      const hint = state === 'offline' ? ' · tap pill to retry' : '';
+      sync.innerHTML = `<span class="dot"></span>${label} · ${count} units${hint}`;
+    }
+  } catch (e) {}
 }
 
 let connTimer = null;
 let offlineTimer = null;
 function startConnWatchdog() {
   clearTimeout(connTimer);
-  connTimer = setTimeout(showOfflineHelp, 5000);
+  connTimer = setTimeout(showOfflineHelp, 3000);
 }
 function showOfflineHelp() {
   const help = document.getElementById('conn-help');
@@ -1000,19 +1140,16 @@ function renderOverview() {
   const hhLet = get('reserved_hh') + get('signed_hh') + get('occupied_hh');
   const reservedBh = get('reserved_bh');
   const reservedHh = get('reserved_hh');
-  const listed = get('marketing');
-  const inViewing = get('viewing');
-  const inFlight = get('inflight');
-  const avail = listed + inViewing + inFlight;
+  const inHouse = get('available');     // rentable, not yet on portals
+  const onPortals = get('marketing');   // Listed = on portals
+  const avail = inHouse + onPortals;
 
   document.getElementById('kpi-avail').textContent = avail;
   document.getElementById('kpi-bh').textContent = bhLet;
   document.getElementById('kpi-hh').textContent = hhLet;
 
   const availParts = [];
-  if (listed) availParts.push(`${listed} listed online`);
-  if (inViewing) availParts.push(`${inViewing} in viewing`);
-  if (inFlight) availParts.push(`${inFlight} in pipeline`);
+  if (onPortals) availParts.push(`${onPortals} listed on portals`);
   if (reservedBh + reservedHh) availParts.push(`${reservedBh + reservedHh} reserved`);
   const showFlatCount = UNITS.filter(u => u.showFlat || u.s === 'show_flat').length;
   if (showFlatCount) availParts.push(`${showFlatCount} show flat${showFlatCount === 1 ? '' : 's'}`);
@@ -1033,7 +1170,18 @@ function renderOverview() {
   `).join('');
   strip.querySelectorAll('.bed-card').forEach(c => {
     c.addEventListener('click', () => {
+      // Deep-link into Browse with the bedroom filter pre-applied
       filter.bed = c.dataset.bed;
+      filter.extras.clear();
+      filter.search = '';
+      const si = document.getElementById('search-input');
+      if (si) si.value = '';
+      const sc = document.getElementById('search-clear');
+      if (sc) sc.classList.remove('visible');
+      // Reflect the bedroom selection on the Browse chips
+      document.querySelectorAll('#filter-bedroom .chip').forEach(chip =>
+        chip.classList.toggle('active', chip.dataset.bed === filter.bed));
+      document.querySelectorAll('#filter-extra .chip').forEach(chip => chip.classList.remove('active'));
       switchTab('list');
       renderList();
     });
@@ -1113,7 +1261,12 @@ function renderList() {
   document.getElementById('list-count').textContent = list.length;
   const host = document.getElementById('unit-list');
   if (!list.length) {
-    host.innerHTML = `<div class="empty-state">No units match. Try clearing some filters.</div>`;
+    host.innerHTML = `<div class="empty-state">
+      <div style="font-size:13px;color:var(--slate);margin-bottom:14px;">No units match these filters.</div>
+      <button id="empty-clear" class="btn-clear-empty">Clear all filters</button>
+    </div>`;
+    const clearBtn = host.querySelector('#empty-clear');
+    if (clearBtn) clearBtn.addEventListener('click', () => document.getElementById('filter-clear').click());
     return;
   }
   host.innerHTML = list.map(u => {
@@ -1212,18 +1365,43 @@ document.getElementById('filter-extra').querySelectorAll('.chip').forEach(chip =
   });
 });
 document.getElementById('search-input').addEventListener('input', e => {
-  filter.search = e.target.value.trim();
+  const v = e.target.value.trim();
+  filter.search = v;
+  document.getElementById('search-clear').classList.toggle('visible', v.length > 0);
   renderList();
 });
 document.getElementById('search-clear').addEventListener('click', () => {
   document.getElementById('search-input').value = '';
+  document.getElementById('search-clear').classList.remove('visible');
   filter.search = '';
   renderList();
 });
-document.getElementById('sort-by').addEventListener('change', e => {
-  filter.sort = e.target.value;
-  renderList();
-});
+// Custom sort menu — Apple-style popover. Trigger toggles aria-expanded;
+// items set the value, update the trigger label, close the menu.
+(function() {
+  const trigger = document.getElementById('sort-trigger');
+  const menu    = document.getElementById('sort-menu');
+  const label   = document.getElementById('sort-trigger-label');
+  if (!trigger || !menu) return;
+
+  const open = () => { menu.classList.add('open'); trigger.setAttribute('aria-expanded', 'true'); menu.setAttribute('aria-hidden', 'false'); };
+  const close = () => { menu.classList.remove('open'); trigger.setAttribute('aria-expanded', 'false'); menu.setAttribute('aria-hidden', 'true'); };
+  const isOpen = () => menu.classList.contains('open');
+
+  trigger.addEventListener('click', e => { e.stopPropagation(); isOpen() ? close() : open(); });
+  document.addEventListener('click', e => { if (isOpen() && !menu.contains(e.target) && e.target !== trigger) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && isOpen()) close(); });
+
+  menu.querySelectorAll('.sort-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      filter.sort = btn.dataset.sort;
+      menu.querySelectorAll('.sort-item').forEach(b => b.classList.toggle('active', b === btn));
+      label.textContent = btn.textContent.replace(/\s+/g, ' ').trim();
+      close();
+      renderList();
+    });
+  });
+})();
 document.getElementById('filter-clear').addEventListener('click', () => {
   filter.bed = 'all';
   filter.view = 'all';
@@ -1233,7 +1411,11 @@ document.getElementById('filter-clear').addEventListener('click', () => {
   filter.priceMax = priceBounds.max;
   filter.sort = 'floor-asc';
   document.getElementById('search-input').value = '';
-  document.getElementById('sort-by').value = 'floor-asc';
+  document.getElementById('search-clear').classList.remove('visible');
+  // Reset the custom sort menu to the default item
+  document.querySelectorAll('.sort-item').forEach(b => b.classList.toggle('active', b.dataset.sort === 'floor-asc'));
+  const defaultLabel = document.querySelector('.sort-item[data-sort="floor-asc"]');
+  if (defaultLabel) document.getElementById('sort-trigger-label').textContent = defaultLabel.textContent.replace(/\s+/g, ' ').trim();
   document.getElementById('price-min').value = priceBounds.min;
   document.getElementById('price-max').value = priceBounds.max;
   resetChips();
@@ -1292,7 +1474,7 @@ function renderTower() {
   // Bands (vertical labels on the left)
   if (bandsHost && !bandsHost.dataset.built) {
     bandsHost.innerHTML = `
-      <div class="band-marker b-penthouse">Penthouse · 90–93</div>
+      <div class="band-marker b-penthouse">Penthouse</div>
       <div class="band-marker b-upper">Upper · 70–89</div>
       <div class="band-marker b-mid">Mid · 26–69</div>
       <div class="band-marker">Lower · 5–25</div>`;
@@ -1378,11 +1560,16 @@ function setupTowerTouchPreview() {
     tip.classList.remove('visible');
   }
 
+  // Subtle haptic feedback (iOS/Android) — mirrors how Apple uses Taptic Engine
+  // for picker selection. No-op on browsers without vibrate support.
+  const haptic = (ms) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (_) {} };
+
   frame.addEventListener('touchstart', e => {
     const t = e.touches[0];
     const cell = getCellAt(t.clientX, t.clientY);
     if (cell) {
       e.preventDefault();
+      haptic(8);
       setActive(cell, t.clientX, t.clientY);
     }
   }, { passive: false });
@@ -1391,11 +1578,13 @@ function setupTowerTouchPreview() {
     e.preventDefault();
     const t = e.touches[0];
     const cell = getCellAt(t.clientX, t.clientY);
+    if (cell && cell !== activeCell) haptic(4);
     setActive(cell, t.clientX, t.clientY);
   }, { passive: false });
   frame.addEventListener('touchend', () => {
     if (activeCell) {
       const uid = activeCell.dataset.uid;
+      haptic(12);
       clearPreview();
       openUnit(uid);
     } else {
@@ -1411,11 +1600,12 @@ function unitMatchesTowerFilter() {
   const m = towerView.mode;
   if (m === 'status') {
     if (v === 'available')  return u => AVAILABLE_STATES.includes(u.s);
+    if (v === 'listed')     return u => u.s === 'marketing';
+    if (v === 'in_house')   return u => u.s === 'available';
     if (v === 'bh_let')     return u => BH_LET_STATES.includes(u.s);
     if (v === 'hh_let')     return u => HH_LET_STATES.includes(u.s);
     if (v === 'show_flat')  return u => isShowFlat(u);
     if (v === 'lost')       return u => u.s === 'lost';
-    if (v === 'not_launched') return u => u.s === 'not_launched';
     return () => true;
   }
   if (m === 'bedroom')  return u => u.t === v;
@@ -1431,11 +1621,12 @@ function unitMatchesTowerFilter() {
 function chipsForMode(mode) {
   if (mode === 'status') {
     const items = [
-      { v: 'available', label: 'Available', sw: '#B39470' },
+      { v: 'available', label: 'Available (all)', sw: 'linear-gradient(90deg,#B39470 50%,rgba(122,160,178,0.5) 50%)' },
+      { v: 'listed',    label: 'Listed on portals', sw: '#B39470' },
+      { v: 'in_house',  label: 'In-house only', sw: 'rgba(122,160,178,0.5)' },
       { v: 'bh_let',    label: 'bh let',    sw: '#1F343F' },
-      { v: 'hh_let',    label: 'H&H Let',   sw: '#7BA0B2' },
+      { v: 'hh_let',    label: 'H&H Let',   sw: '#9B2C2C' },
       { v: 'show_flat', label: 'Show flat', sw: '#2C537A' },
-      { v: 'not_launched', label: 'Not launched', sw: '#E8DBC8' },
       { v: 'lost',      label: 'Lost',      sw: '#FF787A' },
     ];
     return items.map(i => `<button class="chip ${towerView.value===i.v?'active':''}" data-val="${i.v}"><span class="legend-sw" style="background:${i.sw};margin-right:6px;"></span>${i.label}</button>`).join('');
@@ -1459,12 +1650,12 @@ function chipsForMode(mode) {
 function legendForMode(mode) {
   const item = (sw, label, ring) => `<span class="legend-item"><span class="legend-sw ${ring?'ring':''}" style="${ring?'color:'+sw:'background:'+sw}"></span>${label}</span>`;
   if (mode === 'status') return [
-    item('#B39470', 'Listed'),
-    item('#D9B9A0', 'In viewing'),
+    item('rgba(122,160,178,0.5)', 'Available (in-house)'),
+    item('#B39470', 'Listed (on portals)'),
     item('#1F343F', 'Reserved · bh', true),
-    item('#7BA0B2', 'Reserved · H&H', true),
+    item('#9B2C2C', 'Reserved · H&H', true),
     item('#1F343F', 'bh signed/occupied'),
-    item('#7BA0B2', 'H&H signed/occupied'),
+    item('#9B2C2C', 'H&H signed/occupied'),
     item('#2C537A', 'Show flat'),
     item('#FF787A', 'Lost'),
     item('#D7A86F', 'Duplex (gold ring)', true),
@@ -1486,6 +1677,18 @@ document.querySelectorAll('#tower-mode .seg-btn').forEach(b => {
   });
 });
 
+// Legend disclosure — collapsed by default so the tower itself stays the hero
+(function() {
+  const toggle = document.getElementById('legend-toggle');
+  const legend = document.getElementById('tower-legend');
+  if (!toggle || !legend) return;
+  toggle.addEventListener('click', () => {
+    const open = legend.hasAttribute('hidden');
+    if (open) { legend.removeAttribute('hidden'); toggle.setAttribute('aria-expanded', 'true'); }
+    else      { legend.setAttribute('hidden', '');  toggle.setAttribute('aria-expanded', 'false'); }
+  });
+})();
+
 // ============================================================
 // UNIT DETAIL — slide-up modal
 // ============================================================
@@ -1493,6 +1696,7 @@ const modal = document.getElementById('unit-modal');
 function openUnit(uid) {
   const u = UNITS.find(x => x.uid === uid);
   if (!u) return;
+  if (typeof pushRecent === 'function') pushRecent(uid);
   document.getElementById('um-title').textContent = `Unit ${u.uid}`;
   const m = TYPE_META[u.t];
   const view = VIEW_NAMES[u.v] || u.v;
@@ -1667,9 +1871,10 @@ function refresh() {
   clearTimeout(connTimer);
   clearTimeout(offlineTimer);
   startConnWatchdog();
-  // Hard timeout: 8s. Stops the pill getting stuck on "Connecting" forever
-  // when an in-app browser blocks the gviz JSONP request silently.
-  offlineTimer = setTimeout(fallToSnapshot, 8000);
+  // Hard timeout: 4s. iOS Safari and WhatsApp's in-app browser sometimes
+  // silently block cross-origin JSONP scripts, so we don't want the pill
+  // stuck on "Connecting" any longer than necessary.
+  offlineTimer = setTimeout(fallToSnapshot, 4000);
   const prev = document.getElementById('gviz-loader');
   if (prev) prev.remove();
   const s = document.createElement('script');
@@ -1680,12 +1885,82 @@ function refresh() {
 }
 
 // ============================================================
+// INFO TAB STANDALONE RENT CALC
+// ============================================================
+(function() {
+  const ids = ['ic-rent','ic-term','ic-free'];
+  if (!document.getElementById('ic-rent')) return;
+  function recalc() {
+    const rent = parseFloat(document.getElementById('ic-rent').value) || 0;
+    const term = parseInt(document.getElementById('ic-term').value, 10) || 14;
+    const free = Math.max(0, parseFloat(document.getElementById('ic-free').value) || 0);
+    const paid = Math.max(0, term - free);
+    const totalCash = (rent / 12) * paid;
+    const eff = term > 0 ? totalCash / (term / 12) : 0;
+    const effMon = term > 0 ? totalCash / term : 0;
+    const disc = rent > 0 ? (1 - eff/rent) * 100 : 0;
+    document.getElementById('ic-eff').textContent = 'AED ' + fmtN(eff);
+    document.getElementById('ic-disc').textContent = disc.toFixed(1) + '%';
+    document.getElementById('ic-mon').textContent = 'AED ' + fmtN(effMon);
+    document.getElementById('ic-tot').textContent = 'AED ' + fmtN(totalCash);
+    document.getElementById('ic-foot').textContent = `${paid} paid · ${free} rent-free over a ${term}-month lease`;
+  }
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.addEventListener('input', recalc); el.addEventListener('change', recalc); }
+  });
+  recalc();
+})();
+
+// ============================================================
+// RECENTLY VIEWED — last 5 units the broker tapped, persisted in localStorage
+// ============================================================
+const RECENT_KEY = 'ct1.recent';
+function getRecent() {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch (e) { return []; }
+}
+function pushRecent(uid) {
+  const cur = getRecent().filter(x => x !== uid);
+  cur.unshift(uid);
+  try { localStorage.setItem(RECENT_KEY, JSON.stringify(cur.slice(0, 5))); } catch (e) {}
+  renderRecent();
+}
+function renderRecent() {
+  const host = document.getElementById('recent-strip');
+  if (!host) return;
+  const ids = getRecent();
+  const units = ids.map(uid => UNITS.find(u => u.uid === uid)).filter(Boolean);
+  if (!units.length) { host.style.display = 'none'; return; }
+  host.style.display = 'block';
+  host.innerHTML = `
+    <div class="recent-head">
+      <span>Recently viewed</span>
+      <button class="recent-clear" id="recent-clear" type="button">Clear</button>
+    </div>
+    <div class="recent-row">
+      ${units.map(u => `
+        <button class="recent-card" data-uid="${u.uid}">
+          <div class="r-uid">${u.uid}</div>
+          <div class="r-meta">${TYPE_META[u.t].label} · Floor ${u.f}</div>
+          <div class="r-rent">${fmtAED(u.pr)}</div>
+        </button>`).join('')}
+    </div>`;
+  host.querySelectorAll('.recent-card').forEach(c => c.addEventListener('click', () => openUnit(c.dataset.uid)));
+  const cb = host.querySelector('#recent-clear');
+  if (cb) cb.addEventListener('click', () => {
+    try { localStorage.removeItem(RECENT_KEY); } catch (e) {}
+    renderRecent();
+  });
+}
+
+// ============================================================
 // BOOT
 // ============================================================
 buildViewChips();
 setupPriceSlider();
 renderOverview();
 renderList();
+renderRecent();
 setTimeout(refresh, 200);
 setInterval(refresh, REFRESH_MS);
 </script>
