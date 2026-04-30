@@ -1079,20 +1079,25 @@ function setLive(state, label) {
   pill.classList.remove('live','offline');
   if (state) pill.classList.add(state);
   document.getElementById('live-status').textContent = label;
-  // Mirror the live state on the Overview KPI tile so brokers don't have to
-  // glance to the top-right corner to know the data's fresh.
-  const sync = document.getElementById('kpi-sync');
-  if (sync) {
-    sync.classList.toggle('offline', state === 'offline');
-    sync.innerHTML = `<span class="dot"></span>${label} · ${UNITS.length} units`;
-  }
+  // Mirror the live state on the Overview KPI tile. Wrapped in try/catch so a
+  // DOM hiccup (e.g. element not yet in the page) can't trap the pill on
+  // "Connecting".
+  try {
+    const sync = document.getElementById('kpi-sync');
+    if (sync) {
+      sync.classList.toggle('offline', state === 'offline');
+      const count = (typeof UNITS !== 'undefined' && UNITS) ? UNITS.length : 0;
+      const hint = state === 'offline' ? ' · tap pill to retry' : '';
+      sync.innerHTML = `<span class="dot"></span>${label} · ${count} units${hint}`;
+    }
+  } catch (e) {}
 }
 
 let connTimer = null;
 let offlineTimer = null;
 function startConnWatchdog() {
   clearTimeout(connTimer);
-  connTimer = setTimeout(showOfflineHelp, 5000);
+  connTimer = setTimeout(showOfflineHelp, 3000);
 }
 function showOfflineHelp() {
   const help = document.getElementById('conn-help');
@@ -1866,9 +1871,10 @@ function refresh() {
   clearTimeout(connTimer);
   clearTimeout(offlineTimer);
   startConnWatchdog();
-  // Hard timeout: 8s. Stops the pill getting stuck on "Connecting" forever
-  // when an in-app browser blocks the gviz JSONP request silently.
-  offlineTimer = setTimeout(fallToSnapshot, 8000);
+  // Hard timeout: 4s. iOS Safari and WhatsApp's in-app browser sometimes
+  // silently block cross-origin JSONP scripts, so we don't want the pill
+  // stuck on "Connecting" any longer than necessary.
+  offlineTimer = setTimeout(fallToSnapshot, 4000);
   const prev = document.getElementById('gviz-loader');
   if (prev) prev.remove();
   const s = document.createElement('script');
