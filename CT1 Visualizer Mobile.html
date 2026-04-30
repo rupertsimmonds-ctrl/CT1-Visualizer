@@ -1003,7 +1003,7 @@ let UNITS = FALLBACK_UNITS;
 const SHEET_ID  = '1FOofWcGkSXXnBWZ70dB7tix9T5lHjV3BL8evePp-URk';
 const SHEET_TAB = '07_HTML_Export';
 const GVIZ_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq` +
-                  `?tqx=out:json;responseHandler:ctMobileLoaded` +
+                  `?tqx=out:json` +
                   `&sheet=${encodeURIComponent(SHEET_TAB)}`;
 const REFRESH_MS = 5 * 60 * 1000;
 
@@ -1813,9 +1813,7 @@ function closeUnit() {
 // ============================================================
 // LIVE SYNC
 // ============================================================
-window.ctMobileLoaded = function(resp) {
-  clearTimeout(offlineTimer);
-  clearTimeout(connTimer);
+function processGvizResponse(resp) {
   try {
     if (!resp || resp.status !== 'ok') throw new Error((resp && resp.errors && resp.errors[0] && resp.errors[0].detailed_message) || 'gviz error');
     const cols = resp.table.cols.map(c => ((c.label || c.id || '') + '').trim().toLowerCase().replace(/\s+/g,'_'));
@@ -1864,24 +1862,53 @@ window.ctMobileLoaded = function(resp) {
   } catch (err) {
     fallToSnapshot();
   }
-};
+}
 
 function refresh() {
   setLive('', 'Connecting');
   clearTimeout(connTimer);
   clearTimeout(offlineTimer);
   startConnWatchdog();
-  // Hard timeout: 4s. iOS Safari and WhatsApp's in-app browser sometimes
-  // silently block cross-origin JSONP scripts, so we don't want the pill
-  // stuck on "Connecting" any longer than necessary.
-  offlineTimer = setTimeout(fallToSnapshot, 4000);
-  const prev = document.getElementById('gviz-loader');
-  if (prev) prev.remove();
-  const s = document.createElement('script');
-  s.id = 'gviz-loader';
-  s.src = GVIZ_URL + '&t=' + Date.now();
-  s.onerror = fallToSnapshot;
-  document.head.appendChild(s);
+  // We used to inject a <script> tag and rely on JSONP, but iOS Safari and
+  // in-app browsers (WhatsApp, Instagram, Drive preview) can silently swallow
+  // cross-origin scripts — neither the response handler nor onerror fires,
+  // so the pill stays stuck on "Connecting". fetch() with AbortController
+  // always settles, so the pill is guaranteed to transition out of Connecting.
+  const ac = new AbortController();
+  let settled = false;
+  offlineTimer = setTimeout(() => {
+    if (settled) return;
+    settled = true;
+    ac.abort();
+    fallToSnapshot();
+  }, 6000);
+
+  fetch(GVIZ_URL + '&t=' + Date.now(), { signal: ac.signal, cache: 'no-store' })
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    })
+    .then(text => {
+      if (settled) return;
+      // gviz wraps the JSON in a JSONP-style envelope:
+      //   /*O_o*/\ngoogle.visualization.Query.setResponse(<json>);
+      const start = text.indexOf('(');
+      const end   = text.lastIndexOf(')');
+      if (start < 0 || end <= start) throw new Error('bad gviz envelope');
+      const resp = JSON.parse(text.slice(start + 1, end));
+      settled = true;
+      clearTimeout(offlineTimer);
+      clearTimeout(connTimer);
+      processGvizResponse(resp);
+    })
+    .catch(err => {
+      if (settled || err.name === 'AbortError') return;
+      settled = true;
+      clearTimeout(offlineTimer);
+      clearTimeout(connTimer);
+      console.warn('Live sync failed:', err);
+      fallToSnapshot();
+    });
 }
 
 // ============================================================
