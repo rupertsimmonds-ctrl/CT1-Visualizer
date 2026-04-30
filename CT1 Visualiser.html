@@ -272,11 +272,14 @@
   .floor-row.decade-band { box-shadow: 0 -1px 0 rgba(31,52,63,0.06); }
   .tranche-marker {
     position: absolute; left: 12px; width: 70px;
-    font-size: 10px; letter-spacing: 0.18em;
+    font-size: 10px; letter-spacing: 0.16em;
     text-transform: uppercase; color: var(--denim);
     writing-mode: vertical-rl; transform: rotate(180deg);
     text-align: center; border-left: 2px solid var(--sand);
     padding: 6px 4px 6px 8px; opacity: 0; transition: opacity 0.2s ease;
+    /* Defensively clip text: penthouse band is only 4 floors tall, the
+       label can run longer than the band's vertical space. */
+    overflow: hidden; white-space: nowrap;
   }
   .tranche-marker.placed { opacity: 0.85; }
   .tranche-marker.lower      { border-left-color: var(--mist); }
@@ -999,7 +1002,7 @@
         <div class="hint">Click any unit</div>
       </div>
       <div class="tower-frame">
-        <div class="tranche-marker penthouse" data-min="90" data-max="93">Penthouse · 90–93</div>
+        <div class="tranche-marker penthouse" data-min="90" data-max="93">P/H · 90–93</div>
         <div class="tranche-marker upper"     data-min="70" data-max="89">Upper · 70–89</div>
         <div class="tranche-marker mid"       data-min="26" data-max="69">Mid · 26–69</div>
         <div class="tranche-marker lower"     data-min="5"  data-max="25">Lower · 5–25</div>
