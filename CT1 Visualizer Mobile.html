@@ -524,8 +524,12 @@
   .tw-cell.t-2br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: rgba(31,52,63,0.65); }
   .tw-cell.t-3br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: var(--terra); opacity: 0.85; }
   .tw-cell.t-4br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2.5px; background: var(--terra); }
-  .tw-cell.s-not_launched { background: #E8DBC8; box-shadow: inset 0 0 0 0.5px rgba(31,52,63,0.18); }
+  /* Available — rentable in-house, NOT yet on portals. Subtle powder fill so it reads as "potential" rather than "promoted". */
+  .tw-cell.s-available    { background: rgba(122, 160, 178, 0.5); box-shadow: inset 0 0 0 0.5px rgba(31,52,63,0.15); }
+  /* Listed (internal code: marketing) — actively on portals. Bolder bronze fill so listed cells pop above the Available pool. */
   .tw-cell.s-marketing    { background: #B39470; }
+  /* Legacy — older snapshots may still have these */
+  .tw-cell.s-not_launched { background: #E8DBC8; box-shadow: inset 0 0 0 0.5px rgba(31,52,63,0.18); }
   .tw-cell.s-viewing      { background: var(--sand); }
   .tw-cell.s-inflight     { background: #BF956E; }
   /* Reserved is OFF the leasing pipeline - render as empty fill with a bold BH/H&H border so brokers can see at a glance who claimed it */
@@ -897,32 +901,39 @@ const TYPES_ORDER = ['studio','1br','2br','3br','4br'];
 const VIEW_NAMES = { SHKZ:'Museum of the Future', SEA:'Sea View', MET:'Metro', CT2:'City Tower 2' };
 const BEDROOM_CODE = { 'Studio':'studio','1 Bedroom':'1br','2 Bedroom':'2br','3 Bedroom':'3br','4 Bedroom':'4br' };
 
-const AVAILABLE_STATES = ['marketing','viewing','inflight'];
+const AVAILABLE_STATES = ['available','marketing'];
 const BH_LET_STATES    = ['reserved_bh','signed_bh','occupied_bh'];
 const HH_LET_STATES    = ['reserved_hh','signed_hh','occupied_hh'];
 
+// Display labels. Internal `marketing` is kept as the code for backward compat
+// with snapshot data, but the sheet now uses `Listed` (= shown on portals)
+// and `Available` (= rentable, in-house only). Both count toward Available.
 const STATUS_LABEL = {
-  not_launched:'Not launched', marketing:'Listed', viewing:'Viewing',
-  inflight:'In flight',
+  available:'Available', marketing:'Listed',
   reserved_bh:'Reserved · bh', reserved_hh:'Reserved · H&H',
   signed_bh:'Signed · bh', signed_hh:'Signed · H&H',
   occupied_bh:'Occupied · bh', occupied_hh:'Occupied · H&H',
   show_flat:'Show flat', lost:'Lost',
+  // legacy codes (no longer produced by the sheet but tolerated in old snapshots)
+  not_launched:'Not launched', viewing:'Viewing', inflight:'In flight',
 };
 
 function classifyJS(rawStatus, agencyWon) {
-  const s = (rawStatus || 'Not Launched').trim();
+  const s = (rawStatus || '').trim();
   const a = (agencyWon || '').trim();
-  if (s === 'Not Launched') return 'not_launched';
-  if (s === 'Marketing')    return 'marketing';
-  if (s === 'Viewing Booked' || s === 'Viewing Held') return 'viewing';
+  // Current sheet vocabulary
+  if (s === 'Available')                   return 'available';
+  if (s === 'Listed' || s === 'Marketing') return 'marketing';
+  if (s === 'Reserved')                    return a === 'BH' ? 'reserved_bh' : a === 'H&H' ? 'reserved_hh' : 'available';
+  if (s === 'Signed' || s === 'Invoiced')  return a === 'BH' ? 'signed_bh'   : a === 'H&H' ? 'signed_hh'   : 'available';
+  if (s === 'Occupied')                    return a === 'BH' ? 'occupied_bh' : a === 'H&H' ? 'occupied_hh' : 'signed_bh';
+  if (s === 'Show Flat')                   return 'show_flat';
+  if (s === 'Lost')                        return 'lost';
+  // Legacy fall-through (older sheet snapshots)
+  if (s === 'Not Launched')                                          return 'not_launched';
+  if (s === 'Viewing Booked' || s === 'Viewing Held')                return 'viewing';
   if (s === 'Offer Received' || s === 'Negotiating' || s === 'Pipeline') return 'inflight';
-  if (s === 'Reserved') return a === 'BH' ? 'reserved_bh' : a === 'H&H' ? 'reserved_hh' : 'inflight';
-  if (s === 'Invoiced') return a === 'BH' ? 'signed_bh'   : a === 'H&H' ? 'signed_hh'   : 'inflight';
-  if (s === 'Occupied') return a === 'BH' ? 'occupied_bh' : a === 'H&H' ? 'occupied_hh' : 'signed_bh';
-  if (s === 'Show Flat') return 'show_flat';
-  if (s === 'Lost')      return 'lost';
-  return 'marketing';
+  return 'available';
 }
 
 const fmtN = n => Math.round(n).toLocaleString('en-GB');
@@ -1000,19 +1011,16 @@ function renderOverview() {
   const hhLet = get('reserved_hh') + get('signed_hh') + get('occupied_hh');
   const reservedBh = get('reserved_bh');
   const reservedHh = get('reserved_hh');
-  const listed = get('marketing');
-  const inViewing = get('viewing');
-  const inFlight = get('inflight');
-  const avail = listed + inViewing + inFlight;
+  const inHouse = get('available');     // rentable, not yet on portals
+  const onPortals = get('marketing');   // Listed = on portals
+  const avail = inHouse + onPortals;
 
   document.getElementById('kpi-avail').textContent = avail;
   document.getElementById('kpi-bh').textContent = bhLet;
   document.getElementById('kpi-hh').textContent = hhLet;
 
   const availParts = [];
-  if (listed && listed !== avail) availParts.push(`${listed} available online`);
-  if (inViewing) availParts.push(`${inViewing} in viewing`);
-  if (inFlight) availParts.push(`${inFlight} in pipeline`);
+  if (onPortals) availParts.push(`${onPortals} listed on portals`);
   if (reservedBh + reservedHh) availParts.push(`${reservedBh + reservedHh} reserved`);
   const showFlatCount = UNITS.filter(u => u.showFlat || u.s === 'show_flat').length;
   if (showFlatCount) availParts.push(`${showFlatCount} show flat${showFlatCount === 1 ? '' : 's'}`);
@@ -1411,11 +1419,12 @@ function unitMatchesTowerFilter() {
   const m = towerView.mode;
   if (m === 'status') {
     if (v === 'available')  return u => AVAILABLE_STATES.includes(u.s);
+    if (v === 'listed')     return u => u.s === 'marketing';
+    if (v === 'in_house')   return u => u.s === 'available';
     if (v === 'bh_let')     return u => BH_LET_STATES.includes(u.s);
     if (v === 'hh_let')     return u => HH_LET_STATES.includes(u.s);
     if (v === 'show_flat')  return u => isShowFlat(u);
     if (v === 'lost')       return u => u.s === 'lost';
-    if (v === 'not_launched') return u => u.s === 'not_launched';
     return () => true;
   }
   if (m === 'bedroom')  return u => u.t === v;
@@ -1431,11 +1440,12 @@ function unitMatchesTowerFilter() {
 function chipsForMode(mode) {
   if (mode === 'status') {
     const items = [
-      { v: 'available', label: 'Available', sw: '#B39470' },
+      { v: 'available', label: 'Available (all)', sw: 'linear-gradient(90deg,#B39470 50%,rgba(122,160,178,0.5) 50%)' },
+      { v: 'listed',    label: 'Listed on portals', sw: '#B39470' },
+      { v: 'in_house',  label: 'In-house only', sw: 'rgba(122,160,178,0.5)' },
       { v: 'bh_let',    label: 'bh let',    sw: '#1F343F' },
       { v: 'hh_let',    label: 'H&H Let',   sw: '#7BA0B2' },
       { v: 'show_flat', label: 'Show flat', sw: '#2C537A' },
-      { v: 'not_launched', label: 'Not launched', sw: '#E8DBC8' },
       { v: 'lost',      label: 'Lost',      sw: '#FF787A' },
     ];
     return items.map(i => `<button class="chip ${towerView.value===i.v?'active':''}" data-val="${i.v}"><span class="legend-sw" style="background:${i.sw};margin-right:6px;"></span>${i.label}</button>`).join('');
@@ -1459,8 +1469,8 @@ function chipsForMode(mode) {
 function legendForMode(mode) {
   const item = (sw, label, ring) => `<span class="legend-item"><span class="legend-sw ${ring?'ring':''}" style="${ring?'color:'+sw:'background:'+sw}"></span>${label}</span>`;
   if (mode === 'status') return [
-    item('#B39470', 'Listed'),
-    item('#D9B9A0', 'In viewing'),
+    item('rgba(122,160,178,0.5)', 'Available (in-house)'),
+    item('#B39470', 'Listed (on portals)'),
     item('#1F343F', 'Reserved · bh', true),
     item('#7BA0B2', 'Reserved · H&H', true),
     item('#1F343F', 'bh signed/occupied'),

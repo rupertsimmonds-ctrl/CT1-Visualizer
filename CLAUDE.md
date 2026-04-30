@@ -33,20 +33,43 @@ Optional: `balcony`, `balcony_sqft`, `show_flat`
 
 Status column values map to internal codes via `classifyJS` (mobile + desktop both use the same logic).
 
+## Sheet status vocabulary
+
+The `status` column on `01_Unit_master` / `07_HTML_Export` uses these exact strings (case-sensitive):
+
+`Available` · `Listed` · `Reserved` · `Signed` · `Occupied` · `Lost`
+
+(Plus `Show Flat` legacy support, though show-flatness is now driven by the separate `show_flat` column with `Y`/`Yes`/`TRUE`/`1`.)
+
+There is **no** `Not Launched`, `Marketing`, `Viewing Booked`, `Viewing Held`, `Offer Received`, `Negotiating`, `Pipeline`, `Invoiced`. Old codes are tolerated as legacy fall-throughs in `classifyJS` for snapshot compatibility but the live sheet should not produce them.
+
 ## Status definitions (aligned mobile + desktop)
-- `not_launched` → "Not launched" — pre-launch, NOT counted as available
-- `marketing` → **"Listed"** — actively for lease (the primary KPI)
-- `viewing` → "Viewing" — viewing booked/held
-- `inflight` → "Pipeline" — offer received / negotiating
+
+- `available` → "Available" — rentable, broker can show, NOT yet on portals
+- `marketing` → **"Listed"** — actively on web portals (Bayut / Property Finder etc.) — also available
 - `reserved_bh` → "Reserved · bh" — off the leasing pipeline, claimed by bh
 - `reserved_hh` → "Reserved · H&H"
 - `signed_bh` → "Signed · bh"
 - `signed_hh` → "Signed · H&H"
 - `occupied_bh` → "Occupied · bh"
 - `occupied_hh` → "Occupied · H&H"
-- `show_flat` → "Show flat" — designated show flat (can also overlap with Marketing)
+- `show_flat` → "Show flat" — legacy code; the canonical way to flag a show flat is the `show_flat` column on the sheet
 - `lost` → "Lost"
 
-`AVAILABLE_STATES = ['marketing', 'viewing', 'inflight']` — does NOT include `not_launched`.
+The internal code `marketing` is preserved (instead of renamed to `listed`) so old snapshots and any external consumers keep working.
+
+`AVAILABLE_STATES = ['available', 'marketing']` — both count toward the big "Available" KPI, since Listed is a sub-segment of Available promoted online.
 
 A unit is treated as a show flat when `u.showFlat || u.s === 'show_flat'`.
+
+## Tower colours
+
+- `s-available`: powder-blue tint (`rgba(122,160,178,0.5)`) — subtle, signals "potential / in-house only"
+- `s-marketing` (Listed): bronze (`#B39470`) — bolder, signals "actively promoted online"
+- Reserved: white fill + bold bh-slate or H&H-powder inset border
+- Signed/Occupied · bh: solid slate fill, with a sand center dot for occupied
+- Signed/Occupied · H&H: solid powder-blue fill, with a slate center dot for occupied
+- Show flat: white inset border on top of any underlying status colour
+- Lost: salmon
+- Duplex: gold outline
+

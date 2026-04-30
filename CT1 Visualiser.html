@@ -1012,10 +1012,9 @@
         <div class="legend">
           <div class="legend-row">
             <span class="legend-arrow">Lifecycle →</span>
-            <div class="item"><span class="swatch nl"></span>Not launched</div>
-            <div class="item"><span class="swatch available"></span>Available</div>
-            <div class="item"><span class="swatch marketing"></span>Listed</div>
-            <div class="item"><span class="swatch show"></span>Show Flat</div>
+            <div class="item"><span class="swatch available"></span>Available · in-house</div>
+            <div class="item"><span class="swatch marketing"></span>Listed · on portals</div>
+            <div class="item"><span class="swatch show"></span>Show flat</div>
           </div>
           <div class="legend-row">
             <span class="legend-arrow">BH won</span>
@@ -1202,15 +1201,16 @@ const BEDROOM_CODE = {
 };
 // Granular lifecycle display states. 'Available' drawers pool the first four;
 // 'BH let' / 'H&H let' drawers pool the three agency-won states each.
-const AVAILABLE_STATES = ['marketing','viewing','inflight'];
+const AVAILABLE_STATES = ['available','marketing'];
 const BH_LET_STATES    = ['reserved_bh','signed_bh','occupied_bh'];
 const HH_LET_STATES    = ['reserved_hh','signed_hh','occupied_hh'];
 
+// Display labels. Internal `marketing` is kept as the code for backward compat
+// with snapshot data, but the sheet now uses `Listed` (= shown on portals) and
+// `Available` (= rentable, in-house only). Both count toward Available.
 const STATUS_LABEL = {
-  not_launched: 'Not launched',
+  available:    'Available',
   marketing:    'Listed',
-  viewing:      'Viewing',
-  inflight:     'In flight',
   reserved_bh:  'Reserved · bh',
   reserved_hh:  'Reserved · H&H',
   signed_bh:    'Signed · bh',
@@ -1219,21 +1219,28 @@ const STATUS_LABEL = {
   occupied_hh:  'Occupied · H&H',
   show_flat:    'Show flat',
   lost:         'Lost',
+  // Legacy codes — no longer produced by the sheet but tolerated in old snapshots.
+  not_launched: 'Not launched',
+  viewing:      'Viewing',
+  inflight:     'In flight',
 };
 
 function classifyJS(rawStatus, agencyWon) {
-  const s = (rawStatus || 'Not Launched').trim();
+  const s = (rawStatus || '').trim();
   const a = (agencyWon || '').trim();
-  if (s === 'Not Launched') return 'not_launched';
-  if (s === 'Marketing')    return 'marketing';
-  if (s === 'Viewing Booked' || s === 'Viewing Held') return 'viewing';
+  // Current sheet vocabulary
+  if (s === 'Available')                   return 'available';
+  if (s === 'Listed' || s === 'Marketing') return 'marketing';
+  if (s === 'Reserved')                    return a === 'BH' ? 'reserved_bh' : a === 'H&H' ? 'reserved_hh' : 'available';
+  if (s === 'Signed' || s === 'Invoiced')  return a === 'BH' ? 'signed_bh'   : a === 'H&H' ? 'signed_hh'   : 'available';
+  if (s === 'Occupied')                    return a === 'BH' ? 'occupied_bh' : a === 'H&H' ? 'occupied_hh' : 'signed_bh';
+  if (s === 'Show Flat')                   return 'show_flat';
+  if (s === 'Lost')                        return 'lost';
+  // Legacy fall-through (older sheet snapshots)
+  if (s === 'Not Launched')                                          return 'not_launched';
+  if (s === 'Viewing Booked' || s === 'Viewing Held')                return 'viewing';
   if (s === 'Offer Received' || s === 'Negotiating' || s === 'Pipeline') return 'inflight';
-  if (s === 'Reserved') return a === 'BH' ? 'reserved_bh' : a === 'H&H' ? 'reserved_hh' : 'inflight';
-  if (s === 'Invoiced') return a === 'BH' ? 'signed_bh'   : a === 'H&H' ? 'signed_hh'   : 'inflight';
-  if (s === 'Occupied') return a === 'BH' ? 'occupied_bh' : a === 'H&H' ? 'occupied_hh' : 'signed_bh';
-  if (s === 'Show Flat') return 'show_flat';
-  if (s === 'Lost')      return 'lost';
-  return 'marketing';
+  return 'available';
 }
 const FLOOR_BANDS = [
   { code:'lower',     label:'Lower · 5–25',    min:5,  max:25 },
@@ -1360,13 +1367,12 @@ function buildHeadlines() {
   const bhLet = get('reserved_bh') + get('signed_bh') + get('occupied_bh');
   const hhLet = get('reserved_hh') + get('signed_hh') + get('occupied_hh');
   const lost = get('lost');
-  // Big KPI counts the full available pool (listed + in viewing + in pipeline).
-  // Listed is surfaced in the sub-line because brokers want both the headline
-  // (any unit potentially available) and the sub-segment (actively listed online).
-  const listed = get('marketing');
-  const inViewing = get('viewing');
-  const inFlight = get('inflight');
-  const avail = listed + inViewing + inFlight;
+  // Big KPI counts the full available pool: rentable in-house (Available)
+  // PLUS on-portals (Listed). Both are bookable; Listed is the sub-segment
+  // promoted online to generate enquiries.
+  const inHouse = get('available');
+  const onPortals = get('marketing');
+  const avail = inHouse + onPortals;
 
   document.getElementById('kpi-bh').textContent    = bhLet;
   document.getElementById('kpi-hh').textContent    = hhLet;
@@ -1389,9 +1395,7 @@ function buildHeadlines() {
     : `${total ? (hhLet/total*100).toFixed(1) : '0'}% of stock`;
 
   const avParts = [];
-  if (listed && listed !== avail) avParts.push(`${listed} available online`);
-  if (inViewing)           avParts.push(`${inViewing} in viewing`);
-  if (inFlight)            avParts.push(`${inFlight} in pipeline`);
+  if (onPortals)           avParts.push(`${onPortals} listed on portals`);
   if (get('reserved_bh') + get('reserved_hh')) avParts.push(`${get('reserved_bh') + get('reserved_hh')} reserved`);
   const showFlatTotal = UNITS.filter(u => u.showFlat || u.s === 'show_flat').length;
   if (showFlatTotal)       avParts.push(`${showFlatTotal} show flat${showFlatTotal === 1 ? '' : 's'}`);
