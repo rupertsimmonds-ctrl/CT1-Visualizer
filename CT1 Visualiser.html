@@ -285,7 +285,11 @@
   .tranche-marker.lower      { border-left-color: var(--mist); }
   .tranche-marker.mid        { border-left-color: var(--powder); }
   .tranche-marker.upper      { border-left-color: var(--denim); }
-  .tranche-marker.penthouse  { border-left-color: var(--terra); }
+  .tranche-marker.penthouse  {
+    border-left-color: var(--terra);
+    /* Penthouse is only 4 floors - tighten the letter-spacing so the label fits */
+    font-size: 9px; letter-spacing: 0.04em;
+  }
 
   /* Crown — CT1 Afterlight cornice + gold-tipped antenna */
   .crown-block { margin: 0 auto 3px; display: flex; flex-direction: column; align-items: center; }
@@ -301,19 +305,19 @@
     z-index: 1;
   }
   .floors { display: flex; flex-direction: column-reverse; gap: 1px; }
-  .floor-row { display: flex; align-items: center; gap: 2px; height: 8px; position: relative; }
-  .floor-row.tranche-divider { margin-top: 5px; border-top: 1px dashed var(--rule-strong); padding-top: 3px; height: 11px; }
+  .floor-row { display: flex; align-items: center; gap: 2px; height: 14px; position: relative; }
+  .floor-row.tranche-divider { margin-top: 5px; border-top: 1px dashed var(--rule-strong); padding-top: 3px; height: 17px; }
   .floor-num {
-    position: absolute; right: calc(100% + 6px);
-    font-size: 9px; color: var(--denim); opacity: 0;
+    position: absolute; right: calc(100% + 8px);
+    font-size: 10px; color: var(--denim); opacity: 0;
     font-variant-numeric: tabular-nums; transition: opacity 0.15s ease;
-    font-weight: 600;
+    font-weight: 600; line-height: 1;
   }
   .floor-row:hover .floor-num,
   .floor-row.show-num .floor-num { opacity: 1; }
 
   .unit-cell {
-    width: 22px; height: 8px; cursor: pointer; position: relative;
+    width: 26px; height: 14px; cursor: pointer; position: relative;
     transition: all 0.14s ease; border: 0;
   }
   /* Lifecycle cell fills — cool (empty) → warm (active) → committed (agency).
@@ -350,22 +354,22 @@
   .unit-cell.s-signed_bh::before,
   .unit-cell.s-occupied_bh::before {
     content: ''; position: absolute; left: 50%; top: 50%;
-    width: 3px; height: 3px; background: var(--sand);
+    width: 5px; height: 5px; background: var(--sand);
     transform: translate(-50%, -50%);
   }
   .unit-cell.s-signed_hh::before,
   .unit-cell.s-occupied_hh::before {
     content: ''; position: absolute; left: 50%; top: 50%;
-    width: 3px; height: 3px; background: var(--sand);
+    width: 5px; height: 5px; background: var(--sand);
     transform: translate(-50%, -50%);
   }
 
   /* Bedroom-type overlay: right-edge stripe */
-  .unit-cell.t-studio::after { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: rgba(122,160,178,0.85); }
-  .unit-cell.t-1br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: var(--denim); }
-  .unit-cell.t-2br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: rgba(31,52,63,0.65); }
-  .unit-cell.t-3br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: var(--terra); opacity: 0.85; }
-  .unit-cell.t-4br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: var(--terra); }
+  .unit-cell.t-studio::after { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: rgba(122,160,178,0.85); }
+  .unit-cell.t-1br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: var(--denim); }
+  .unit-cell.t-2br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: rgba(31,52,63,0.65); }
+  .unit-cell.t-3br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: var(--terra); opacity: 0.85; }
+  .unit-cell.t-4br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:4px; background: var(--terra); }
   .unit-cell.premium { outline: 1.5px solid var(--ct-gold); outline-offset: -1px; z-index: 2; }
   .unit-cell:hover { transform: scale(1.4); z-index: 10; box-shadow: 0 0 0 1px var(--slate); }
   .tower.filtered .unit-cell:not(.match) { opacity: 0.12; }
@@ -1002,7 +1006,8 @@
         <div class="hint">Click any unit</div>
       </div>
       <div class="tower-frame">
-        <div class="tranche-marker penthouse" data-min="90" data-max="93">P/H · 90–93</div>
+        <!-- Penthouse only spans 4 floors so we keep just "P/H" - the actual floor numbers (90-93) are visible on the rows themselves. -->
+        <div class="tranche-marker penthouse" data-min="90" data-max="93">Penthouse</div>
         <div class="tranche-marker upper"     data-min="70" data-max="89">Upper · 70–89</div>
         <div class="tranche-marker mid"       data-min="26" data-max="69">Mid · 26–69</div>
         <div class="tranche-marker lower"     data-min="5"  data-max="25">Lower · 5–25</div>

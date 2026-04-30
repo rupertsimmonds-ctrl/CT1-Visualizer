@@ -559,27 +559,27 @@
   .band-marker.b-upper     { border-left-color: var(--denim); }
   .band-marker.b-penthouse { border-left-color: var(--terra); }
   .tower-frame { display: flex; flex-direction: column-reverse; gap: 1px; }
-  .tw-row { display: flex; align-items: center; gap: 2px; height: 8px; position: relative; }
-  .tw-row.tranche-divider { margin-top: 4px; padding-top: 2px; height: 10px; border-top: 1px dashed rgba(31,52,63,0.22); }
+  .tw-row { display: flex; align-items: center; gap: 2px; height: 12px; position: relative; }
+  .tw-row.tranche-divider { margin-top: 4px; padding-top: 2px; height: 14px; border-top: 1px dashed rgba(31,52,63,0.22); }
   .tw-num {
-    position: absolute; right: calc(100% + 4px);
-    font-size: 8px; color: var(--denim); opacity: 0;
-    font-variant-numeric: tabular-nums; font-weight: 600;
+    position: absolute; right: calc(100% + 6px);
+    font-size: 9px; color: var(--denim); opacity: 0;
+    font-variant-numeric: tabular-nums; font-weight: 600; line-height: 1;
   }
   .tw-row.show-num .tw-num { opacity: 1; }
   .tw-cell {
     /* Fixed width — together with .tower-stage's fit-content the tower
        silhouette tracks the actual unit count per floor. */
-    width: 14px; flex: none; height: 8px;
+    width: 16px; flex: none; height: 12px;
     border: 0; padding: 0; cursor: pointer; position: relative;
     transition: transform 0.16s ease, opacity 0.18s ease;
   }
   .tw-cell:active { transform: scaleY(1.6); z-index: 5; }
-  .tw-cell.t-studio::after { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: rgba(122,160,178,0.85); }
-  .tw-cell.t-1br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: var(--denim); }
-  .tw-cell.t-2br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: rgba(31,52,63,0.65); }
-  .tw-cell.t-3br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:1.5px; background: var(--terra); opacity: 0.85; }
-  .tw-cell.t-4br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2.5px; background: var(--terra); }
+  .tw-cell.t-studio::after { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: rgba(122,160,178,0.85); }
+  .tw-cell.t-1br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: var(--denim); }
+  .tw-cell.t-2br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: rgba(31,52,63,0.65); }
+  .tw-cell.t-3br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: var(--terra); opacity: 0.85; }
+  .tw-cell.t-4br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: var(--terra); }
   /* Available — rentable in-house, NOT yet on portals. Subtle powder fill so it reads as "potential" rather than "promoted". */
   .tw-cell.s-available    { background: rgba(122, 160, 178, 0.5); box-shadow: inset 0 0 0 0.5px rgba(31,52,63,0.15); }
   /* Listed (internal code: marketing) — actively on portals. Bolder bronze fill so listed cells pop above the Available pool. */
@@ -1469,7 +1469,7 @@ function renderTower() {
   // Bands (vertical labels on the left)
   if (bandsHost && !bandsHost.dataset.built) {
     bandsHost.innerHTML = `
-      <div class="band-marker b-penthouse">P/H · 90–93</div>
+      <div class="band-marker b-penthouse">Penthouse</div>
       <div class="band-marker b-upper">Upper · 70–89</div>
       <div class="band-marker b-mid">Mid · 26–69</div>
       <div class="band-marker">Lower · 5–25</div>`;
