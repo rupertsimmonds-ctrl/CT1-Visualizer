@@ -930,7 +930,7 @@
       </button>
       <button class="headline available" data-view="available">
         <span class="click-hint">Click for list</span>
-        <div class="headline-lbl">Listed</div>
+        <div class="headline-lbl">Available</div>
         <div class="headline-val" id="kpi-avail">0</div>
         <div class="headline-sub" id="kpi-avail-sub">—</div>
       </button>
@@ -1360,10 +1360,13 @@ function buildHeadlines() {
   const bhLet = get('reserved_bh') + get('signed_bh') + get('occupied_bh');
   const hhLet = get('reserved_hh') + get('signed_hh') + get('occupied_hh');
   const lost = get('lost');
-  // Big KPI shows ONLY listed units (marketing). Viewing / pipeline / not-launched
-  // surface in the sub-line so brokers can still see the full pipeline at a glance.
+  // Big KPI counts the full available pool (listed + in viewing + in pipeline).
+  // Listed is surfaced in the sub-line because brokers want both the headline
+  // (any unit potentially available) and the sub-segment (actively listed online).
   const listed = get('marketing');
-  const avail = listed;
+  const inViewing = get('viewing');
+  const inFlight = get('inflight');
+  const avail = listed + inViewing + inFlight;
 
   document.getElementById('kpi-bh').textContent    = bhLet;
   document.getElementById('kpi-hh').textContent    = hhLet;
@@ -1386,8 +1389,9 @@ function buildHeadlines() {
     : `${total ? (hhLet/total*100).toFixed(1) : '0'}% of stock`;
 
   const avParts = [];
-  if (get('viewing'))      avParts.push(`${get('viewing')} in viewing`);
-  if (get('inflight'))     avParts.push(`${get('inflight')} in pipeline`);
+  if (listed)              avParts.push(`${listed} listed online`);
+  if (inViewing)           avParts.push(`${inViewing} in viewing`);
+  if (inFlight)            avParts.push(`${inFlight} in pipeline`);
   if (get('reserved_bh') + get('reserved_hh')) avParts.push(`${get('reserved_bh') + get('reserved_hh')} reserved`);
   const showFlatTotal = UNITS.filter(u => u.showFlat || u.s === 'show_flat').length;
   if (showFlatTotal)       avParts.push(`${showFlatTotal} show flat${showFlatTotal === 1 ? '' : 's'}`);
