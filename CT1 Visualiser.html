@@ -487,6 +487,33 @@
   .hours-card .hours-val { font-family: Georgia, serif; font-size: 17px; color: var(--slate); }
   .hours-card .hours-sub { font-size: 11px; color: var(--denim); margin-top: 4px; }
 
+  /* Operational info grid: lobby protocol, views note, fees, tenant requirements */
+  .info-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px; margin-top: 36px;
+  }
+  .info-block {
+    background: white; border: 1px solid var(--rule); padding: 20px 22px;
+  }
+  .info-block h2 {
+    font-family: Georgia, serif; font-size: 16px; color: var(--slate);
+    margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--rule-gold);
+  }
+  .info-block p { font-size: 13px; line-height: 1.55; color: var(--slate); margin-bottom: 8px; }
+  .info-block p:last-child { margin-bottom: 0; }
+  .info-block strong { color: var(--denim); font-weight: 600; }
+  .info-block .info-pin {
+    margin-top: 10px; padding: 8px 12px; background: var(--mist);
+    border-left: 3px solid var(--ct-gold); font-size: 11px;
+    letter-spacing: 0.08em; color: var(--denim);
+  }
+  .info-block ul { list-style: none; padding: 0; margin: 0; }
+  .info-block li {
+    padding: 8px 0; border-bottom: 1px solid var(--rule);
+    font-size: 12.5px; line-height: 1.5; color: var(--slate);
+  }
+  .info-block li:last-child { border-bottom: none; }
+
   /* Footer — gold rule, bh × CT1 dual credit */
   .footer {
     margin-top: 48px; padding-top: 22px;
@@ -1054,6 +1081,45 @@
       </section>
 
     </div>
+  </section>
+
+  <section class="info-grid">
+    <article class="info-block">
+      <h2>Lobby &amp; access</h2>
+      <p>Guest valet on arrival. Register at concierge — guests are ushered to the <strong>bh section of the lobby on the left</strong>. No sub-agents to show units; they must wait at the lobby.</p>
+      <p class="info-pin">Lobby · Mon – Sun · 10:00 – 19:00 · Pre-booked appointments only</p>
+    </article>
+
+    <article class="info-block">
+      <h2>Views</h2>
+      <p>Sea View / Metro / City Tower 2 / Sheikh Zayed Road views become available <strong>from the 25th floor and above</strong>. Museum of the Future view is the exception — visible from any floor.</p>
+    </article>
+
+    <article class="info-block">
+      <h2>Fees &amp; deposits</h2>
+      <ul>
+        <li><strong>Agency fee:</strong> 5% of contract value, or AED 5,000, whichever is higher, + 5% VAT — payable to betterhomes</li>
+        <li><strong>Security deposit:</strong> 5% of annual rent, or AED 10,000, whichever is higher</li>
+        <li><strong>Ejari fee:</strong> AED 315 (AED 300 + VAT) — payable to H&amp;H Development LLC</li>
+        <li><strong>DEWA deposit:</strong> paid by tenant directly to DEWA. Receipt required before check-in.</li>
+        <li><strong>District cooling (Tabreed) deposit:</strong> paid by tenant. Receipt required before check-in.</li>
+        <li><strong>Move-in / lift use deposit:</strong> AED 3,000 refundable, held but not cashed unless damage on move-in.</li>
+      </ul>
+    </article>
+
+    <article class="info-block">
+      <h2>Tenant requirements</h2>
+      <ul>
+        <li><strong>Credit score:</strong> 650+</li>
+        <li><strong>Cheques:</strong> 4 cheques standard. 12 cheques considered for credit score 750+.</li>
+        <li><strong>Bank statements:</strong> only if credit score below 650 or new to country.</li>
+        <li><strong>Third-party payment accepted:</strong> EID + passport + visa copy + 3rd-party letter.</li>
+        <li><strong>International transfers:</strong> from tenant only — allow 3 – 4 working days for clearance.</li>
+        <li><strong>Pets:</strong> small pets only, no dogs (cats fine), subject to NOC.</li>
+        <li><strong>Internet:</strong> Etisalat &amp; DU.</li>
+        <li><strong>Parking:</strong> allocation per unit type — not all studios get a bay.</li>
+      </ul>
+    </article>
   </section>
 
   <footer class="footer">
@@ -1908,7 +1974,7 @@ function renderDetail(uid) {
           </div>
           <div class="calc-row">
             <label>Initial term (months)</label>
-            <input type="number" id="calc-term" value="12" min="1" max="120" step="1" inputmode="numeric">
+            <input type="number" id="calc-term" value="14" min="1" max="120" step="1" inputmode="numeric">
           </div>
           <div class="calc-row">
             <label>Rent-free (months)</label>
@@ -1952,7 +2018,7 @@ function renderDetail(uid) {
   // Wire up the rent calculator
   function recalcRent() {
     const rent = parseFloat(document.getElementById('calc-rent').value) || 0;
-    const term = parseInt(document.getElementById('calc-term').value, 10) || 12;
+    const term = parseInt(document.getElementById('calc-term').value, 10) || 14;
     const free = Math.max(0, parseFloat(document.getElementById('calc-free').value) || 0);
     const paidMonths = Math.max(0, term - free);
     const monthlyAsking = rent / 12;

@@ -124,8 +124,13 @@
   .stat-card:active { transform: scale(0.985); }
   .stat-card.primary {
     text-align: center;
-    border: 1px solid rgba(215,168,111,0.35);
+    border: 0;
+    border-top: 1px solid rgba(215,168,111,0.35);
+    border-bottom: 1px solid rgba(215,168,111,0.35);
     background: rgba(215,168,111,0.08);
+    /* edge-to-edge — negative margin compensates the .stat-hero 16px gutter */
+    margin: 0 -16px 14px;
+    padding: 30px 24px 28px;
     margin-bottom: 12px;
   }
   .stat-card .stat-lbl { font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ct-gold); margin-bottom: 6px; }
@@ -285,6 +290,19 @@
     border: 1px solid var(--rule);
   }
   .info-card h3 { font-family: Georgia, serif; font-size: 17px; margin-bottom: 10px; color: var(--slate); }
+  .info-note {
+    margin-top: 10px; padding: 10px 12px; background: var(--mist); border-left: 3px solid var(--ct-gold);
+    font-size: 12px; line-height: 1.5; color: var(--slate);
+  }
+  .info-list {
+    margin: 4px 0 0; padding: 0; list-style: none;
+  }
+  .info-list li {
+    padding: 8px 0; border-bottom: 1px solid var(--rule);
+    font-size: 12.5px; line-height: 1.45; color: var(--slate);
+  }
+  .info-list li:last-child { border-bottom: none; }
+  .info-list li strong { color: var(--denim); font-weight: 600; }
   .info-row {
     display: flex; justify-content: space-between; align-items: baseline;
     padding: 8px 0; border-bottom: 1px solid var(--rule); font-size: 13px;
@@ -648,9 +666,9 @@
 
     <div class="stat-hero">
       <button class="stat-card primary" id="card-avail">
-        <div class="stat-lbl">Listed</div>
+        <div class="stat-lbl">Available</div>
         <div class="stat-val" id="kpi-avail">0</div>
-        <div class="stat-sub" id="kpi-avail-sub">Tap to browse listed units</div>
+        <div class="stat-sub" id="kpi-avail-sub">Tap to browse</div>
       </button>
       <div class="stat-row">
         <button class="stat-card dim" id="card-bh">
@@ -787,6 +805,38 @@
       <div class="info-row"><span class="lbl">First viewings</span><span class="val">From Mon 4 May 2026</span></div>
       <div class="info-row"><span class="lbl">Move-in</span><span class="val">From 1 June 2026</span></div>
       <div class="info-row"><span class="lbl">Booking</span><span class="val">Pre-booked appointments only</span></div>
+      <div class="info-note">Guest valet on arrival. Register at concierge — guests are ushered to the bh section of the lobby on the left. No sub-agents to show units; they must wait at the lobby.</div>
+    </div>
+
+    <div class="info-card">
+      <h3>Views</h3>
+      <div class="info-note">Sea View / Metro / City Tower 2 / Sheikh Zayed Road views become available <strong>from the 25th floor and above</strong>. Museum of the Future view is the exception — visible from any floor.</div>
+    </div>
+
+    <div class="info-card">
+      <h3>Fees &amp; deposits</h3>
+      <ul class="info-list">
+        <li><strong>Agency fee:</strong> 5% of contract value, or AED 5,000, whichever is higher, + 5% VAT — payable to betterhomes</li>
+        <li><strong>Security deposit:</strong> 5% of annual rent, or AED 10,000, whichever is higher</li>
+        <li><strong>Ejari fee:</strong> AED 315 (AED 300 + VAT) — payable to H&amp;H Development LLC</li>
+        <li><strong>DEWA deposit:</strong> paid by tenant directly to DEWA. Receipt required before check-in.</li>
+        <li><strong>District cooling (Tabreed) deposit:</strong> paid by tenant. Receipt required before check-in.</li>
+        <li><strong>Move-in / lift use deposit:</strong> AED 3,000 refundable. Held but not cashed unless damage on move-in.</li>
+      </ul>
+    </div>
+
+    <div class="info-card">
+      <h3>Tenant requirements</h3>
+      <ul class="info-list">
+        <li><strong>Credit score:</strong> 650+</li>
+        <li><strong>Cheques:</strong> 4 cheques standard. 12 cheques considered for credit score 750+.</li>
+        <li><strong>Bank statements:</strong> only required if credit score below 650 or new to country.</li>
+        <li><strong>Third-party payment accepted:</strong> EID + passport + visa copy + 3rd-party letter.</li>
+        <li><strong>International transfers:</strong> from tenant only — allow 3 – 4 working days for clearance.</li>
+        <li><strong>Pets:</strong> small pets only, no dogs (cats fine), subject to NOC.</li>
+        <li><strong>Internet:</strong> Etisalat &amp; DU.</li>
+        <li><strong>Parking:</strong> allocation per unit type — not all studios get a bay.</li>
+      </ul>
     </div>
 
     <div class="qr-card">
@@ -948,14 +998,18 @@ function renderOverview() {
   const reservedBh = get('reserved_bh');
   const reservedHh = get('reserved_hh');
   const listed = get('marketing');
-  const inViewing = get('viewing') + get('inflight');
+  const inViewing = get('viewing');
+  const inFlight = get('inflight');
+  const avail = listed + inViewing + inFlight;
 
-  document.getElementById('kpi-avail').textContent = listed;
+  document.getElementById('kpi-avail').textContent = avail;
   document.getElementById('kpi-bh').textContent = bhLet;
   document.getElementById('kpi-hh').textContent = hhLet;
 
   const availParts = [];
+  if (listed) availParts.push(`${listed} listed online`);
   if (inViewing) availParts.push(`${inViewing} in viewing`);
+  if (inFlight) availParts.push(`${inFlight} in pipeline`);
   if (reservedBh + reservedHh) availParts.push(`${reservedBh + reservedHh} reserved`);
   const showFlatCount = UNITS.filter(u => u.showFlat || u.s === 'show_flat').length;
   if (showFlatCount) availParts.push(`${showFlatCount} show flat${showFlatCount === 1 ? '' : 's'}`);
@@ -1407,7 +1461,7 @@ function legendForMode(mode) {
     item('#1F343F', 'Reserved · bh', true),
     item('#7BA0B2', 'Reserved · H&H', true),
     item('#1F343F', 'bh signed/occupied'),
-    item('#7BA0B2', 'H&H Signed/Occupied'),
+    item('#7BA0B2', 'H&H signed/occupied'),
     item('#2C537A', 'Show flat'),
     item('#FF787A', 'Lost'),
     item('#D7A86F', 'Duplex (gold ring)', true),
@@ -1475,7 +1529,7 @@ function openUnit(uid) {
       <div class="calc-inputs">
         <div class="calc-row"><label>Asking rent</label><input type="number" id="c-rent" value="${Math.round(u.pr)}" step="1000"></div>
         <div class="calc-row"><label>Initial term (months)</label>
-          <input type="number" id="c-term" value="12" min="1" max="120" step="1" inputmode="numeric">
+          <input type="number" id="c-term" value="14" min="1" max="120" step="1" inputmode="numeric">
         </div>
         <div class="calc-row"><label>Rent-free</label><input type="number" id="c-free" value="2" min="0" step="1"></div>
       </div>
@@ -1497,7 +1551,7 @@ function openUnit(uid) {
   // Wire calculator
   function recalc() {
     const rent = parseFloat(document.getElementById('c-rent').value) || 0;
-    const term = parseInt(document.getElementById('c-term').value, 10) || 12;
+    const term = parseInt(document.getElementById('c-term').value, 10) || 14;
     const free = Math.max(0, parseFloat(document.getElementById('c-free').value) || 0);
     const paid = Math.max(0, term - free);
     const monthly = rent / 12;
