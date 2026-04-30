@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  bh wordmark — placeholder using a serif "bh" lockup.
+  Drop your real logo file here (same filename, must remain bh-mark.svg)
+  to swap in the official asset. The viewBox is tuned so it sits cleanly
+  inside the diamond container in both HTMLs.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet" aria-label="bh">
+  <text x="50" y="46"
+        font-family="Georgia, 'Times New Roman', serif"
+        font-size="46" font-weight="700" font-style="normal"
+        fill="#1F343F" text-anchor="middle"
+        letter-spacing="-2">bh</text>
+</svg>
