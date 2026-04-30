@@ -1010,7 +1010,7 @@ function renderOverview() {
   document.getElementById('kpi-hh').textContent = hhLet;
 
   const availParts = [];
-  if (listed) availParts.push(`${listed} listed online`);
+  if (listed && listed !== avail) availParts.push(`${listed} available online`);
   if (inViewing) availParts.push(`${inViewing} in viewing`);
   if (inFlight) availParts.push(`${inFlight} in pipeline`);
   if (reservedBh + reservedHh) availParts.push(`${reservedBh + reservedHh} reserved`);

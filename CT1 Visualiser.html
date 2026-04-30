@@ -1389,7 +1389,7 @@ function buildHeadlines() {
     : `${total ? (hhLet/total*100).toFixed(1) : '0'}% of stock`;
 
   const avParts = [];
-  if (listed)              avParts.push(`${listed} listed online`);
+  if (listed && listed !== avail) avParts.push(`${listed} available online`);
   if (inViewing)           avParts.push(`${inViewing} in viewing`);
   if (inFlight)            avParts.push(`${inFlight} in pipeline`);
   if (get('reserved_bh') + get('reserved_hh')) avParts.push(`${get('reserved_bh') + get('reserved_hh')} reserved`);
