@@ -482,6 +482,9 @@
     background: linear-gradient(180deg, #E8E4DE 0%, #F7F2EB 28%, #FDFAF4 100%);
     border: 1px solid var(--rule); border-radius: 14px;
     overflow: hidden; box-shadow: 0 1px 2px rgba(31,52,63,0.05), 0 8px 24px -10px rgba(31,52,63,0.10);
+    /* Shrink-wrap to the widest floor — silhouette steps in/out like the actual building. */
+    width: fit-content; max-width: 100%;
+    margin: 0 auto;
   }
   .tower-stage::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 8px;
@@ -513,7 +516,9 @@
   }
   .tw-row.show-num .tw-num { opacity: 1; }
   .tw-cell {
-    flex: 1; min-width: 6px; max-width: 18px; height: 8px;
+    /* Fixed width — together with .tower-stage's fit-content the tower
+       silhouette tracks the actual unit count per floor. */
+    width: 14px; flex: none; height: 8px;
     border: 0; padding: 0; cursor: pointer; position: relative;
     transition: transform 0.16s ease, opacity 0.18s ease;
   }
@@ -533,11 +538,11 @@
   .tw-cell.s-inflight     { background: #BF956E; }
   /* Reserved is OFF the leasing pipeline - render as empty fill with a bold BH/H&H border so brokers can see at a glance who claimed it */
   .tw-cell.s-reserved_bh  { background: white; box-shadow: inset 0 0 0 2px var(--slate); }
-  .tw-cell.s-reserved_hh  { background: white; box-shadow: inset 0 0 0 2px var(--powder); }
+  .tw-cell.s-reserved_hh  { background: white; box-shadow: inset 0 0 0 2px #9B2C2C; }
   .tw-cell.s-signed_bh    { background: var(--slate); }
-  .tw-cell.s-signed_hh    { background: var(--powder); }
+  .tw-cell.s-signed_hh    { background: #9B2C2C; }
   .tw-cell.s-occupied_bh  { background: var(--slate); box-shadow: inset 0 0 0 1px var(--sand); }
-  .tw-cell.s-occupied_hh  { background: var(--powder); box-shadow: inset 0 0 0 1px var(--slate); }
+  .tw-cell.s-occupied_hh  { background: #9B2C2C; box-shadow: inset 0 0 0 1px var(--sand); }
   .tw-cell.s-show_flat,
   .tw-cell.is-show        { box-shadow: inset 0 0 0 1.5px white; }
   .tw-cell.s-show_flat    { background: var(--denim); }
@@ -1439,7 +1444,7 @@ function chipsForMode(mode) {
       { v: 'listed',    label: 'Listed on portals', sw: '#B39470' },
       { v: 'in_house',  label: 'In-house only', sw: 'rgba(122,160,178,0.5)' },
       { v: 'bh_let',    label: 'bh let',    sw: '#1F343F' },
-      { v: 'hh_let',    label: 'H&H Let',   sw: '#7BA0B2' },
+      { v: 'hh_let',    label: 'H&H Let',   sw: '#9B2C2C' },
       { v: 'show_flat', label: 'Show flat', sw: '#2C537A' },
       { v: 'lost',      label: 'Lost',      sw: '#FF787A' },
     ];
@@ -1467,9 +1472,9 @@ function legendForMode(mode) {
     item('rgba(122,160,178,0.5)', 'Available (in-house)'),
     item('#B39470', 'Listed (on portals)'),
     item('#1F343F', 'Reserved · bh', true),
-    item('#7BA0B2', 'Reserved · H&H', true),
+    item('#9B2C2C', 'Reserved · H&H', true),
     item('#1F343F', 'bh signed/occupied'),
-    item('#7BA0B2', 'H&H signed/occupied'),
+    item('#9B2C2C', 'H&H signed/occupied'),
     item('#2C537A', 'Show flat'),
     item('#FF787A', 'Lost'),
     item('#D7A86F', 'Duplex (gold ring)', true),
