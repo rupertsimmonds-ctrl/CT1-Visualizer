@@ -1089,7 +1089,6 @@
       <div class="calc-inputs" style="background:transparent;padding:8px 0 0;">
         <div class="calc-row"><label>Stated annual rent (AED)</label><input type="number" id="fc-rent" value="250000" step="5000" inputmode="numeric"></div>
         <div class="calc-row"><label>Contract length (months)</label><input type="number" id="fc-term" value="14" min="1" max="120" step="1" inputmode="numeric"></div>
-        <div class="calc-row"><label>Rent-free</label><input type="number" id="fc-free" value="2" min="0" step="1" inputmode="numeric"></div>
       </div>
       <div class="calc-out" style="margin-top:12px;">
         <div class="calc-out-row"><span class="lbl">Effective monthly</span><span class="val" id="fc-mon">—</span></div>
@@ -2305,14 +2304,13 @@ function refresh() {
 (function () {
   const $ = id => document.getElementById(id);
   if (!$('fc-rent')) return;
-  const ids = ['fc-rent', 'fc-term', 'fc-free'];
+  const ids = ['fc-rent', 'fc-term'];
   function fmt2(n) {
     return 'AED ' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
   function recalc() {
     const rent = parseFloat($('fc-rent').value) || 0;
     const term = parseInt($('fc-term').value, 10) || 0;
-    // free is captured for symmetry with the rent calc, but doesn't enter the fee maths.
     const monthly = rent / 12;
     const cv = monthly * term;
     const fee = cv * 0.05;
