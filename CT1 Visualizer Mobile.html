@@ -605,7 +605,11 @@
   .seg {
     display: inline-flex; padding: 3px;
     background: rgba(31,52,63,0.06); border-radius: 10px; align-self: flex-start;
+    max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
+  .seg::-webkit-scrollbar { display: none; }
+  .seg-btn { white-space: nowrap; flex-shrink: 0; }
   .seg-btn {
     border: 0; background: transparent; padding: 8px 14px;
     font: 600 12px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -910,6 +914,7 @@
         <div class="seg" id="tower-mode">
           <button class="seg-btn active" data-mode="status">Status</button>
           <button class="seg-btn" data-mode="bedroom">Bedroom</button>
+          <button class="seg-btn" data-mode="type">Type</button>
           <button class="seg-btn" data-mode="view">View</button>
           <button class="seg-btn" data-mode="features">Features</button>
         </div>
@@ -1946,6 +1951,7 @@ function unitMatchesTowerFilter() {
     return () => true;
   }
   if (m === 'bedroom')  return u => u.t === v;
+  if (m === 'type')     return u => (u.pt || '').toUpperCase() === v;
   if (m === 'view')     return u => u.v === v;
   if (m === 'features') {
     if (v === 'duplex')  return u => u.d === true;
@@ -1970,6 +1976,18 @@ function chipsForMode(mode) {
   }
   if (mode === 'bedroom') {
     return TYPES_ORDER.map(t => `<button class="chip ${towerView.value===t?'active':''}" data-val="${t}">${TYPE_META[t].label}</button>`).join('');
+  }
+  if (mode === 'type') {
+    const counts = {};
+    for (const u of UNITS) {
+      const t = (u.pt || '').trim().toUpperCase();
+      if (t) counts[t] = (counts[t] || 0) + 1;
+    }
+    const types = Object.keys(counts).sort();
+    if (!types.length) return '<span class="legend-item">No product types in the data</span>';
+    return types.map(t =>
+      `<button class="chip ${towerView.value===t?'active':''}" data-val="${t}">Type ${t}</button>`,
+    ).join('');
   }
   if (mode === 'view') {
     const counts = {};
@@ -2004,7 +2022,7 @@ function legendForMode(mode) {
   return '<span class="legend-item">Tap a chip to highlight units</span>';
 }
 
-// Tower segmented control (Status / Bedroom / View / Features)
+// Tower segmented control (Status / Bedroom / Type / View / Features)
 document.querySelectorAll('#tower-mode .seg-btn').forEach(b => {
   b.addEventListener('click', () => {
     document.querySelectorAll('#tower-mode .seg-btn').forEach(x => x.classList.toggle('active', x === b));
