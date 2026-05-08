@@ -75,6 +75,16 @@
   .live-pill.live .live-dot { background: #7BE495; animation: pulse 1.6s ease-in-out infinite; }
   .live-pill.offline { background: rgba(255,120,122,0.1); border-color: var(--salmon); color: var(--salmon); }
   @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
+  .unit-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 24px; min-width: 36px; padding: 0 8px;
+    background: rgba(244,242,238,0.06);
+    border: 1px solid rgba(215,168,111,0.3);
+    color: var(--ct-sun);
+    font-family: inherit; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    cursor: pointer; user-select: none; flex-shrink: 0;
+  }
+  .unit-toggle:active { opacity: 0.7; }
 
   /* ============================================================
    * CONTENT — between top + bottom bars, scrollable
@@ -450,6 +460,34 @@
   .pill.denim { background: var(--denim); color: white; }
   .pill.outline { background: transparent; color: var(--ct-haze); border: 1px solid rgba(244,242,238,0.4); }
 
+  .um-floorplan-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; margin-top: 14px;
+    padding: 12px 16px;
+    background: var(--ct-gold); color: var(--ct-afterlight);
+    border: 0; font-family: inherit;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    cursor: pointer;
+  }
+  .um-floorplan-btn:active { opacity: 0.85; }
+  .um-fp-icon { font-size: 14px; }
+  .fp-modal {
+    position: fixed; inset: 0; z-index: 110;
+    background: var(--ct-haze);
+    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    display: flex; flex-direction: column;
+  }
+  .fp-modal.open { transform: translateY(0); }
+  .fp-modal #fp-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .fp-iframe { flex: 1; width: 100%; border: 0; background: #000; }
+  .fp-empty {
+    margin: auto; padding: 40px 24px; text-align: center; max-width: 400px;
+    color: var(--slate);
+  }
+  .fp-empty h4 { font-family: Georgia, serif; font-size: 22px; margin-bottom: 12px; color: var(--ct-afterlight); }
+  .fp-empty p { font-size: 13px; line-height: 1.5; margin-bottom: 8px; }
+  .fp-empty .fp-hint { font-size: 11px; color: var(--denim); font-style: italic; opacity: 0.8; }
+  .fp-empty code { background: rgba(31,52,63,0.08); padding: 2px 6px; font-family: monospace; font-size: 12px; }
   .um-stats { background: white; padding: 18px 20px; }
   .um-stat-row {
     display: flex; justify-content: space-between; align-items: baseline;
@@ -485,6 +523,43 @@
   .calc-out-row.head .val { color: var(--ct-gold); font-size: 24px; }
   .calc-out-row.head .lbl { color: var(--ct-gold); }
   .calc-foot { padding-top: 8px; font-size: 11px; color: var(--ct-sun); font-style: italic; opacity: 0.85; }
+  .cq-toggle { display: inline-flex; align-items: center; cursor: pointer; }
+  .cq-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+  .cq-knob {
+    position: relative; width: 38px; height: 22px; border-radius: 11px;
+    background: rgba(31,52,63,0.18); transition: background 0.18s ease;
+    flex-shrink: 0;
+  }
+  .cq-knob::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    transition: transform 0.18s ease;
+  }
+  .cq-toggle input:checked ~ .cq-knob { background: var(--ct-gold-dark); }
+  .cq-toggle input:checked ~ .cq-knob::after { transform: translateX(16px); }
+  .cq-summary {
+    background: var(--ct-afterlight); color: var(--ct-sun);
+    padding: 10px 16px; font-size: 11px; letter-spacing: 0.04em;
+  }
+  .cq-summary b { color: var(--ct-haze); font-family: Georgia, serif; font-size: 14px; }
+  .cq-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .cq-table {
+    width: 100%; border-collapse: collapse; background: white;
+    font-variant-numeric: tabular-nums;
+  }
+  .cq-table th, .cq-table td {
+    padding: 8px 12px; text-align: left;
+    border-bottom: 1px solid var(--rule);
+  }
+  .cq-table th {
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--denim); background: var(--paper); white-space: nowrap;
+  }
+  .cq-table td { font-size: 12px; color: var(--slate); white-space: nowrap; }
+  .cq-table td:first-child { color: var(--denim); font-weight: 600; }
+  .cq-table td.amount { text-align: right; font-weight: 500; }
+  .cq-empty { padding: 18px 16px; text-align: center; color: var(--denim); font-style: italic; font-size: 12px; }
 
   .um-actions { padding: 16px; }
   .um-actions .btn {
@@ -752,6 +827,9 @@
 <header class="topbar">
   <div class="brand-mark"><img src="/bh-mark.svg" alt="bh" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'bh'}))"></div>
   <div class="topbar-title"></div>
+  <button class="unit-toggle" id="unit-toggle" type="button" aria-label="Toggle size unit">
+    <span id="unit-toggle-label">ft</span>
+  </button>
   <div class="live-pill" id="live-pill">
     <span class="live-dot"></span><span id="live-status">Connecting</span>
   </div>
@@ -849,6 +927,7 @@
         <button class="chip" data-bed="3br">3 Bed</button>
         <button class="chip" data-bed="4br">4 Bed</button>
       </div>
+      <div class="filter-row" id="filter-type"></div>
       <div class="filter-row" id="filter-view"></div>
       <div class="filter-row" id="filter-extra">
         <button class="chip gold" data-extra="balcony">Balcony</button>
@@ -865,6 +944,18 @@
           <input type="range" id="price-max" min="0" max="100" value="100" step="1">
           <div class="price-rail"></div>
           <div class="price-fill" id="price-fill"></div>
+        </div>
+      </div>
+      <div class="price-wrap" id="size-wrap">
+        <div class="price-head">
+          <span class="price-label">Size <span id="size-unit-tag" style="opacity:0.6;font-size:9px;">sq ft</span></span>
+          <span class="price-vals"><b id="size-min-val">—</b> · <b id="size-max-val">—</b></span>
+        </div>
+        <div class="price-track">
+          <input type="range" id="size-min" min="0" max="100" value="0" step="1">
+          <input type="range" id="size-max" min="0" max="100" value="100" step="1">
+          <div class="price-rail"></div>
+          <div class="price-fill" id="size-fill"></div>
         </div>
       </div>
       <div class="sort-wrap">
@@ -929,6 +1020,7 @@
         <li><strong>DEWA deposit:</strong> paid by tenant directly to DEWA. Receipt required before check-in.</li>
         <li><strong>District cooling (Tabreed) deposit:</strong> paid by tenant. Receipt required before check-in.</li>
         <li><strong>Move-in / lift use deposit:</strong> AED 3,000 refundable. Held but not cashed unless damage on move-in.</li>
+        <li><strong>Optional parking:</strong> an additional unallocated parking space may be available, payable at AED 10,000 per annum. No guarantee that the parking can be allocated upon renewal.</li>
       </ul>
     </div>
 
@@ -940,6 +1032,7 @@
         <li><strong>Bank statements:</strong> only required if credit score below 650 or new to country.</li>
         <li><strong>Third-party payment accepted:</strong> EID + passport + visa copy + 3rd-party letter.</li>
         <li><strong>International transfers:</strong> from tenant only — allow 3 – 4 working days for clearance.</li>
+        <li><strong>Payment method:</strong> first rent instalment payable by bank transfer. Subsequent payments by post-dated cheques.</li>
         <li><strong>Pets:</strong> small pets only, no dogs (cats fine), subject to NOC.</li>
         <li><strong>Internet:</strong> Etisalat &amp; DU.</li>
         <li><strong>Parking:</strong> allocation per unit type — not all studios get a bay.</li>
@@ -960,6 +1053,45 @@
         <div class="calc-out-row"><span class="lbl">Monthly equivalent</span><span class="val" id="ic-mon">—</span></div>
         <div class="calc-out-row"><span class="lbl">Total cash for the term</span><span class="val" id="ic-tot">—</span></div>
         <div class="calc-foot" id="ic-foot">—</div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>Fee calculator</h3>
+      <div class="info-note" style="margin-top:0;">Agency fee is on the contract value at the stated monthly rate. Rent-free does <strong>not</strong> reduce the fee.</div>
+      <div class="calc-inputs" style="background:transparent;padding:8px 0 0;">
+        <div class="calc-row"><label>Stated annual rent (AED)</label><input type="number" id="fc-rent" value="250000" step="5000" inputmode="numeric"></div>
+        <div class="calc-row"><label>Contract length (months)</label><input type="number" id="fc-term" value="14" min="1" max="120" step="1" inputmode="numeric"></div>
+        <div class="calc-row"><label>Rent-free</label><input type="number" id="fc-free" value="2" min="0" step="1" inputmode="numeric"></div>
+      </div>
+      <div class="calc-out" style="margin-top:12px;">
+        <div class="calc-out-row"><span class="lbl">Effective monthly</span><span class="val" id="fc-mon">—</span></div>
+        <div class="calc-out-row"><span class="lbl">Contract value (for fee)</span><span class="val" id="fc-cv">—</span></div>
+        <div class="calc-out-row head"><span class="lbl">Fee · 5%</span><span class="val" id="fc-fee">—</span></div>
+        <div class="calc-out-row"><span class="lbl">VAT · 5%</span><span class="val" id="fc-vat">—</span></div>
+        <div class="calc-out-row"><span class="lbl">Fee total inc VAT</span><span class="val" id="fc-tot">—</span></div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>Cheque planning</h3>
+      <div class="info-note" style="margin-top:0;">Cheque dates and amounts based on contract start, length and number of cheques. First instalment is by bank transfer; subsequent are post-dated cheques.</div>
+      <div class="calc-inputs" style="background:transparent;padding:8px 0 0;">
+        <div class="calc-row"><label>Contract start</label><input type="date" id="cq-start"></div>
+        <div class="calc-row"><label>Annual rent (AED)</label><input type="number" id="cq-rent" value="250000" step="5000" inputmode="numeric"></div>
+        <div class="calc-row"><label>Contract length (months)</label><input type="number" id="cq-term" value="14" min="1" max="120" step="1" inputmode="numeric"></div>
+        <div class="calc-row"><label>Rent-free</label><input type="number" id="cq-free" value="2" min="0" step="1" inputmode="numeric"></div>
+        <div class="calc-row"><label>Number of cheques</label><input type="number" id="cq-n" value="4" min="1" max="24" step="1" inputmode="numeric"></div>
+        <div class="calc-row"><label>Amortize across full contract</label>
+          <label class="cq-toggle"><input type="checkbox" id="cq-amort"><span class="cq-knob"></span></label>
+        </div>
+      </div>
+      <div class="cq-summary" id="cq-summary">—</div>
+      <div class="cq-table-wrap">
+        <table class="cq-table" id="cq-table">
+          <thead><tr><th>#</th><th>Date</th><th>Amount</th><th>Method</th></tr></thead>
+          <tbody></tbody>
+        </table>
       </div>
     </div>
 
@@ -993,6 +1125,15 @@
   <div id="um-body"></div>
 </div>
 
+<!-- Floorplan — slide-up full-screen modal sitting above the unit modal -->
+<div class="fp-modal" id="fp-modal" aria-hidden="true">
+  <div class="um-topbar">
+    <button class="um-close" id="fp-close" aria-label="Close">×</button>
+    <div class="um-title" id="fp-title">Floorplan</div>
+  </div>
+  <div id="fp-body"></div>
+</div>
+
 <script>
 // ============================================================
 // DATA & CONSTANTS
@@ -1007,7 +1148,53 @@ const SHEET_TAB = '07_HTML_Export';
 // CORS issues and the silent-JSONP failures we saw on iOS Safari + in-app
 // browsers (WhatsApp, Drive preview, etc.).
 const UNITS_URL = '/api/units';
+const FLOORPLANS_URL = '/api/floorplans';
 const REFRESH_MS = 5 * 60 * 1000;
+
+// ============================================================
+// SIZE UNITS — sqft / sqm toggle, persisted in localStorage
+// ============================================================
+const SQFT_PER_SQM = 10.7639;
+let sizeUnit = (function () {
+  try { return localStorage.getItem('ct1.sizeUnit') === 'sqm' ? 'sqm' : 'sqft'; }
+  catch (e) { return 'sqft'; }
+})();
+function unitSqft(u) { return Math.max(0, (u.sq || 0) - (u.bsq || 0)); }
+function balconySqft(u) { return u.b ? (u.bsq || 0) : 0; }
+function unitSqm(u) {
+  if (u.nsqm) return u.nsqm;
+  if (u.tsqm && u.b) return Math.max(0, u.tsqm - balconySqm(u));
+  return unitSqft(u) / SQFT_PER_SQM;
+}
+function balconySqm(u) {
+  if (!u.b) return 0;
+  if (u.tsqm && u.nsqm) return Math.max(0, u.tsqm - u.nsqm);
+  return balconySqft(u) / SQFT_PER_SQM;
+}
+function fmtSqft(n) { return fmtN(Math.round(n)) + ' sq ft'; }
+function fmtSqm(n)  { return (Math.round(n * 10) / 10).toFixed(1) + ' m²'; }
+// Returns the unit / balcony / sort-key triple in the active unit, no combined total.
+function sizeView(u) {
+  if (sizeUnit === 'sqm') {
+    const u_ = unitSqm(u), b_ = balconySqm(u);
+    return {
+      unitStr: fmtSqm(u_),
+      balcStr: u.b ? fmtSqm(b_) : null,
+      // Rendering helpers
+      oneLine: u.b ? `${fmtSqm(u_)} · +${fmtSqm(b_)} balcony` : fmtSqm(u_),
+      sortKey: u_,
+      sliderRaw: u_,
+    };
+  }
+  const u_ = unitSqft(u), b_ = balconySqft(u);
+  return {
+    unitStr: fmtSqft(u_),
+    balcStr: u.b ? fmtSqft(b_) : null,
+    oneLine: u.b ? `${fmtSqft(u_)} · +${fmtSqft(b_)} balcony` : fmtSqft(u_),
+    sortKey: u_,
+    sliderRaw: u_,
+  };
+}
 
 const TYPE_META = {
   studio: { label: 'Studio',    cls: 'studio' },
@@ -1063,12 +1250,15 @@ const fmtAED = n => 'AED ' + fmtN(n);
 // ============================================================
 const filter = {
   bed: 'all',
+  type: 'all',
   view: 'all',
   extras: new Set(),
   search: '',
   sort: 'floor-asc',
   priceMin: null,
   priceMax: null,
+  sizeMin: null, // in the active sizeUnit
+  sizeMax: null,
 };
 const towerView = { mode: 'status', value: null }; // mode: status|bedroom|view|features
 let priceBounds = { min: 0, max: 1000000 };
@@ -1120,6 +1310,24 @@ function fallToSnapshot(reason) {
 }
 // Tap the pill to retry
 document.getElementById('live-pill').addEventListener('click', () => refresh());
+
+// Size-unit toggle
+function applySizeUnit() {
+  document.getElementById('unit-toggle-label').textContent = sizeUnit === 'sqm' ? 'm²' : 'ft';
+  // Rebuild the size slider's bounds for the new unit BEFORE rendering, so
+  // the active filter range stays consistent with the data.
+  if (typeof setupSizeSlider === 'function') setupSizeSlider();
+  if (typeof renderOverview === 'function') renderOverview();
+  if (typeof renderList === 'function') renderList();
+  if (typeof renderRecent === 'function') renderRecent();
+  if (document.getElementById('tab-tower-viz').classList.contains('active') && typeof renderTower === 'function') renderTower();
+  if (typeof refreshOpenUnitModal === 'function') refreshOpenUnitModal();
+}
+document.getElementById('unit-toggle').addEventListener('click', () => {
+  sizeUnit = sizeUnit === 'sqft' ? 'sqm' : 'sqft';
+  try { localStorage.setItem('ct1.sizeUnit', sizeUnit); } catch (e) {}
+  applySizeUnit();
+});
 
 // ============================================================
 // TAB SWITCHING
@@ -1204,7 +1412,7 @@ function renderOverview() {
         <span class="show-pin"></span>
         <div class="show-type">${TYPE_META[u.t].label}${u.d ? ' · Duplex' : ''}</div>
         <div class="show-uid">Unit ${u.uid}</div>
-        <div class="show-meta">Floor ${u.f} · ${VIEW_NAMES[u.v] || u.v}<br>${fmtN(u.sq)} sq ft</div>
+        <div class="show-meta">Floor ${u.f} · ${VIEW_NAMES[u.v] || u.v}<br>${sizeView(u).oneLine}</div>
         <div class="show-rent">${fmtAED(u.pr)} p.a.</div>
       </button>
     `).join('');
@@ -1232,16 +1440,25 @@ function unitMatches(u) {
     if (!AVAILABLE_STATES.includes(u.s) && !showFlat) return false;
   }
   if (filter.bed !== 'all' && u.t !== filter.bed) return false;
+  if (filter.type !== 'all' && (u.pt || '').toUpperCase() !== filter.type) return false;
   if (filter.view !== 'all' && u.v !== filter.view) return false;
   if (filter.extras.has('balcony') && !u.b) return false;
   if (filter.extras.has('duplex') && !u.d) return false;
   if (filter.priceMin != null && u.pr < filter.priceMin) return false;
   if (filter.priceMax != null && u.pr > filter.priceMax) return false;
+  // Skip the size filter for units with no size data — don't hide them by accident.
+  const sv = sizeView(u);
+  if (sv.sliderRaw > 0) {
+    if (filter.sizeMin != null && sv.sliderRaw < filter.sizeMin) return false;
+    if (filter.sizeMax != null && sv.sliderRaw > filter.sizeMax) return false;
+  }
   if (filter.search) {
     const q = filter.search.toLowerCase();
     const hay = [
       u.uid, String(u.f), String(u.p), u.t,
       TYPE_META[u.t]?.label || '',
+      u.pt ? 'type ' + u.pt : '',
+      u.pt || '',
       u.v, VIEW_NAMES[u.v] || '',
       u.b ? 'balcony' : '',
       u.d ? 'duplex' : '',
@@ -1257,7 +1474,7 @@ function unitMatches(u) {
 function sortUnits(list) {
   const [k, dir] = filter.sort.split('-');
   const sign = dir === 'desc' ? -1 : 1;
-  const get = u => k === 'floor' ? u.f * 100 + u.p : k === 'price' ? u.pr : k === 'size' ? u.sq : u.f;
+  const get = u => k === 'floor' ? u.f * 100 + u.p : k === 'price' ? u.pr : k === 'size' ? unitSqft(u) : u.f;
   return list.slice().sort((a, b) => sign * (get(a) - get(b)) || a.f - b.f || a.p - b.p);
 }
 
@@ -1288,12 +1505,12 @@ function renderList() {
           <div class="uc-rent">${fmtAED(u.pr)}<span style="font-size:11px;color:var(--denim);"> p.a.</span></div>
         </div>
         <div class="uc-mid">
-          <span class="uc-bedr-dot ${m.cls}"></span>${m.label}${u.d ? ' Duplex' : ''} · Floor ${u.f} · ${view} · ${fmtN(u.sq)} sq ft
+          <span class="uc-bedr-dot ${m.cls}"></span>${m.label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''} · Floor ${u.f} · ${view} · ${sizeView(u).unitStr}
         </div>
         <div class="uc-bot">
           ${showFlat ? '<span class="badge show">Show flat</span>' : ''}
           ${u.d ? '<span class="badge duplex">Duplex</span>' : ''}
-          ${u.b ? `<span class="badge balc">Balcony · ${fmtN(u.bsq)} sq ft</span>` : ''}
+          ${u.b ? `<span class="badge balc">Balcony · ${sizeView(u).balcStr}</span>` : ''}
           ${cut ? `<span class="badge cut">Price cut ${cutPct}%</span>` : ''}
           ${!u.d && !u.b && !showFlat && !cut ? '<span style="opacity:0.5;">Unfurnished</span>' : ''}
         </div>
@@ -1354,11 +1571,94 @@ function setupPriceSlider() {
   update();
 }
 
+// Type chips — built dynamically and scoped to the active bedroom band.
+// Selecting "1 Bed" should only show the type letters that exist for 1BRs.
+function buildTypeChips() {
+  const host = document.getElementById('filter-type');
+  if (!host) return;
+  const pool = filter.bed === 'all'
+    ? UNITS
+    : UNITS.filter(u => u.t === filter.bed);
+  const types = [...new Set(pool.map(u => (u.pt || '').trim().toUpperCase()).filter(Boolean))].sort();
+  if (types.length <= 1) {
+    // Either no product_type column, or only one type for this band — hide the row entirely.
+    host.style.display = 'none';
+    host.innerHTML = '';
+    if (filter.type !== 'all') filter.type = 'all';
+    return;
+  }
+  host.style.display = '';
+  host.innerHTML =
+    `<button class="chip ${filter.type==='all'?'active':''}" data-type="all">All types</button>` +
+    types.map(t =>
+      `<button class="chip ${filter.type===t?'active':''}" data-type="${t}">Type ${t}</button>`
+    ).join('');
+  host.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      filter.type = chip.dataset.type;
+      host.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === chip));
+      renderList();
+    });
+  });
+}
+
+// Size slider — bounds are derived from the data and respect the active unit
+// (sq ft / m²). When the broker flips the topbar toggle, applySizeUnit rebuilds
+// the slider so its bounds match.
+let sizeBounds = { min: 0, max: 0, step: 50 };
+let sizeSliderBound = false;
+function setupSizeSlider() {
+  const minEl = document.getElementById('size-min');
+  const maxEl = document.getElementById('size-max');
+  const fill  = document.getElementById('size-fill');
+  const tag   = document.getElementById('size-unit-tag');
+  const labelMin = document.getElementById('size-min-val');
+  const labelMax = document.getElementById('size-max-val');
+  if (!minEl || !maxEl) return;
+
+  const sizes = UNITS
+    .filter(u => AVAILABLE_STATES.includes(u.s) || isShowFlat(u))
+    .map(u => sizeView(u).sliderRaw)
+    .filter(s => s > 0);
+  if (!sizes.length) return;
+  const step = sizeUnit === 'sqm' ? 5 : 50;
+  const lo = Math.floor(Math.min(...sizes) / step) * step;
+  const hi = Math.ceil(Math.max(...sizes) / step) * step;
+  sizeBounds = { min: lo, max: hi, step };
+  if (filter.sizeMin == null || filter.sizeMin < lo || filter.sizeMin > hi) filter.sizeMin = lo;
+  if (filter.sizeMax == null || filter.sizeMax > hi || filter.sizeMax < lo) filter.sizeMax = hi;
+  minEl.min = lo; minEl.max = hi; minEl.step = step; minEl.value = filter.sizeMin;
+  maxEl.min = lo; maxEl.max = hi; maxEl.step = step; maxEl.value = filter.sizeMax;
+  if (tag) tag.textContent = sizeUnit === 'sqm' ? 'm²' : 'sq ft';
+
+  const refresh = (changed) => {
+    let a = parseFloat(minEl.value), b = parseFloat(maxEl.value);
+    if (a > b - step) {
+      if (changed === minEl) a = b - step; else b = a + step;
+    }
+    minEl.value = a; maxEl.value = b;
+    filter.sizeMin = a; filter.sizeMax = b;
+    const fmt = sizeUnit === 'sqm' ? fmtSqm : fmtSqft;
+    labelMin.textContent = fmt(a); labelMax.textContent = fmt(b);
+    const range = sizeBounds.max - sizeBounds.min || 1;
+    fill.style.left = ((a - sizeBounds.min) / range * 100) + '%';
+    fill.style.right = (100 - (b - sizeBounds.min) / range * 100) + '%';
+  };
+  if (!sizeSliderBound) {
+    minEl.addEventListener('input', () => { refresh(minEl); renderList(); });
+    maxEl.addEventListener('input', () => { refresh(maxEl); renderList(); });
+    sizeSliderBound = true;
+  }
+  refresh();
+}
+
 // Filter chip handlers
 document.getElementById('filter-bedroom').querySelectorAll('.chip').forEach(chip => {
   chip.addEventListener('click', () => {
     filter.bed = chip.dataset.bed;
+    filter.type = 'all'; // reset type when bedroom band changes — types are scoped per band
     document.getElementById('filter-bedroom').querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === chip));
+    buildTypeChips();
     renderList();
   });
 });
@@ -1410,11 +1710,14 @@ document.getElementById('search-clear').addEventListener('click', () => {
 })();
 document.getElementById('filter-clear').addEventListener('click', () => {
   filter.bed = 'all';
+  filter.type = 'all';
   filter.view = 'all';
   filter.extras.clear();
   filter.search = '';
   filter.priceMin = priceBounds.min;
   filter.priceMax = priceBounds.max;
+  filter.sizeMin = sizeBounds.min;
+  filter.sizeMax = sizeBounds.max;
   filter.sort = 'floor-asc';
   document.getElementById('search-input').value = '';
   document.getElementById('search-clear').classList.remove('visible');
@@ -1426,7 +1729,9 @@ document.getElementById('filter-clear').addEventListener('click', () => {
   document.getElementById('price-max').value = priceBounds.max;
   resetChips();
   buildViewChips();
+  buildTypeChips();
   setupPriceSlider();
+  setupSizeSlider();
   renderList();
 });
 function resetChips() {
@@ -1541,7 +1846,7 @@ function setupTowerTouchPreview() {
           tip.innerHTML = `
             <div class="tt-uid">Unit ${u.uid}</div>
             <div class="tt-meta">${m.label}${u.d ? ' Duplex' : ''} · Floor ${u.f} · ${view}</div>
-            <div class="tt-meta">${fmtN(u.sq)} sq ft${u.b ? ' · balcony' : ''}</div>
+            <div class="tt-meta">${u.pt ? 'Type ' + u.pt + ' · ' : ''}${sizeView(u).oneLine}</div>
             <div class="tt-rent">${fmtAED(u.pr)} p.a.</div>
             <div class="tt-status">${STATUS_LABEL[u.s] || u.s}${(showFlat && u.s !== 'show_flat') ? ' · Show flat' : ''}</div>
             <div class="tt-hint">Release to open</div>
@@ -1699,39 +2004,46 @@ document.querySelectorAll('#tower-mode .seg-btn').forEach(b => {
 // UNIT DETAIL — slide-up modal
 // ============================================================
 const modal = document.getElementById('unit-modal');
-function openUnit(uid) {
+function openUnit(uid, opts) {
   const u = UNITS.find(x => x.uid === uid);
   if (!u) return;
-  if (typeof pushRecent === 'function') pushRecent(uid);
+  lastOpenUnitUid = uid;
+  if (!(opts && opts.silent) && typeof pushRecent === 'function') pushRecent(uid);
   document.getElementById('um-title').textContent = `Unit ${u.uid}`;
   const m = TYPE_META[u.t];
   const view = VIEW_NAMES[u.v] || u.v;
   const cut = u.orig && u.orig > u.pr;
   const cutPct = cut ? Math.round((1 - u.pr/u.orig) * 100) : 0;
-  const internal = Math.max(0, (u.sq||0) - (u.bsq||0));
+  const sv = sizeView(u);
+  const fpReady = floorplanFor(u);
 
   document.getElementById('um-body').innerHTML = `
     <div class="um-hero">
-      <div class="um-eyebrow">${m.label}${u.d ? ' · Duplex' : ''} · Floor ${u.f} · ${view}</div>
+      <div class="um-eyebrow">${m.label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''} · Floor ${u.f} · ${view}</div>
       <div class="um-uid">${u.uid}</div>
       <div class="um-sub">${STATUS_LABEL[u.s] || u.s} · Tranche ${u.tr || '—'}</div>
       <div class="um-rent">${fmtAED(u.pr)}<span class="pa">p.a.</span></div>
       <div class="um-psf">${u.psf ? 'AED ' + Math.round(u.psf) + ' psf' : ''}${cut ? ' · was AED ' + fmtN(u.orig) : ''}</div>
       <div class="um-pills">
         ${(u.showFlat || u.s === 'show_flat') ? '<span class="pill denim">Show flat</span>' : ''}
+        ${u.pt ? `<span class="pill outline">Type ${u.pt}</span>` : ''}
         ${u.d ? '<span class="pill gold">Duplex</span>' : ''}
-        ${u.b ? `<span class="pill sun">Balcony · ${fmtN(u.bsq)} sq ft</span>` : '<span class="pill outline">No balcony</span>'}
+        ${u.b ? `<span class="pill sun">Balcony · ${sv.balcStr}</span>` : '<span class="pill outline">No balcony</span>'}
         <span class="pill outline">Unfurnished</span>
         ${cut ? `<span class="pill" style="background:var(--terra);color:white;">Price cut ${cutPct}%</span>` : ''}
       </div>
+      <button class="um-floorplan-btn" id="um-floorplan-btn" type="button" data-uid="${u.uid}">
+        <span class="um-fp-icon">▦</span>
+        <span>${fpReady ? 'View floorplan' : 'Floorplan not available'}</span>
+      </button>
     </div>
 
     <div class="um-stats">
-      <div class="um-stat-row"><span class="lbl">Total size (inc. balcony)</span><span class="val">${fmtN(u.sq)} sq ft</span></div>
-      <div class="um-stat-row"><span class="lbl">Internal</span><span class="val">${fmtN(internal)} sq ft</span></div>
-      <div class="um-stat-row"><span class="lbl">Balcony</span><span class="val">${u.b ? fmtN(u.bsq) + ' sq ft' : 'None'}</span></div>
+      <div class="um-stat-row"><span class="lbl">Unit area</span><span class="val">${sv.unitStr}</span></div>
+      <div class="um-stat-row"><span class="lbl">Balcony</span><span class="val">${u.b ? sv.balcStr : 'No balcony'}</span></div>
       <div class="um-stat-row"><span class="lbl">Price per sq ft</span><span class="val">${u.psf ? 'AED ' + Math.round(u.psf) : '—'}</span></div>
       <div class="um-stat-row"><span class="lbl">View</span><span class="val">${view}</span></div>
+      ${u.pt ? `<div class="um-stat-row"><span class="lbl">Product type</span><span class="val">${u.pt}</span></div>` : ''}
       <div class="um-stat-row"><span class="lbl">Furnishing</span><span class="val">Unfurnished</span></div>
       <div class="um-stat-row"><span class="lbl">Unit ID</span><span class="val">${u.uid}</span></div>
     </div>
@@ -1790,7 +2102,7 @@ function openUnit(uid) {
     const lines = [
       `🏢 *City Tower 1 — Unit ${u.uid}*`,
       `${m.label}${u.d ? ' · Duplex' : ''} · Floor ${u.f} · ${view}`,
-      `Size: ${fmtN(u.sq)} sq ft${u.b ? ` (incl. ${fmtN(u.bsq)} sq ft balcony)` : ''}`,
+      `Size: ${sizeView(u).oneLine}`,
       `Rent: ${fmtAED(u.pr)} p.a.${cut ? ` (was ${fmtAED(u.orig)})` : ''}`,
       u.psf ? `PSF: AED ${Math.round(u.psf)}` : null,
       ``,
@@ -1804,6 +2116,9 @@ function openUnit(uid) {
     });
   });
 
+  const fpBtn = document.getElementById('um-floorplan-btn');
+  if (fpBtn) fpBtn.addEventListener('click', () => openFloorplanModal(u));
+
   modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
@@ -1814,6 +2129,7 @@ function closeUnit() {
   modal.classList.remove('open');
   modal.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
+  lastOpenUnitUid = null;
 }
 
 // ============================================================
@@ -1828,6 +2144,8 @@ function processGvizResponse(resp) {
     if (need.some(n => ix(n) < 0)) throw new Error('Expected column missing');
     const iBalc = ix('balcony'), iBsq = ix('balcony_sqft');
     const iSf = ix('show_flat');
+    const iPt = ix('product_type');
+    const iNsqm = ix('net_sqm'), iTsqm = ix('total_sqm');
     const isYes = v => /^(y|yes|true|1)$/i.test(String(v == null ? '' : v).trim());
     const get = (row, i) => (i < 0 || !row.c[i]) ? null : row.c[i].v;
     const fresh = [];
@@ -1844,9 +2162,13 @@ function processGvizResponse(resp) {
       fresh.push({
         uid: String(get(row, ix('unit_id')) || `${String(f).padStart(2,'0')}-${String(p).padStart(2,'0')}`),
         f, p, t,
+        bedRaw: bed, // raw bedroom_type string ("Studio", "1 Bedroom", "3 Bedroom") for floorplan lookup
+        pt: String(get(row, iPt)||'').trim().toUpperCase() || null,
         d: String(get(row, ix('is_duplex'))||'').toUpperCase() === 'Y',
         v: String(get(row, ix('view_code'))||'').trim(),
         sq: parseFloat(get(row, ix('total_sqft'))) || 0,
+        nsqm: parseFloat(get(row, iNsqm)) || 0,
+        tsqm: parseFloat(get(row, iTsqm)) || 0,
         pr: cur, orig,
         psf: parseFloat(get(row, ix('asking_psf'))) || null,
         tr: String(get(row, ix('tranche'))||'').trim(),
@@ -1859,7 +2181,9 @@ function processGvizResponse(resp) {
     if (fresh.length < 100) throw new Error(`only ${fresh.length} rows`);
     UNITS = fresh;
     buildViewChips();
+    buildTypeChips();
     setupPriceSlider();
+    setupSizeSlider();
     renderOverview(); renderList();
     if (document.getElementById('tab-tower-viz').classList.contains('active')) renderTower();
     const now = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
@@ -1947,6 +2271,197 @@ function refresh() {
 })();
 
 // ============================================================
+// FEE CALCULATOR
+// Fee is on the contract value at the stated monthly rate.
+// Rent-free does NOT reduce the fee.
+// ============================================================
+(function () {
+  const $ = id => document.getElementById(id);
+  if (!$('fc-rent')) return;
+  const ids = ['fc-rent', 'fc-term', 'fc-free'];
+  function fmt2(n) {
+    return 'AED ' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function recalc() {
+    const rent = parseFloat($('fc-rent').value) || 0;
+    const term = parseInt($('fc-term').value, 10) || 0;
+    // free is captured for symmetry with the rent calc, but doesn't enter the fee maths.
+    const monthly = rent / 12;
+    const cv = monthly * term;
+    const fee = cv * 0.05;
+    const vat = fee * 0.05;
+    const tot = fee + vat;
+    $('fc-mon').textContent = fmt2(monthly);
+    $('fc-cv').textContent  = fmt2(cv);
+    $('fc-fee').textContent = fmt2(fee);
+    $('fc-vat').textContent = fmt2(vat);
+    $('fc-tot').textContent = fmt2(tot);
+  }
+  ids.forEach(id => {
+    const el = $(id);
+    if (el) { el.addEventListener('input', recalc); el.addEventListener('change', recalc); }
+  });
+  recalc();
+})();
+
+// ============================================================
+// CHEQUE PLANNING
+// Default: total paid = stated annual rent, packed into the paid period
+//          (contract length − rent free), evenly spaced.
+// Amortized: same total spread across the FULL contract length, dates
+//          rounded to the 1st of the nearest month.
+// ============================================================
+(function () {
+  const $ = id => document.getElementById(id);
+  if (!$('cq-start')) return;
+  const ids = ['cq-start', 'cq-rent', 'cq-term', 'cq-free', 'cq-n', 'cq-amort'];
+
+  // Default contract start = first of next month
+  (function defaultStart() {
+    const today = new Date();
+    const d = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+    const yyyy = d.getFullYear(), mm = String(d.getMonth() + 1).padStart(2, '0');
+    $('cq-start').value = `${yyyy}-${mm}-01`;
+  })();
+
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function chequeDate(start, n, monthOffsetExact) {
+    if (n === 1) return new Date(start.getTime());
+    const rounded = Math.round(monthOffsetExact);
+    const d = new Date(start.getTime());
+    d.setDate(1);
+    d.setMonth(d.getMonth() + rounded);
+    return d;
+  }
+  function fmtDate(d) {
+    return `${String(d.getDate()).padStart(2, '0')} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  }
+  function fmtAmt(n) {
+    return 'AED ' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function recalc() {
+    const startStr = $('cq-start').value;
+    const start = startStr ? new Date(startStr + 'T00:00:00') : null;
+    const rent = parseFloat($('cq-rent').value) || 0;
+    const term = parseInt($('cq-term').value, 10) || 0;
+    const free = Math.max(0, parseInt($('cq-free').value, 10) || 0);
+    const nCh  = Math.max(1, parseInt($('cq-n').value, 10) || 0);
+    const amortize = $('cq-amort').checked;
+    const tbody = $('cq-table').querySelector('tbody');
+    const summary = $('cq-summary');
+
+    if (!start || !rent || !term || !nCh) {
+      tbody.innerHTML = '<tr><td colspan="4" class="cq-empty">Enter contract details to see the schedule.</td></tr>';
+      summary.textContent = '—';
+      return;
+    }
+
+    const paid = Math.max(0, term - free);
+    const span = amortize ? term : paid;
+    const spacing = nCh > 1 ? span / nCh : 0;
+    const amount = rent / nCh;
+
+    summary.innerHTML =
+      `<b>${nCh}</b> cheque${nCh === 1 ? '' : 's'} · `
+      + `<b>${fmtAmt(amount)}</b> each · `
+      + `<b>${fmtAmt(rent)}</b> total`
+      + (amortize
+          ? ` · spread across <b>${term}</b> months`
+          : ` · packed into <b>${paid}</b> paid month${paid === 1 ? '' : 's'}`);
+
+    const rows = [];
+    for (let i = 1; i <= nCh; i++) {
+      const offsetExact = (i - 1) * spacing;
+      const d = chequeDate(start, i, offsetExact);
+      const method = i === 1 ? 'Bank transfer' : 'Post-dated cheque';
+      rows.push(`
+        <tr>
+          <td>${i}</td>
+          <td>${fmtDate(d)}</td>
+          <td class="amount">${fmtAmt(amount)}</td>
+          <td>${method}</td>
+        </tr>
+      `);
+    }
+    tbody.innerHTML = rows.join('');
+  }
+
+  ids.forEach(id => {
+    const el = $(id);
+    if (el) { el.addEventListener('input', recalc); el.addEventListener('change', recalc); }
+  });
+  recalc();
+})();
+
+// ============================================================
+// FLOORPLANS — fetched once from /api/floorplans, indexed by
+// `${bedroom_type}::${product_type}` for O(1) lookup.
+// ============================================================
+let FLOORPLAN_INDEX = {}; // { 'Studio::A': '<file_id>' , ... }
+let lastOpenUnitUid = null;
+
+function fpKey(bed, type) { return (bed || '').trim() + '::' + (type || '').trim().toUpperCase(); }
+function floorplanFor(u) {
+  if (!u || !u.bedRaw || !u.pt) return null;
+  return FLOORPLAN_INDEX[fpKey(u.bedRaw, u.pt)] || null;
+}
+async function fetchFloorplans() {
+  try {
+    const r = await fetch(FLOORPLANS_URL + '?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return;
+    const body = await r.json();
+    if (!body || body.status !== 'ok' || !Array.isArray(body.rows)) return;
+    const next = {};
+    for (const row of body.rows) {
+      next[fpKey(row.bedroom_type, row.product_type)] = row.file_id;
+    }
+    FLOORPLAN_INDEX = next;
+    // If the unit modal is currently open, refresh its View-floorplan button state.
+    refreshOpenUnitModal();
+  } catch (e) {
+    // Silent — floorplan availability is best-effort. The modal shows a clear
+    // "not available" state when a unit has no matching plan.
+  }
+}
+function openFloorplanModal(u) {
+  const fileId = floorplanFor(u);
+  const modal = document.getElementById('fp-modal');
+  const body = document.getElementById('fp-body');
+  const title = document.getElementById('fp-title');
+  title.textContent = `Floorplan · ${u.bedRaw}${u.pt ? ' · Type ' + u.pt : ''}`;
+  if (fileId) {
+    body.innerHTML = `<iframe class="fp-iframe" src="https://drive.google.com/file/d/${fileId}/preview" allow="autoplay" loading="lazy"></iframe>`;
+  } else {
+    body.innerHTML = `<div class="fp-empty">
+      <h4>Floorplan not available</h4>
+      <p>No floorplan registered for <b>${u.bedRaw}${u.pt ? ' · Type ' + u.pt : ''}</b>.</p>
+      <p class="fp-hint">Add a row to <code>08_Floorplans</code> on the master sheet to enable this.</p>
+    </div>`;
+  }
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+function closeFloorplanModal() {
+  const modal = document.getElementById('fp-modal');
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  document.getElementById('fp-body').innerHTML = '';
+}
+
+function refreshOpenUnitModal() {
+  // If the unit modal is currently open, re-render it so size-unit toggles
+  // and floorplan-availability updates land immediately.
+  if (!lastOpenUnitUid) return;
+  const modal = document.getElementById('unit-modal');
+  if (!modal || !modal.classList.contains('open')) return;
+  if (typeof openUnit === 'function') openUnit(lastOpenUnitUid, { silent: true });
+}
+
+// ============================================================
 // RECENTLY VIEWED — last 5 units the broker tapped, persisted in localStorage
 // ============================================================
 const RECENT_KEY = 'ct1.recent';
@@ -1991,12 +2506,17 @@ function renderRecent() {
 // BOOT
 // ============================================================
 buildViewChips();
+buildTypeChips();
 setupPriceSlider();
+setupSizeSlider();
+applySizeUnit(); // sets the toggle label from the persisted choice
 renderOverview();
 renderList();
 renderRecent();
 setTimeout(refresh, 200);
 setInterval(refresh, REFRESH_MS);
+setTimeout(fetchFloorplans, 250);
+document.getElementById('fp-close').addEventListener('click', closeFloorplanModal);
 </script>
 
 </body>
