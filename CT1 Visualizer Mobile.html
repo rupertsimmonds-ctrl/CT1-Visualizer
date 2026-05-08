@@ -409,6 +409,25 @@
   .info-doc-text h3 { margin: 0; font-family: Georgia, serif; font-size: 17px; color: var(--slate); }
   .info-doc-hint { margin: 3px 0 0; font-size: 12px; color: var(--denim); line-height: 1.35; }
   .info-doc-arrow { font-size: 20px; color: var(--ct-gold-dark); flex-shrink: 0; }
+  .parking-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 8px -4px 0; }
+  .parking-table {
+    width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums;
+    font-size: 12px; color: var(--slate);
+  }
+  .parking-table th, .parking-table td {
+    padding: 8px 10px; text-align: left;
+    border-bottom: 1px solid var(--rule);
+  }
+  .parking-table th {
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--denim); white-space: nowrap;
+  }
+  .parking-table td.num, .parking-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .parking-table tr.parking-total td {
+    font-weight: 600; color: var(--slate);
+    border-bottom: none; border-top: 1.5px solid var(--rule-strong);
+    padding-top: 10px;
+  }
 
   /* ============================================================
    * BOTTOM TAB BAR
@@ -1045,6 +1064,28 @@
       </ul>
     </div>
 
+    <div class="info-card">
+      <h3>Parking allocation</h3>
+      <div class="parking-table-wrap">
+        <table class="parking-table">
+          <thead>
+            <tr><th>Unit type</th><th class="num">Units</th><th class="num">Bays per unit</th><th class="num">Total bays</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Studio</td><td class="num">64</td><td class="num">0.34 avg</td><td class="num">22</td></tr>
+            <tr><td>1 Bedroom</td><td class="num">98</td><td class="num">1</td><td class="num">98</td></tr>
+            <tr><td>2 Bedroom · &lt; 180 m²</td><td class="num">183</td><td class="num">1</td><td class="num">183</td></tr>
+            <tr><td>2 Bedroom · ≥ 180 m²</td><td class="num">8</td><td class="num">2</td><td class="num">16</td></tr>
+            <tr><td>3 Bedroom</td><td class="num">296</td><td class="num">2</td><td class="num">592</td></tr>
+            <tr><td>4 Bedroom</td><td class="num">34</td><td class="num">2</td><td class="num">68</td></tr>
+            <tr><td>4 Bedroom · top floor</td><td class="num">12</td><td class="num">3</td><td class="num">36</td></tr>
+            <tr class="parking-total"><td>Total</td><td class="num">695</td><td></td><td class="num">1,015</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="info-note">Studios share a pool of 22 bays — only ~1 in 3 has one allocated, so individual studio listings show <em>"subject to availability"</em>. Optional unallocated parking is AED 10,000 per annum (see Fees &amp; deposits).</div>
+    </div>
+
     <a class="info-card info-doc-card"
        href="https://drive.google.com/file/d/1YNvtElc9RM-7CtS2EfHxlRo-007Li4vW/view?usp=drivesdk"
        target="_blank" rel="noopener noreferrer">
@@ -1225,6 +1266,37 @@ function sizeView(u) {
     sortKey: u_,
     sliderRaw: u_,
   };
+}
+
+// ============================================================
+// PARKING — derived from the published allocation matrix
+// ============================================================
+// Studio                       limited (~22/64 — soft "subject to availability")
+// 1 Bedroom                    1 bay
+// 2 Bedroom · total_sqm < 180  1 bay
+// 2 Bedroom · total_sqm ≥ 180  2 bays
+// 3 Bedroom                    2 bays
+// 4 Bedroom · top floor        3 bays (penthouse)
+// 4 Bedroom · other floors     2 bays
+function topFloor() {
+  let max = 0;
+  for (const u of UNITS) if (u.f > max) max = u.f;
+  return max;
+}
+function parkingForUnit(u) {
+  if (!u || !u.t) return '—';
+  if (u.t === 'studio') return 'Subject to availability — confirm with the team';
+  if (u.t === '1br') return '1 bay';
+  if (u.t === '2br') {
+    const sqm = u.tsqm || (u.sq ? u.sq / 10.7639 : 0);
+    return sqm >= 180 ? '2 bays' : '1 bay';
+  }
+  if (u.t === '3br') return '2 bays';
+  if (u.t === '4br') {
+    const isPenthouse = u.f && u.f === topFloor();
+    return isPenthouse ? '3 bays · penthouse' : '2 bays';
+  }
+  return '—';
 }
 
 const TYPE_META = {
@@ -2085,6 +2157,7 @@ function openUnit(uid, opts) {
     <div class="um-stats">
       <div class="um-stat-row"><span class="lbl">Unit area</span><span class="val">${sv.unitStr}</span></div>
       <div class="um-stat-row"><span class="lbl">Balcony</span><span class="val">${u.b ? sv.balcStr : 'No balcony'}</span></div>
+      <div class="um-stat-row"><span class="lbl">Parking</span><span class="val">${parkingForUnit(u)}</span></div>
       <div class="um-stat-row"><span class="lbl">Price per sq ft</span><span class="val">${u.psf ? 'AED ' + Math.round(u.psf) : '—'}</span></div>
       <div class="um-stat-row"><span class="lbl">View</span><span class="val">${view}</span></div>
       ${u.pt ? `<div class="um-stat-row"><span class="lbl">Product type</span><span class="val">${u.pt}</span></div>` : ''}
