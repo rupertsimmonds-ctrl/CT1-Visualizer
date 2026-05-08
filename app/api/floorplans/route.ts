@@ -25,8 +25,19 @@ function extractFileId(raw: unknown): string | null {
 type FloorplanRow = {
   bedroom_type: string;
   product_type: string;
+  // "Y", "N", or "" — empty acts as a catch-all matching either duplex or non-duplex
+  // when no specific Y/N row exists for the same bedroom + product_type combo.
+  is_duplex: string;
   file_id: string;
 };
+
+function normalizeYN(raw: unknown): string {
+  if (raw == null) return "";
+  const v = String(raw).trim().toUpperCase();
+  if (v === "Y" || v === "YES" || v === "TRUE" || v === "1") return "Y";
+  if (v === "N" || v === "NO" || v === "FALSE" || v === "0") return "N";
+  return "";
+}
 
 export async function GET() {
   try {
@@ -75,6 +86,7 @@ export async function GET() {
     const ix = (name: string) => cols.indexOf(name);
     const iBed = ix("bedroom_type");
     const iType = ix("product_type");
+    const iDup = ix("is_duplex"); // optional — older sheets without this column still work
     const iUrl =
       ix("drive_url") >= 0
         ? ix("drive_url")
@@ -99,9 +111,15 @@ export async function GET() {
         i < 0 || !row.c || !row.c[i] ? null : row.c[i].v;
       const bed = String(cell(iBed) ?? "").trim();
       const type = String(cell(iType) ?? "").trim();
+      const dup = iDup >= 0 ? normalizeYN(cell(iDup)) : "";
       const fileId = extractFileId(cell(iUrl));
       if (!bed || !type || !fileId) continue;
-      rows.push({ bedroom_type: bed, product_type: type, file_id: fileId });
+      rows.push({
+        bedroom_type: bed,
+        product_type: type,
+        is_duplex: dup,
+        file_id: fileId,
+      });
     }
 
     return new NextResponse(

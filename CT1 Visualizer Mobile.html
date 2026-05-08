@@ -2396,16 +2396,26 @@ function refresh() {
 })();
 
 // ============================================================
-// FLOORPLANS — fetched once from /api/floorplans, indexed by
-// `${bedroom_type}::${product_type}` for O(1) lookup.
+// FLOORPLANS — fetched once from /api/floorplans.
+// Index keyed by `${bedroom_type}::${product_type}::${duplexTag}` where
+// duplexTag is 'Y', 'N', or '' (catch-all). Lookup is two-tier: first try
+// the specific Y/N match, then fall back to the catch-all. So a single row
+// in 08_Floorplans with is_duplex blank covers both duplex + non-duplex,
+// but a Y or N row takes priority when the unit's is_duplex matches.
 // ============================================================
-let FLOORPLAN_INDEX = {}; // { 'Studio::A': '<file_id>' , ... }
+let FLOORPLAN_INDEX = {}; // { 'Studio::A::': '<file_id>', '3 Bedroom::A::Y': '<id>' , ... }
 let lastOpenUnitUid = null;
 
-function fpKey(bed, type) { return (bed || '').trim() + '::' + (type || '').trim().toUpperCase(); }
+function fpKey(bed, type, dup) {
+  return (bed || '').trim() + '::' + (type || '').trim().toUpperCase() + '::' + (dup || '').trim().toUpperCase();
+}
 function floorplanFor(u) {
   if (!u || !u.bedRaw || !u.pt) return null;
-  return FLOORPLAN_INDEX[fpKey(u.bedRaw, u.pt)] || null;
+  const dupTag = u.d ? 'Y' : 'N';
+  // Specific match first (e.g. "3 Bedroom::A::Y"), then catch-all ("3 Bedroom::A::").
+  return FLOORPLAN_INDEX[fpKey(u.bedRaw, u.pt, dupTag)]
+      || FLOORPLAN_INDEX[fpKey(u.bedRaw, u.pt, '')]
+      || null;
 }
 async function fetchFloorplans() {
   try {
@@ -2415,10 +2425,9 @@ async function fetchFloorplans() {
     if (!body || body.status !== 'ok' || !Array.isArray(body.rows)) return;
     const next = {};
     for (const row of body.rows) {
-      next[fpKey(row.bedroom_type, row.product_type)] = row.file_id;
+      next[fpKey(row.bedroom_type, row.product_type, row.is_duplex)] = row.file_id;
     }
     FLOORPLAN_INDEX = next;
-    // If the unit modal is currently open, refresh its View-floorplan button state.
     refreshOpenUnitModal();
   } catch (e) {
     // Silent — floorplan availability is best-effort. The modal shows a clear
