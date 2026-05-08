@@ -393,6 +393,22 @@
     letter-spacing: 0.14em; text-transform: uppercase;
   }
   .info-foot .v { display: block; margin-top: 4px; opacity: 0.6; font-style: italic; text-transform: none; letter-spacing: 0; }
+  .info-doc-card {
+    display: flex; align-items: center; gap: 14px;
+    text-decoration: none; color: inherit; cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  .info-doc-card:active { opacity: 0.65; }
+  .info-doc-icon {
+    width: 44px; height: 44px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--ct-gold); color: var(--ct-afterlight);
+    font-size: 22px; line-height: 1;
+  }
+  .info-doc-text { flex: 1; min-width: 0; }
+  .info-doc-text h3 { margin: 0; font-family: Georgia, serif; font-size: 17px; color: var(--slate); }
+  .info-doc-hint { margin: 3px 0 0; font-size: 12px; color: var(--denim); line-height: 1.35; }
+  .info-doc-arrow { font-size: 20px; color: var(--ct-gold-dark); flex-shrink: 0; }
 
   /* ============================================================
    * BOTTOM TAB BAR
@@ -1023,6 +1039,17 @@
         <li><strong>Optional parking:</strong> an additional unallocated parking space may be available, payable at AED 10,000 per annum. No guarantee that the parking can be allocated upon renewal.</li>
       </ul>
     </div>
+
+    <a class="info-card info-doc-card"
+       href="https://drive.google.com/file/d/1YNvtElc9RM-7CtS2EfHxlRo-007Li4vW/view?usp=drivesdk"
+       target="_blank" rel="noopener noreferrer">
+      <div class="info-doc-icon" aria-hidden="true">▤</div>
+      <div class="info-doc-text">
+        <h3>Reservation Form</h3>
+        <p class="info-doc-hint">Tap to open in Drive — download or share with the tenant</p>
+      </div>
+      <div class="info-doc-arrow" aria-hidden="true">↗</div>
+    </a>
 
     <div class="info-card">
       <h3>Tenant requirements</h3>
