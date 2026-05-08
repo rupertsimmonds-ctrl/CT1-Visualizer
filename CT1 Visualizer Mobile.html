@@ -606,20 +606,10 @@
   .cq-payee-name {
     font-family: Georgia, serif; font-size: 16px; line-height: 1.3;
     color: var(--slate); word-break: break-word;
-    margin-bottom: 12px; padding-bottom: 12px;
-    border-bottom: 1px solid var(--rule);
   }
-  .cq-payee-row {
-    display: flex; justify-content: space-between; gap: 12px;
-    padding: 5px 0; font-size: 12px;
-  }
-  .cq-payee-row .lbl {
-    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
-    color: var(--denim); flex-shrink: 0;
-  }
-  .cq-payee-row .val {
-    text-align: right; color: var(--slate);
-    font-variant-numeric: tabular-nums; word-break: break-all;
+  .cq-payee-foot {
+    margin-top: 8px; font-size: 11px; line-height: 1.4;
+    color: var(--denim); font-style: italic;
   }
   .cq-copy {
     margin-top: 12px; width: 100%;
@@ -1204,11 +1194,8 @@
       <div class="cq-payee">
         <div class="cq-payee-head">Cheques payable to</div>
         <div class="cq-payee-name">THE GALLERIA INVESTMENTS LLC — CITY TOWER</div>
-        <div class="cq-payee-row"><span class="lbl">Bank</span><span class="val">Emirates NBD</span></div>
-        <div class="cq-payee-row"><span class="lbl">Account no.</span><span class="val">1014808692906</span></div>
-        <div class="cq-payee-row"><span class="lbl">IBAN</span><span class="val">AE290260001014808692906</span></div>
-        <div class="cq-payee-row"><span class="lbl">Bank address</span><span class="val">PO Box 777, Dubai, UAE</span></div>
-        <button class="cq-copy" type="button" id="cq-copy">Copy bank details</button>
+        <div class="cq-payee-foot">Tenant writes this exact name on each cheque. Bank transfer details for the first instalment are on the reservation form.</div>
+        <button class="cq-copy" type="button" id="cq-copy">Copy payee + schedule</button>
       </div>
     </div>
 
@@ -2557,17 +2544,21 @@ function refresh() {
   });
   recalc();
 
-  // Copy bank details — useful for pasting payee + IBAN into a tenant chat
+  // Copy payee + the live cheque schedule — what the tenant needs to fill
+  // out the cheques. Bank details are intentionally omitted; they live on
+  // the reservation form.
   const copyBtn = $('cq-copy');
   if (copyBtn) {
     copyBtn.addEventListener('click', async () => {
-      const txt = [
-        'Cheques payable to: THE GALLERIA INVESTMENTS LLC — CITY TOWER',
-        'Bank: Emirates NBD',
-        'Account no.: 1014808692906',
-        'IBAN: AE290260001014808692906',
-        'Bank address: PO Box 777, Dubai, UAE',
-      ].join('\n');
+      const lines = ['Cheques payable to: THE GALLERIA INVESTMENTS LLC — CITY TOWER', ''];
+      const trs = $('cq-table').querySelectorAll('tbody tr');
+      trs.forEach(tr => {
+        const cells = [...tr.querySelectorAll('td')].map(td => td.textContent.trim());
+        if (cells.length === 4) {
+          lines.push(`${cells[0]}. ${cells[1]} · ${cells[2]} · ${cells[3]}`);
+        }
+      });
+      const txt = lines.join('\n');
       try {
         await navigator.clipboard.writeText(txt);
         copyBtn.classList.add('copied');
