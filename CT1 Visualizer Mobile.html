@@ -389,6 +389,94 @@
   .btn-clear-empty:active { transform: scale(0.97); }
 
   /* ============================================================
+   * TAB — LEAGUE
+   * ========================================================== */
+  .league-hero {
+    background: linear-gradient(180deg, var(--ct-afterlight) 0%, var(--ct-afterlight2) 100%);
+    color: var(--ct-haze);
+    padding: 26px 18px 24px;
+    border-bottom: 1.5px solid var(--ct-gold);
+  }
+  .league-eyebrow {
+    font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--ct-gold); margin-bottom: 8px;
+  }
+  .league-title {
+    font-family: Georgia, serif; font-size: 28px; line-height: 1.05;
+    margin: 0 0 6px; color: var(--ct-haze); font-weight: 400;
+  }
+  .league-title em { font-style: italic; color: var(--ct-gold); }
+  .league-sub {
+    font-size: 11px; letter-spacing: 0.04em; color: var(--ct-sun); opacity: 0.9;
+  }
+  .league-mode {
+    display: inline-flex; padding: 3px;
+    background: rgba(31, 52, 63, 0.06);
+    margin: 16px 18px 0;
+  }
+  .league-mode .seg-btn {
+    border: 0; background: transparent;
+    padding: 8px 14px;
+    font: 600 11px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--slate); cursor: pointer;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    transition: all 0.18s ease;
+  }
+  .league-mode .seg-btn.active {
+    background: white; color: var(--ct-afterlight);
+    box-shadow: 0 1px 2px rgba(31, 52, 63, 0.12);
+  }
+  .league-board { padding: 14px 16px 12px; }
+  .league-row {
+    display: grid;
+    grid-template-columns: 32px 1fr auto auto;
+    gap: 12px; align-items: center;
+    padding: 14px 14px;
+    background: white;
+    margin-bottom: 8px;
+    border-left: 3px solid transparent;
+  }
+  .league-row.rank-1 { border-left-color: var(--ct-gold); }
+  .league-row.rank-2 { border-left-color: var(--powder); }
+  .league-row.rank-3 { border-left-color: var(--terra); }
+  .league-rank {
+    font-family: Georgia, serif; font-size: 22px; line-height: 1;
+    color: var(--ct-gold-dark); text-align: center;
+  }
+  .league-row.rank-1 .league-rank { color: var(--ct-gold); }
+  .league-name {
+    font-size: 14px; color: var(--slate); font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .league-deals {
+    font-family: Georgia, serif; font-size: 18px; color: var(--slate);
+    font-variant-numeric: tabular-nums;
+  }
+  .league-deals .lbl {
+    display: block; font-size: 9px; letter-spacing: 0.16em;
+    color: var(--denim); font-family: inherit;
+    text-transform: uppercase; text-align: right; margin-top: 2px;
+  }
+  .league-revenue {
+    text-align: right; font-size: 11px; color: var(--denim);
+    font-variant-numeric: tabular-nums; min-width: 90px;
+  }
+  .league-revenue strong { display: block; color: var(--slate); font-size: 13px; font-weight: 500; }
+  .league-empty {
+    background: var(--paper); padding: 28px 16px; text-align: center;
+    color: var(--denim); font-style: italic; font-size: 13px;
+    line-height: 1.5;
+  }
+  .league-foot {
+    padding: 14px 18px 24px; font-size: 11px; line-height: 1.5;
+    color: var(--denim);
+  }
+  .league-foot code {
+    background: rgba(31, 52, 63, 0.08); padding: 1px 5px;
+    font-size: 11px;
+  }
+
+  /* ============================================================
    * TAB 3 — INFO
    * ========================================================== */
   .info-hero {
@@ -491,7 +579,7 @@
     position: fixed; bottom: 0; left: 0; right: 0; height: var(--tabbar-h); z-index: 50;
     padding: 0 0 var(--safe-bot);
     background: white; border-top: 1px solid var(--rule);
-    display: grid; grid-template-columns: repeat(4, 1fr);
+    display: grid; grid-template-columns: repeat(5, 1fr);
   }
   .tabbar button {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -1151,7 +1239,26 @@
     <div class="unit-list" id="unit-list"></div>
   </section>
 
-  <!-- TAB 3 — INFO -->
+  <!-- TAB — LEAGUE (broker leaderboard, signed deals this month) -->
+  <section class="tab" id="tab-league">
+    <div class="league-hero">
+      <div class="league-eyebrow">League · CT1</div>
+      <h2 class="league-title">Top brokers <em>this month</em></h2>
+      <div class="league-sub" id="league-sub">Ranked by signed deals · resets on the 1st</div>
+    </div>
+    <div class="league-mode" id="league-mode">
+      <button class="seg-btn active" data-league-mode="month">This month</button>
+      <button class="seg-btn" data-league-mode="all">All time</button>
+    </div>
+    <div class="league-board" id="league-board"></div>
+    <div class="league-foot">
+      <strong>Note:</strong> a broker only appears if they're recorded as the
+      signing broker on at least one closed deal. Resets monthly. If your
+      name's missing, check the <code>broker</code> column on the master sheet.
+    </div>
+  </section>
+
+  <!-- TAB — INFO -->
   <section class="tab" id="tab-info">
     <div class="info-hero">
       <svg viewBox="490 340 930 400" xmlns="http://www.w3.org/2000/svg" aria-label="City Tower" role="img"><path fill="currentColor" d="M843,347.8l-4.5,12.1s-7.2-5.5-19.7-5.5h-27.9v148.6s-.5,6.9,4.4,10.5v.2h-21.8v-.2c4.9-3.6,4.4-10.5,4.4-10.5v-148.6h-28c-12.5,0-19.7,5.5-19.7,5.5l-4.5-12.1h117.1ZM725.9,566.3l4.5,12.1s7.2-5.5,19.7-5.5h28v148.6s.5,6.9-4.4,10.5v.2h21.8v-.2c-4.9-3.6-4.4-10.5-4.4-10.5v-148.6h27.9c12.5,0,19.7,5.5,19.7,5.5l4.5-12.1h-117.1ZM1144.7,566.3c2.3,5.7.5,12.2.5,12.2l-50.2,138.5c0-.2-25.7-70.2-25.7-70.2,10.9-31.4,21-60.5,22.3-64.5,3.2-9.4,10.3-15.9,10.3-15.9h-18c2.3,5.7.5,12.2.5,12.2l-19.9,55.3-17.2-47s-.7-1.8-1.8-6.2c-1.6-6.3.2-14.2.2-14.2h-25.2c5.4,2.7,9.6,12,9.6,12l27.2,75.5-22.6,63.2c0-.2-16.2-43.4-21.9-58.6-7-18.7-12.8-38.2-23.6-55.2-7.7-12-17.6-22.1-29.7-29.7-12.7-8-28.4-10.7-43.2-10.7-48.7,0-88.2,38.8-88.2,86.6s39.5,86.6,88.2,86.6,63.4-18.8,78.2-46.4l-7.5-17.8c-8.7,33.8-37,58.6-70.7,58.6s-73.4-36-73.4-80.4,32.9-80.3,73.4-80.3,43.3,11.6,56.5,29.3c9.1,12.3,13.5,26.7,18.4,40.9,3.6,10.3,7.1,20.7,10.5,31.1l21.7,61.3h15.8s13.3-37.6,22.8-65l23.1,65h14.4s49.9-141.6,52.7-150c3.2-9.5,10.3-15.9,10.3-15.9h-18,0ZM1233.6,723.7h-40.6v-75c7.4.3,20,1,31.9,2.9,14,2.2,27.4,5.7,27.4,5.7l5.7-13.6h-65v-69.6h51.1c14.2,0,25.7,4.9,25.7,4.9v-12.6h-94.2v.2c4.9,3.6,4.4,10.5,4.4,10.5v144.4s.5,6.9-4.4,10.5v.2h94.8l10.9-20.2s-15.5,11.7-47.8,11.7h0ZM1410,732v.2h-27c-3.5-8.4-11.9-24.6-11.9-24.6l-22.1-42.8c-19.1.9-35-4.6-40.5-6.8v63.5s-.6,6.9,4.3,10.5v.2h-21.7v-.2c4.9-3.6,4.4-10.5,4.4-10.5v-144.4s.5-6.9-4.4-10.5v-.2h42.6c8.4,0,17.5,0,25.8,1.3,17.8,2.8,33.8,13,39.6,30.5,1.8,5.5,2.6,11.3,2.6,17.1,0,16.2-13.1,41.4-40.5,48,2.6,5.3,7.4,15.4,16.4,32.1,13.8,25.4,29.7,35.3,32.3,36.8h0ZM1357.6,656.2c10.4-3,18.8-10,23.8-19.6,5.8-11.2,7.4-28.3,1.9-40-4.2-8.8-12.6-15.3-21.7-18.7-10.6-4-21.7-3.9-32.8-3.9,0,0-18.4,0-20.2,0v77c15.4,5.7,32.9,9.8,49,5.2h0ZM710,348v-.2h-21.8v.2c3.7,2.7,4.4,7.4,4.4,9.5,0,.7,0,1.1,0,1.1v144.4s0,.4,0,1.1c0,2.1-.7,6.7-4.4,9.5v.2h21.8v-.2c-3.7-2.7-4.3-7.4-4.4-9.5v-145.5s0-.4,0-1.1c0-2.1.7-6.7,4.4-9.5ZM962.2,364.2c4.9-8.7,13.1-16.4,13.1-16.4h-20.8c3.1,5.7.5,12.1.5,12.1l-35.9,66.1c-10.1-18.1-34.8-59-36.5-63.8-2.9-7.7,0-14.5,0-14.5h-23.7c5.5,3.3,9.6,12,9.6,12l42.5,74.9v68.3s0,.4,0,1.1c0,2.1-.7,6.7-4.4,9.5v.2h21.8v-.2c-3.7-2.7-4.3-7.4-4.4-9.5v-69.4c20.3-39.9,35.4-65.5,38.2-70.5h0ZM663,481.9c-18,21.4-38.8,29.8-64.8,29.8-40.5,0-73.4-36-73.4-80.4s32.9-80.4,73.4-80.4,36.5,11.6,49.8,26.4l10.5-10c-15.8-14.5-37-23.4-60.3-23.4-48.7,0-88.2,38.8-88.2,86.6s39.5,86.6,88.2,86.6,52.3-12.5,68.5-32l-3.8-3.4h0Z"/></svg>
@@ -1331,6 +1438,7 @@
   <button data-tab="tower" class="active"><span class="ic">⌂</span><span>Overview</span></button>
   <button data-tab="tower-viz"><span class="ic">▦</span><span>Tower</span></button>
   <button data-tab="list"><span class="ic">⌕</span><span>Browse</span></button>
+  <button data-tab="league"><span class="ic">★</span><span>League</span></button>
   <button data-tab="info"><span class="ic">ⓘ</span><span>Info</span></button>
 </nav>
 
@@ -1595,7 +1703,81 @@ function switchTab(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.id === 'tab-'+name));
   window.scrollTo(0, 0);
   if (name === 'tower-viz') renderTower();
+  if (name === 'league') renderLeague();
 }
+
+// ============================================================
+// LEAGUE TAB — broker leaderboard. Sorts by # signed deals in
+// the active mode (this month / all time), ties broken by total
+// p.a. revenue. Reads `broker` and `signed_date` columns from
+// the sheet — units without a broker name are skipped.
+// Experimental UI; will be promoted into the main page if it
+// proves useful.
+// ============================================================
+let leagueMode = 'month'; // 'month' | 'all'
+function renderLeague() {
+  const board = document.getElementById('league-board');
+  const sub = document.getElementById('league-sub');
+  if (!board) return;
+  const today = new Date();
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+    .toISOString().slice(0, 10);
+  // Reduce signed deals into a per-broker tally
+  const byBroker = new Map();
+  for (const u of UNITS) {
+    if (!u.br) continue;
+    if (!u.sgnD) continue;
+    if (leagueMode === 'month' && u.sgnD < startOfMonth) continue;
+    const key = u.br.trim();
+    if (!key) continue;
+    const row = byBroker.get(key) || { name: key, deals: 0, revenue: 0 };
+    row.deals += 1;
+    row.revenue += (u.sgnR || u.pr || 0);
+    byBroker.set(key, row);
+  }
+  const ranked = [...byBroker.values()].sort((a, b) =>
+    b.deals - a.deals || b.revenue - a.revenue,
+  );
+  const totalDeals = ranked.reduce((s, r) => s + r.deals, 0);
+  sub.textContent = leagueMode === 'month'
+    ? `Ranked by signed deals · this calendar month · ${totalDeals} total`
+    : `Ranked by signed deals · all time · ${totalDeals} total`;
+
+  if (!ranked.length) {
+    board.innerHTML = `
+      <div class="league-empty">
+        No signed deals ${leagueMode === 'month' ? 'this month yet' : 'on record yet'}.<br>
+        Check back once a deal closes — the leaderboard updates with the live sheet.
+      </div>`;
+    return;
+  }
+  board.innerHTML = ranked.map((r, i) => {
+    const rankClass = i < 3 ? `rank-${i + 1}` : '';
+    return `
+      <div class="league-row ${rankClass}">
+        <div class="league-rank">${i + 1}</div>
+        <div class="league-name">${r.name}</div>
+        <div class="league-deals">${r.deals}<span class="lbl">${r.deals === 1 ? 'deal' : 'deals'}</span></div>
+        <div class="league-revenue"><strong>${fmtAED(r.revenue)}</strong> p.a.</div>
+      </div>
+    `;
+  }).join('');
+}
+// League mode toggle — clicked even before live data lands, so guard the
+// element lookup.
+(function () {
+  const seg = document.getElementById('league-mode');
+  if (!seg) return;
+  seg.querySelectorAll('.seg-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      seg.querySelectorAll('.seg-btn').forEach(x =>
+        x.classList.toggle('active', x === b),
+      );
+      leagueMode = b.dataset.leagueMode;
+      renderLeague();
+    });
+  });
+})();
 
 // ============================================================
 // OVERVIEW — KPIs, bedroom strip, show flats
@@ -2495,6 +2677,7 @@ function processGvizResponse(resp) {
     const iPt = ix('product_type');
     const iNsqm = ix('net_sqm'), iTsqm = ix('total_sqm');
     const iSgnD = ix('signed_date'), iLast = ix('last_activity_date');
+    const iBroker = ix('broker'), iSgnR = ix('signed_rent_aed');
     const isYes = v => /^(y|yes|true|1)$/i.test(String(v == null ? '' : v).trim());
     const get = (row, i) => (i < 0 || !row.c[i]) ? null : row.c[i].v;
     // gviz dates land as 'Date(yyyy,m,d)' (m is 0-indexed). Parse to ISO so
@@ -2537,6 +2720,8 @@ function processGvizResponse(resp) {
         s: classifyJS(status, agency),
         showFlat: isYes(get(row, iSf)) || status === 'Show Flat',
         sgnD: parseGvizDate(get(row, iSgnD)),
+        sgnR: parseFloat(get(row, iSgnR)) || null,
+        br: get(row, iBroker) ? String(get(row, iBroker)).trim() : null,
         lastD: parseGvizDate(get(row, iLast)),
       });
     }
@@ -2548,6 +2733,7 @@ function processGvizResponse(resp) {
     setupSizeSlider();
     renderOverview(); renderList();
     if (document.getElementById('tab-tower-viz').classList.contains('active')) renderTower();
+    if (document.getElementById('tab-league').classList.contains('active')) renderLeague();
     const now = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
     setLive('live', `Live · ${now}`);
     const help = document.getElementById('conn-help');
