@@ -1230,9 +1230,10 @@ let UNITS = FALLBACK_UNITS;
 
 const SHEET_ID  = '1FOofWcGkSXXnBWZ70dB7tix9T5lHjV3BL8evePp-URk';
 const SHEET_TAB = '07_HTML_Export';
-const GVIZ_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq` +
-                  `?tqx=out:json;responseHandler:ctUnitsLoaded` +
-                  `&sheet=${encodeURIComponent(SHEET_TAB)}`;
+// Live data is served by our same-origin /api/units endpoint, which proxies
+// the Google Sheets gviz feed server-side. Going through the same origin
+// avoids CORS issues and the silent-JSONP failures that bit mobile.
+const UNITS_URL = '/api/units';
 const REFRESH_MS = 5 * 60 * 1000;
 
 const TYPE_META = {
@@ -2430,9 +2431,9 @@ window.addEventListener('resize', () => {
 });
 
 /* ============================================================
- * LIVE SYNC (gviz JSONP)
+ * LIVE SYNC — fetches /api/units (same-origin proxy of the gviz feed)
  * ========================================================== */
-window.ctUnitsLoaded = function(resp) {
+function processUnitsResponse(resp) {
   try {
     if (!resp || resp.status !== 'ok') {
       const msg = (resp && resp.errors && resp.errors[0] && resp.errors[0].detailed_message) || 'gviz error';
@@ -2515,17 +2516,42 @@ window.ctUnitsLoaded = function(resp) {
     console.warn('Live sync failed, using snapshot:', err);
     setLivePill('offline', 'Offline · ' + (err.message || 'showing snapshot'));
   }
-};
+}
 
 function refreshFromSheet() {
   setLivePill('loading', 'Fetching latest…');
-  const prev = document.getElementById('gviz-loader');
-  if (prev) prev.remove();
-  const s = document.createElement('script');
-  s.id = 'gviz-loader';
-  s.src = GVIZ_URL + '&t=' + Date.now();
-  s.onerror = () => setLivePill('offline', 'Offline · script load failed');
-  document.head.appendChild(s);
+  const ac = new AbortController();
+  let settled = false;
+  const offlineTimer = setTimeout(() => {
+    if (settled) return;
+    settled = true;
+    ac.abort();
+    setLivePill('offline', 'Offline · request timed out');
+  }, 8000);
+
+  fetch(UNITS_URL + '?t=' + Date.now(), { signal: ac.signal, cache: 'no-store' })
+    .then(async r => {
+      // /api/units returns JSON. On upstream failure (sheet private, gviz
+      // down, columns missing) it returns 502 with {status, message}.
+      const body = await r.json().catch(() => null);
+      if (!r.ok || !body) {
+        throw new Error((body && body.message) || ('HTTP ' + r.status));
+      }
+      return body;
+    })
+    .then(resp => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(offlineTimer);
+      processUnitsResponse(resp);
+    })
+    .catch(err => {
+      if (settled || err.name === 'AbortError') return;
+      settled = true;
+      clearTimeout(offlineTimer);
+      console.warn('Live sync failed:', err);
+      setLivePill('offline', 'Offline · ' + (err.message || 'fetch failed'));
+    });
 }
 
 /* ============================================================
