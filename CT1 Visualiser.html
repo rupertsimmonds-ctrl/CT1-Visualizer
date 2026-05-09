@@ -631,6 +631,51 @@
     font-size: 12.5px; line-height: 1.5; color: var(--slate);
   }
   .info-block li:last-child { border-bottom: none; }
+  /* Document-link variant of .info-block — used for the Reservation Form
+     and Etihad Credit Bureau cards. The whole card is a tappable <a>. */
+  .info-doc-block {
+    text-decoration: none; color: inherit;
+    transition: border-color 0.18s ease, background 0.18s ease;
+  }
+  .info-doc-block:hover {
+    border-color: var(--ct-gold);
+    background: rgba(215, 168, 111, 0.04);
+  }
+  .info-doc-block .info-doc-row {
+    display: flex; align-items: center; gap: 16px;
+  }
+  .info-doc-icon {
+    width: 48px; height: 48px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--ct-gold); color: var(--ct-afterlight);
+    font-size: 22px; line-height: 1;
+  }
+  .info-doc-text { flex: 1; min-width: 0; }
+  .info-doc-text h2 { margin: 0 0 4px; padding: 0; border: 0; font-size: 16px; }
+  .info-doc-text p { margin: 0; font-size: 12.5px; color: var(--denim); }
+  .info-doc-arrow {
+    font-size: 22px; color: var(--ct-gold-dark); flex-shrink: 0;
+  }
+  /* Parking allocation table — same scheme as the cheque table. */
+  .parking-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 8px; }
+  .parking-table {
+    width: 100%; border-collapse: collapse;
+    font-variant-numeric: tabular-nums; font-size: 13px; color: var(--slate);
+  }
+  .parking-table th, .parking-table td {
+    padding: 8px 10px; text-align: left;
+    border-bottom: 1px solid var(--rule);
+  }
+  .parking-table th {
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--denim); white-space: nowrap;
+  }
+  .parking-table td.num, .parking-table th.num { text-align: right; }
+  .parking-table tr.parking-total td {
+    font-weight: 600; color: var(--slate);
+    border-bottom: none; border-top: 1.5px solid var(--rule-strong);
+    padding-top: 10px;
+  }
 
   /* Footer — gold rule, bh × CT1 dual credit */
   .footer {
@@ -1242,7 +1287,30 @@
         <li><strong>DEWA deposit:</strong> paid by tenant directly to DEWA. Receipt required before check-in.</li>
         <li><strong>District cooling (Tabreed) deposit:</strong> paid by tenant. Receipt required before check-in.</li>
         <li><strong>Move-in / lift use deposit:</strong> AED 3,000 refundable, held but not cashed unless damage on move-in.</li>
+        <li><strong>Optional parking:</strong> an additional unallocated parking space may be available, payable at AED 10,000 per annum. No guarantee that the parking can be allocated upon renewal.</li>
       </ul>
+    </article>
+
+    <article class="info-block">
+      <h2>Parking allocation</h2>
+      <div class="parking-table-wrap">
+        <table class="parking-table">
+          <thead>
+            <tr><th>Unit type</th><th class="num">Units</th><th class="num">Bays / unit</th><th class="num">Total bays</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Studio</td><td class="num">64</td><td class="num">0.34 avg</td><td class="num">22</td></tr>
+            <tr><td>1 Bedroom</td><td class="num">98</td><td class="num">1</td><td class="num">98</td></tr>
+            <tr><td>2 Bedroom · net &lt; 180 m²</td><td class="num">183</td><td class="num">1</td><td class="num">183</td></tr>
+            <tr><td>2 Bedroom · net ≥ 180 m²</td><td class="num">8</td><td class="num">2</td><td class="num">16</td></tr>
+            <tr><td>3 Bedroom</td><td class="num">296</td><td class="num">2</td><td class="num">592</td></tr>
+            <tr><td>4 Bedroom</td><td class="num">34</td><td class="num">2</td><td class="num">68</td></tr>
+            <tr><td>4 Bedroom · top floor</td><td class="num">12</td><td class="num">3</td><td class="num">36</td></tr>
+            <tr class="parking-total"><td>Total</td><td class="num">695</td><td></td><td class="num">1,015</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="info-disclaimer">Net = interior area only, balcony excluded. Studios share a pool of 22 bays — only ~1 in 3 has one allocated, so individual studio listings show <em>"subject to availability"</em>.</p>
     </article>
 
     <article class="info-block">
@@ -1253,11 +1321,34 @@
         <li><strong>Bank statements:</strong> only if credit score below 650 or new to country.</li>
         <li><strong>Third-party payment accepted:</strong> EID + passport + visa copy + 3rd-party letter.</li>
         <li><strong>International transfers:</strong> from tenant only — allow 3 – 4 working days for clearance.</li>
+        <li><strong>Payment method:</strong> first rent instalment payable by bank transfer. Subsequent payments by post-dated cheques.</li>
         <li><strong>Pets:</strong> small pets only, no dogs (cats fine), subject to NOC.</li>
         <li><strong>Internet:</strong> Etisalat &amp; DU.</li>
-        <li><strong>Parking:</strong> allocation per unit type — not all studios get a bay.</li>
+        <li><strong>Parking:</strong> allocation per unit type — see Parking allocation card.</li>
       </ul>
     </article>
+
+    <a class="info-block info-doc-block" href="https://drive.google.com/file/d/1YNvtElc9RM-7CtS2EfHxlRo-007Li4vW/view?usp=drivesdk" target="_blank" rel="noopener noreferrer">
+      <div class="info-doc-row">
+        <span class="info-doc-icon" aria-hidden="true">▤</span>
+        <div class="info-doc-text">
+          <h2>Reservation Form</h2>
+          <p>Open in Drive — download or share with the tenant.</p>
+        </div>
+        <span class="info-doc-arrow" aria-hidden="true">↗</span>
+      </div>
+    </a>
+
+    <a class="info-block info-doc-block" href="https://etihadbureau.ae" target="_blank" rel="noopener noreferrer">
+      <div class="info-doc-row">
+        <span class="info-doc-icon" aria-hidden="true">▤</span>
+        <div class="info-doc-text">
+          <h2>Etihad Credit Bureau</h2>
+          <p>Send to applicants — they pull their own credit report (650+ required).</p>
+        </div>
+        <span class="info-doc-arrow" aria-hidden="true">↗</span>
+      </div>
+    </a>
   </section>
 
   <footer class="footer">
@@ -1721,9 +1812,9 @@ function buildShowFlats() {
     const viewLabel = VIEW_NAMES[u.v] || u.v;
     return `<button class="showflat-card" data-uid="${u.uid}">
       <span class="sf-pin"></span>
-      <div class="sf-type">${m.label}${u.d ? ' · Duplex' : ''}</div>
+      <div class="sf-type">${m.label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''}</div>
       <div class="sf-unit">Unit ${u.uid}</div>
-      <div class="sf-meta">Floor <strong>${u.f}</strong> · ${viewLabel}<br>${fmtSqft(u.sq)} · ${fmtAED(u.pr)} p.a.</div>
+      <div class="sf-meta">Floor <strong>${u.f}</strong> · ${viewLabel}<br>${sizeView(u).oneLine} · ${fmtAED(u.pr)} p.a.</div>
       <div class="sf-cta">Click for details →</div>
     </button>`;
   }).join('');
@@ -2157,7 +2248,7 @@ function copyListToClipboard(units, view) {
   units.slice(0, 40).forEach(u => {
     const viewLabel = VIEW_NAMES[u.v] || u.v;
     const rent = view === 'bh_let' || view === 'hh_let' ? (u.sgnR ? fmtAED(u.sgnR) : fmtAED(u.pr)) : fmtAED(u.pr);
-    lines.push(`• *${u.uid}* · ${TYPE_META[u.t].label}${u.d?' Duplex':''} · Fl ${u.f} · ${viewLabel} · ${fmtSqft(u.sq)} · ${rent} p.a.`);
+    lines.push(`• *${u.uid}* · ${TYPE_META[u.t].label}${u.pt?' '+u.pt:''}${u.d?' Duplex':''} · Fl ${u.f} · ${viewLabel} · ${sizeView(u).oneLine} · ${rent} p.a.`);
   });
   if (units.length > 40) lines.push(`\n…and ${units.length - 40} more`);
   const text = lines.join('\n');
@@ -2264,12 +2355,13 @@ function renderDetail(uid) {
     <div class="detail">
       <div class="detail-hero">
         <h1>Unit ${u.uid}</h1>
-        <div class="d-sub">${m.label}${u.d ? ' · Duplex' : ''} · Floor ${u.f} · Tranche ${u.tr}</div>
+        <div class="d-sub">${m.label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''} · Floor ${u.f} · Tranche ${u.tr}</div>
         <div class="d-status-row">
           <span class="pill s-${u.s}">${STATUS_LABEL[u.s]||u.s}</span>
           ${(u.showFlat && u.s !== 'show_flat') ? '<span class="pill s-show_flat">Show flat</span>' : ''}
+          ${u.pt ? `<span class="pill" style="background:var(--paper);color:var(--denim);border:1px solid var(--rule);">Type ${u.pt}</span>` : ''}
           ${u.d ? '<span class="pill" style="background:var(--ct-gold);color:var(--slate);font-weight:600;">Duplex</span>' : ''}
-          ${u.b ? `<span class="pill" style="background:var(--ct-sun);color:var(--slate);">Balcony · ${fmtN(u.bsq)} sq ft</span>` : '<span class="pill" style="background:var(--mist);color:var(--denim);">No balcony</span>'}
+          ${u.b ? `<span class="pill" style="background:var(--ct-sun);color:var(--slate);">Balcony · ${sizeView(u).balcStr}</span>` : '<span class="pill" style="background:var(--mist);color:var(--denim);">No balcony</span>'}
           <span class="pill" style="background:var(--paper);color:var(--denim);border:1px solid var(--rule);">Unfurnished</span>
           ${priceCut ? `<span class="pill" style="background:var(--terra);color:white;">Price cut ${cutPct}%</span>` : ''}
         </div>
@@ -2283,16 +2375,16 @@ function renderDetail(uid) {
           </div>
         </div>
         <div class="detail-fact">
-          <div class="lbl">Size (inc. balcony)</div>
-          <div class="val">${fmtN(u.sq)} <span style="font-size:13px;color:var(--denim);">sq ft</span></div>
+          <div class="lbl">Unit area</div>
+          <div class="val">${sizeView(u).unitStr}</div>
         </div>
         <div class="detail-fact">
           <div class="lbl">Balcony</div>
-          <div class="val small">${u.b ? fmtN(u.bsq) + ' sq ft' : 'None'}</div>
+          <div class="val small">${u.b ? sizeView(u).balcStr : 'No balcony'}</div>
         </div>
         <div class="detail-fact">
-          <div class="lbl">Internal (sq ft)</div>
-          <div class="val small">${fmtN(u.sq - (u.bsq || 0))} sq ft</div>
+          <div class="lbl">Parking</div>
+          <div class="val small">${parkingForUnit(u)}</div>
         </div>
         <div class="detail-fact">
           <div class="lbl">Furnishing</div>
@@ -2308,7 +2400,7 @@ function renderDetail(uid) {
         </div>
         <div class="detail-fact">
           <div class="lbl">Bedroom type</div>
-          <div class="val small">${m.label}${u.d ? ' Duplex' : ''}</div>
+          <div class="val small">${m.label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' Duplex' : ''}</div>
         </div>
         <div class="detail-fact">
           <div class="lbl">Status</div>
@@ -2429,10 +2521,12 @@ function copyUnitToClipboard(u) {
   const m = TYPE_META[u.t];
   const viewLabel = VIEW_NAMES[u.v] || u.v;
   const priceCut = u.orig && u.orig > u.pr;
+  const sv = sizeView(u);
   const lines = [
     `🏢 *City Tower 1 — Unit ${u.uid}*`,
-    `${m.label}${u.d ? ' · Duplex' : ''} · Floor ${u.f} · ${viewLabel} facing`,
-    `Size: ${fmtSqft(u.sq)}`,
+    `${m.label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''} · Floor ${u.f} · ${viewLabel} facing`,
+    `Size: ${sv.oneLine}`,
+    `Parking: ${parkingForUnit(u)}`,
     `Rent: ${fmtAED(u.pr)} p.a.${priceCut ? ` (reduced from ${fmtAED(u.orig)})` : ''}`,
     u.psf ? `PSF: AED ${u.psf.toFixed(0)}` : null,
     '',
