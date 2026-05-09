@@ -211,6 +211,48 @@
   }
 
   .headline-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .headline-grid.available-only { grid-template-columns: 1fr; margin-bottom: 14px; }
+  .kpi-banner {
+    display: grid; grid-template-columns: 1fr 1fr;
+    background: var(--ct-afterlight2);
+    border: 1px solid rgba(215, 168, 111, 0.32);
+    overflow: hidden;
+  }
+  .kpi-half {
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 22px 28px;
+    background: transparent; border: 0; cursor: pointer; text-align: left;
+    color: var(--ct-haze); font-family: inherit;
+    transition: background 0.18s ease;
+    position: relative;
+    border-left: 4px solid var(--ct-sun);
+  }
+  .kpi-half:hover { background: rgba(244, 242, 238, 0.04); }
+  .kpi-half.hh { border-left-color: var(--powder); }
+  .kpi-half + .kpi-half { border-left-style: solid; border-left-width: 1px; border-left-color: rgba(215, 168, 111, 0.18); }
+  .kpi-half + .kpi-half.hh { border-left: 4px solid var(--powder); }
+  .kpi-half .click-hint { position: absolute; top: 14px; right: 18px; font-size: 9px; letter-spacing: 0.2em; color: var(--ct-gold); opacity: 0.55; text-transform: uppercase; }
+  .kpi-half:hover .click-hint { opacity: 1; }
+  .kpi-half .kpi-agency {
+    font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--ct-gold); font-weight: 600;
+  }
+  .kpi-half .kpi-tally {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 16px;
+  }
+  .kpi-half .kpi-tally .lbl {
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ct-sun); opacity: 0.85;
+  }
+  .kpi-half .kpi-tally .val {
+    font-family: Georgia, 'Times New Roman', serif; font-size: 32px; line-height: 1;
+    color: var(--ct-haze); font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+  }
+  .kpi-half .kpi-half-sub {
+    font-size: 11px; letter-spacing: 0.04em;
+    color: var(--ct-sun); opacity: 0.7; margin-top: 4px;
+  }
   .headline {
     background: rgba(244,242,238,0.04);
     border: 1px solid rgba(215,168,111,0.22);
@@ -992,30 +1034,40 @@
   </header>
 
   <section class="hero">
-    <div class="headline-grid">
-      <button class="headline bh-let" data-view="bh_let">
-        <span class="click-hint">Click for list</span>
-        <div class="headline-lbl">bh let</div>
-        <div class="headline-val" id="kpi-bh">0</div>
-        <div class="headline-sub">
-          <span id="kpi-bh-sub">Signed + Occupied</span>
-          <span class="kpi-pill" id="kpi-bh-reserved-pill">+<span id="kpi-bh-reserved">0</span> reserved</span>
-        </div>
-      </button>
-      <button class="headline hh-let" data-view="hh_let">
-        <span class="click-hint">Click for list</span>
-        <div class="headline-lbl">H&amp;H let</div>
-        <div class="headline-val" id="kpi-hh">0</div>
-        <div class="headline-sub">
-          <span id="kpi-hh-sub">Signed + Occupied</span>
-          <span class="kpi-pill" id="kpi-hh-reserved-pill">+<span id="kpi-hh-reserved">0</span> reserved</span>
-        </div>
-      </button>
+    <div class="headline-grid available-only">
       <button class="headline available" data-view="available">
         <span class="click-hint">Click for list</span>
         <div class="headline-lbl">Available</div>
         <div class="headline-val" id="kpi-avail">0</div>
         <div class="headline-sub" id="kpi-avail-sub">—</div>
+      </button>
+    </div>
+    <div class="kpi-banner">
+      <button class="kpi-half" id="card-bh" type="button" data-view="bh_let">
+        <span class="click-hint">Click for list</span>
+        <div class="kpi-agency">bh</div>
+        <div class="kpi-tally">
+          <span class="lbl">Reserved</span>
+          <span class="val" id="kpi-bh-reserved">0</span>
+        </div>
+        <div class="kpi-tally">
+          <span class="lbl">Let</span>
+          <span class="val" id="kpi-bh">0</span>
+        </div>
+        <div class="kpi-half-sub" id="kpi-bh-sub">Signed + Occupied</div>
+      </button>
+      <button class="kpi-half hh" id="card-hh" type="button" data-view="hh_let">
+        <span class="click-hint">Click for list</span>
+        <div class="kpi-agency">H&amp;H</div>
+        <div class="kpi-tally">
+          <span class="lbl">Reserved</span>
+          <span class="val" id="kpi-hh-reserved">0</span>
+        </div>
+        <div class="kpi-tally">
+          <span class="lbl">Let</span>
+          <span class="val" id="kpi-hh">0</span>
+        </div>
+        <div class="kpi-half-sub" id="kpi-hh-sub">Signed + Occupied</div>
       </button>
     </div>
   </section>
@@ -1578,8 +1630,6 @@ function buildHeadlines() {
   document.getElementById('kpi-avail').textContent = avail;
   document.getElementById('kpi-bh-reserved').textContent = bhReserved;
   document.getElementById('kpi-hh-reserved').textContent = hhReserved;
-  document.getElementById('kpi-bh-reserved-pill').style.display = bhReserved ? '' : 'none';
-  document.getElementById('kpi-hh-reserved-pill').style.display = hhReserved ? '' : 'none';
 
   const pctBh = total ? `${(bhLet/total*100).toFixed(1)}%` : '—';
   const pctHh = total ? `${(hhLet/total*100).toFixed(1)}%` : '—';
@@ -1699,8 +1749,9 @@ function setupFilters() {
       applyTowerFilter();
     });
   });
-  // KPI buttons
-  document.querySelectorAll('.headline').forEach(b => {
+  // KPI buttons — both the Available headline and the bh / H&H halves
+  // open the filtered list view via data-view.
+  document.querySelectorAll('.headline[data-view], .kpi-half[data-view]').forEach(b => {
     b.addEventListener('click', () => openList(b.dataset.view));
   });
   // Available focus toggle — fades non-Available units to a near-monochrome
@@ -1789,7 +1840,7 @@ function applyTowerFilter() {
   document.querySelectorAll('#mix-body tr').forEach(r => {
     r.style.opacity = (bed === 'all' || r.dataset.type === bed) ? '1' : '0.35';
   });
-  document.querySelectorAll('.headline').forEach(b => {
+  document.querySelectorAll('.headline[data-view], .kpi-half[data-view]').forEach(b => {
     b.classList.toggle('active', st && b.dataset.view === st);
   });
   document.querySelectorAll('.avail-tile').forEach(t => {
