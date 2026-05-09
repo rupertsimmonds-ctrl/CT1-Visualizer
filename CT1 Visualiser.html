@@ -215,7 +215,19 @@
   .headline-lbl { font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ct-gold); margin-bottom: 6px; }
   .headline-val { font-family: Georgia, 'Times New Roman', serif; font-size: 48px; letter-spacing: -0.02em; line-height: 1; color: var(--ct-haze); font-weight: 400; }
   .headline.available .headline-val { color: var(--ct-gold); }
-  .headline-sub { font-size: 11px; color: var(--ct-sun); margin-top: 10px; opacity: 0.75; }
+  .headline-sub { font-size: 11px; color: var(--ct-sun); margin-top: 10px; opacity: 0.85; line-height: 1.4; }
+  .headline-sub .kpi-pill {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 7px;
+    background: rgba(215, 168, 111, 0.22);
+    color: var(--ct-gold);
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .headline.hh-let .kpi-pill { background: rgba(160, 103, 103, 0.28); color: #E8C8C2; }
 
   /* SHOW FLATS ROW (promoted) */
   .showflats-row {
@@ -968,13 +980,19 @@
         <span class="click-hint">Click for list</span>
         <div class="headline-lbl">bh let</div>
         <div class="headline-val" id="kpi-bh">0</div>
-        <div class="headline-sub" id="kpi-bh-sub">Reserved · Signed · Occupied</div>
+        <div class="headline-sub">
+          <span id="kpi-bh-sub">Signed + Occupied</span>
+          <span class="kpi-pill" id="kpi-bh-reserved-pill">+<span id="kpi-bh-reserved">0</span> reserved</span>
+        </div>
       </button>
       <button class="headline hh-let" data-view="hh_let">
         <span class="click-hint">Click for list</span>
-        <div class="headline-lbl">H&amp;H Let</div>
+        <div class="headline-lbl">H&amp;H let</div>
         <div class="headline-val" id="kpi-hh">0</div>
-        <div class="headline-sub" id="kpi-hh-sub">Reserved · Signed · Occupied</div>
+        <div class="headline-sub">
+          <span id="kpi-hh-sub">Signed + Occupied</span>
+          <span class="kpi-pill" id="kpi-hh-reserved-pill">+<span id="kpi-hh-reserved">0</span> reserved</span>
+        </div>
       </button>
       <button class="headline available" data-view="available">
         <span class="click-hint">Click for list</span>
@@ -1251,8 +1269,12 @@ const BEDROOM_CODE = {
 // Granular lifecycle display states. 'Available' drawers pool the first four;
 // 'BH let' / 'H&H let' drawers pool the three agency-won states each.
 const AVAILABLE_STATES = ['available','marketing'];
-const BH_LET_STATES    = ['reserved_bh','signed_bh','occupied_bh'];
-const HH_LET_STATES    = ['reserved_hh','signed_hh','occupied_hh'];
+// Let = locked in (Signed + Occupied). Reserved is split out so brokers can
+// see floating-vs-committed at a glance.
+const BH_LET_STATES      = ['signed_bh', 'occupied_bh'];
+const HH_LET_STATES      = ['signed_hh', 'occupied_hh'];
+const BH_RESERVED_STATES = ['reserved_bh'];
+const HH_RESERVED_STATES = ['reserved_hh'];
 
 // Display labels. Internal `marketing` is kept as the code for backward compat
 // with snapshot data, but the sheet now uses `Listed` (= shown on portals) and
@@ -1433,8 +1455,12 @@ function buildHeadlines() {
   const get = k => counts[k] || 0;
   const total = UNITS.length;
 
-  const bhLet = get('reserved_bh') + get('signed_bh') + get('occupied_bh');
-  const hhLet = get('reserved_hh') + get('signed_hh') + get('occupied_hh');
+  // Let = Signed + Occupied (locked-in revenue). Reserved is split out
+  // separately because it's still floating and could fall through.
+  const bhLet      = get('signed_bh') + get('occupied_bh');
+  const hhLet      = get('signed_hh') + get('occupied_hh');
+  const bhReserved = get('reserved_bh');
+  const hhReserved = get('reserved_hh');
   const lost = get('lost');
   // Big KPI counts the full available pool: rentable in-house (Available)
   // PLUS on-portals (Listed). Both are bookable; Listed is the sub-segment
@@ -1446,22 +1472,15 @@ function buildHeadlines() {
   document.getElementById('kpi-bh').textContent    = bhLet;
   document.getElementById('kpi-hh').textContent    = hhLet;
   document.getElementById('kpi-avail').textContent = avail;
+  document.getElementById('kpi-bh-reserved').textContent = bhReserved;
+  document.getElementById('kpi-hh-reserved').textContent = hhReserved;
+  document.getElementById('kpi-bh-reserved-pill').style.display = bhReserved ? '' : 'none';
+  document.getElementById('kpi-hh-reserved-pill').style.display = hhReserved ? '' : 'none';
 
-  const bhParts = [];
-  if (get('reserved_bh')) bhParts.push(`${get('reserved_bh')} reserved`);
-  if (get('signed_bh'))   bhParts.push(`${get('signed_bh')} signed`);
-  if (get('occupied_bh')) bhParts.push(`${get('occupied_bh')} occupied`);
-  document.getElementById('kpi-bh-sub').textContent = bhParts.length
-    ? bhParts.join(' · ')
-    : `${total ? (bhLet/total*100).toFixed(1) : '0'}% of stock`;
-
-  const hhParts = [];
-  if (get('reserved_hh')) hhParts.push(`${get('reserved_hh')} reserved`);
-  if (get('signed_hh'))   hhParts.push(`${get('signed_hh')} signed`);
-  if (get('occupied_hh')) hhParts.push(`${get('occupied_hh')} occupied`);
-  document.getElementById('kpi-hh-sub').textContent = hhParts.length
-    ? hhParts.join(' · ')
-    : `${total ? (hhLet/total*100).toFixed(1) : '0'}% of stock`;
+  const pctBh = total ? `${(bhLet/total*100).toFixed(1)}%` : '—';
+  const pctHh = total ? `${(hhLet/total*100).toFixed(1)}%` : '—';
+  document.getElementById('kpi-bh-sub').textContent = `Signed + Occupied · ${pctBh}`;
+  document.getElementById('kpi-hh-sub').textContent = `Signed + Occupied · ${pctHh}`;
 
   const avParts = [];
   if (onPortals)           avParts.push(`${onPortals} listed on portals`);
