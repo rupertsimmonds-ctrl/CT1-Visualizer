@@ -656,6 +656,112 @@
   .info-doc-arrow {
     font-size: 22px; color: var(--ct-gold-dark); flex-shrink: 0;
   }
+  /* Standalone calculators on the bottom Info grid (Fee + Cheque planning) */
+  .info-block .ic-inputs { margin: 8px 0 14px; }
+  .info-block .ic-row {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px; padding: 6px 0;
+  }
+  .info-block .ic-row > span:first-child {
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--denim); flex-shrink: 0;
+  }
+  .info-block .ic-row input[type="number"],
+  .info-block .ic-row input[type="date"] {
+    width: 130px; padding: 6px 10px;
+    border: 1px solid var(--rule); background: white;
+    font-family: Georgia, serif; font-size: 14px; color: var(--slate);
+    font-variant-numeric: tabular-nums; text-align: right;
+  }
+  .info-block .ic-row input:focus { outline: none; border-color: var(--ct-gold-dark); }
+  .info-block .ic-toggle-row { padding: 10px 0 4px; }
+  .info-block .cq-toggle {
+    position: relative; display: inline-block; width: 38px; height: 22px;
+    cursor: pointer;
+  }
+  .info-block .cq-toggle input {
+    position: absolute; opacity: 0; pointer-events: none;
+  }
+  .info-block .cq-knob {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    width: 38px; height: 22px; border-radius: 11px;
+    background: rgba(31,52,63,0.18); transition: background 0.18s ease;
+  }
+  .info-block .cq-knob::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    transition: transform 0.18s ease;
+  }
+  .info-block .cq-toggle input:checked + .cq-knob { background: var(--ct-gold-dark); }
+  .info-block .cq-toggle input:checked + .cq-knob::after { transform: translateX(16px); }
+  .info-block .ic-out {
+    background: var(--ct-afterlight); color: var(--ct-haze);
+    padding: 12px 16px;
+  }
+  .info-block .ic-out-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 5px 0; font-size: 12px;
+  }
+  .info-block .ic-out-row span {
+    color: var(--ct-sun); font-size: 10px; letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .info-block .ic-out-row strong {
+    font-family: Georgia, serif; color: var(--ct-haze); font-size: 14px;
+    font-weight: 400; font-variant-numeric: tabular-nums;
+  }
+  .info-block .ic-out-row.head strong { color: var(--ct-gold); font-size: 18px; }
+  .info-block .ic-out-row.head span { color: var(--ct-gold); }
+  /* Cheque planning — table + payee + copy button (mirrors mobile) */
+  .info-block .cq-summary {
+    background: var(--ct-afterlight); color: var(--ct-sun);
+    padding: 10px 16px; font-size: 11px; margin-top: 6px;
+  }
+  .info-block .cq-summary b { color: var(--ct-haze); font-family: Georgia, serif; font-size: 13px; }
+  .info-block .cq-table-wrap { overflow-x: auto; }
+  .info-block .cq-table {
+    width: 100%; border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+  .info-block .cq-table th, .info-block .cq-table td {
+    padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--rule);
+  }
+  .info-block .cq-table th {
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--denim); background: var(--paper); white-space: nowrap;
+  }
+  .info-block .cq-table td { font-size: 12px; color: var(--slate); white-space: nowrap; }
+  .info-block .cq-table td:first-child { color: var(--denim); font-weight: 600; }
+  .info-block .cq-table td.amount { text-align: right; font-weight: 500; }
+  .info-block .cq-empty { padding: 18px 16px; text-align: center; color: var(--denim); font-style: italic; font-size: 12px; }
+  .info-block .cq-payee {
+    background: var(--paper); padding: 14px 16px;
+    border-top: 1px solid var(--rule); margin-top: 0;
+  }
+  .info-block .cq-payee-head {
+    font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--ct-gold-dark); font-weight: 600; margin-bottom: 4px;
+  }
+  .info-block .cq-payee-name {
+    font-family: Georgia, serif; font-size: 16px; line-height: 1.3;
+    color: var(--slate); word-break: break-word;
+  }
+  .info-block .cq-payee-foot {
+    margin-top: 8px; font-size: 11px; line-height: 1.4;
+    color: var(--denim); font-style: italic;
+  }
+  .info-block .cq-copy {
+    margin-top: 12px; width: 100%;
+    background: transparent; color: var(--ct-gold-dark);
+    border: 1px solid var(--ct-gold-dark);
+    padding: 10px 12px; font-family: inherit;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    cursor: pointer;
+  }
+  .info-block .cq-copy:active { opacity: 0.7; }
+  .info-block .cq-copy.copied { background: var(--ct-gold-dark); color: var(--ct-haze); }
+
   /* Parking allocation table — same scheme as the cheque table. */
   .parking-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 8px; }
   .parking-table {
@@ -1326,6 +1432,51 @@
         <li><strong>Internet:</strong> Etisalat &amp; DU.</li>
         <li><strong>Parking:</strong> allocation per unit type — see Parking allocation card.</li>
       </ul>
+    </article>
+
+    <article class="info-block">
+      <h2>Fee calculator</h2>
+      <p style="font-size:12px;color:var(--denim);margin-bottom:12px;">Agency fee is on the contract value at the stated monthly rate. Rent-free does <strong>not</strong> reduce the fee.</p>
+      <div class="ic-inputs">
+        <label class="ic-row"><span>Stated annual rent (AED)</span><input type="number" id="fc-rent" value="250000" step="5000" inputmode="numeric"></label>
+        <label class="ic-row"><span>Contract length (months)</span><input type="number" id="fc-term" value="14" min="1" max="120" step="1" inputmode="numeric"></label>
+      </div>
+      <div class="ic-out">
+        <div class="ic-out-row"><span>Effective monthly</span><strong id="fc-mon">—</strong></div>
+        <div class="ic-out-row"><span>Contract value (for fee)</span><strong id="fc-cv">—</strong></div>
+        <div class="ic-out-row head"><span>Fee · 5%</span><strong id="fc-fee">—</strong></div>
+        <div class="ic-out-row"><span>VAT · 5%</span><strong id="fc-vat">—</strong></div>
+        <div class="ic-out-row"><span>Fee total inc VAT</span><strong id="fc-tot">—</strong></div>
+      </div>
+    </article>
+
+    <article class="info-block">
+      <h2>Cheque planning</h2>
+      <p style="font-size:12px;color:var(--denim);margin-bottom:12px;">First instalment by bank transfer; subsequent by post-dated cheques.</p>
+      <div class="ic-inputs">
+        <label class="ic-row"><span>Contract start</span><input type="date" id="cq-start"></label>
+        <label class="ic-row"><span>Annual rent (AED)</span><input type="number" id="cq-rent" value="250000" step="5000" inputmode="numeric"></label>
+        <label class="ic-row"><span>Contract length (months)</span><input type="number" id="cq-term" value="14" min="1" max="120" step="1" inputmode="numeric"></label>
+        <label class="ic-row"><span>Rent-free</span><input type="number" id="cq-free" value="2" min="0" step="1" inputmode="numeric"></label>
+        <label class="ic-row"><span>Number of cheques</span><input type="number" id="cq-n" value="4" min="1" max="24" step="1" inputmode="numeric"></label>
+        <label class="ic-row ic-toggle-row">
+          <span>Amortize across full contract</span>
+          <span class="cq-toggle"><input type="checkbox" id="cq-amort"><span class="cq-knob"></span></span>
+        </label>
+      </div>
+      <div class="cq-summary" id="cq-summary">—</div>
+      <div class="cq-table-wrap">
+        <table class="cq-table" id="cq-table">
+          <thead><tr><th>#</th><th>Date</th><th>Amount</th><th>Method</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="cq-payee">
+        <div class="cq-payee-head">Cheques payable to</div>
+        <div class="cq-payee-name">THE GALLERIA INVESTMENTS LLC</div>
+        <div class="cq-payee-foot">Tenant writes this exact name on each cheque. Bank transfer details for the first instalment are on the reservation form.</div>
+        <button class="cq-copy" type="button" id="cq-copy">Copy payee + schedule</button>
+      </div>
     </article>
 
     <a class="info-block info-doc-block" href="https://drive.google.com/file/d/1YNvtElc9RM-7CtS2EfHxlRo-007Li4vW/view?usp=drivesdk" target="_blank" rel="noopener noreferrer">
@@ -2893,6 +3044,156 @@ function applySizeUnit() {
     try { localStorage.setItem('ct1.sizeUnit', sizeUnit); } catch (e) {}
     applySizeUnit();
   });
+})();
+
+/* ============================================================
+ * STANDALONE FEE CALCULATOR
+ *   Fee is on the contract value at the stated monthly rate.
+ *   Rent-free does NOT reduce the fee.
+ * ========================================================== */
+(function () {
+  const $ = id => document.getElementById(id);
+  if (!$('fc-rent')) return;
+  const ids = ['fc-rent', 'fc-term'];
+  function fmt2(n) {
+    return 'AED ' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function recalc() {
+    const rent = parseFloat($('fc-rent').value) || 0;
+    const term = parseInt($('fc-term').value, 10) || 0;
+    const monthly = rent / 12;
+    const cv = monthly * term;
+    const fee = cv * 0.05;
+    const vat = fee * 0.05;
+    const tot = fee + vat;
+    $('fc-mon').textContent = fmt2(monthly);
+    $('fc-cv').textContent  = fmt2(cv);
+    $('fc-fee').textContent = fmt2(fee);
+    $('fc-vat').textContent = fmt2(vat);
+    $('fc-tot').textContent = fmt2(tot);
+  }
+  ids.forEach(id => {
+    const el = $(id);
+    if (el) { el.addEventListener('input', recalc); el.addEventListener('change', recalc); }
+  });
+  recalc();
+})();
+
+/* ============================================================
+ * STANDALONE CHEQUE PLANNING CALCULATOR
+ *   Default: full annual rent packed into the paid period
+ *   Amortized: same total spread across the FULL contract,
+ *              dates rounded to the 1st of the nearest month
+ *   Cheque 1 = Bank transfer; subsequent = Post-dated cheque
+ * ========================================================== */
+(function () {
+  const $ = id => document.getElementById(id);
+  if (!$('cq-start')) return;
+  const ids = ['cq-start', 'cq-rent', 'cq-term', 'cq-free', 'cq-n', 'cq-amort'];
+
+  // Default contract start = 1st of next month
+  (function defaultStart() {
+    const today = new Date();
+    const d = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+    const yyyy = d.getFullYear(), mm = String(d.getMonth() + 1).padStart(2, '0');
+    $('cq-start').value = `${yyyy}-${mm}-01`;
+  })();
+
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function chequeDate(start, n, monthOffsetExact) {
+    if (n === 1) return new Date(start.getTime());
+    const rounded = Math.round(monthOffsetExact);
+    const d = new Date(start.getTime());
+    d.setDate(1);
+    d.setMonth(d.getMonth() + rounded);
+    return d;
+  }
+  function fmtDate(d) {
+    return `${String(d.getDate()).padStart(2, '0')} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  }
+  function fmtAmt(n) {
+    return 'AED ' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function recalc() {
+    const startStr = $('cq-start').value;
+    const start = startStr ? new Date(startStr + 'T00:00:00') : null;
+    const rent = parseFloat($('cq-rent').value) || 0;
+    const term = parseInt($('cq-term').value, 10) || 0;
+    const free = Math.max(0, parseInt($('cq-free').value, 10) || 0);
+    const nCh  = Math.max(1, parseInt($('cq-n').value, 10) || 0);
+    const amortize = $('cq-amort').checked;
+    const tbody = $('cq-table').querySelector('tbody');
+    const summary = $('cq-summary');
+
+    if (!start || !rent || !term || !nCh) {
+      tbody.innerHTML = '<tr><td colspan="4" class="cq-empty">Enter contract details to see the schedule.</td></tr>';
+      summary.textContent = '—';
+      return;
+    }
+
+    const paid = Math.max(0, term - free);
+    const span = amortize ? term : paid;
+    const spacing = nCh > 1 ? span / nCh : 0;
+    const amount = rent / nCh;
+
+    summary.innerHTML =
+      `<b>${nCh}</b> cheque${nCh === 1 ? '' : 's'} · `
+      + `<b>${fmtAmt(amount)}</b> each · `
+      + `<b>${fmtAmt(rent)}</b> total`
+      + (amortize
+          ? ` · spread across <b>${term}</b> months`
+          : ` · packed into <b>${paid}</b> paid month${paid === 1 ? '' : 's'}`);
+
+    const rows = [];
+    for (let i = 1; i <= nCh; i++) {
+      const offsetExact = (i - 1) * spacing;
+      const d = chequeDate(start, i, offsetExact);
+      const method = i === 1 ? 'Bank transfer' : 'Post-dated cheque';
+      rows.push(`
+        <tr>
+          <td>${i}</td>
+          <td>${fmtDate(d)}</td>
+          <td class="amount">${fmtAmt(amount)}</td>
+          <td>${method}</td>
+        </tr>
+      `);
+    }
+    tbody.innerHTML = rows.join('');
+  }
+  ids.forEach(id => {
+    const el = $(id);
+    if (el) { el.addEventListener('input', recalc); el.addEventListener('change', recalc); }
+  });
+  recalc();
+
+  // Copy payee + the live cheque schedule
+  const copyBtn = $('cq-copy');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const lines = ['Cheques payable to: THE GALLERIA INVESTMENTS LLC', ''];
+      const trs = $('cq-table').querySelectorAll('tbody tr');
+      trs.forEach(tr => {
+        const cells = [...tr.querySelectorAll('td')].map(td => td.textContent.trim());
+        if (cells.length === 4) {
+          lines.push(`${cells[0]}. ${cells[1]} · ${cells[2]} · ${cells[3]}`);
+        }
+      });
+      const txt = lines.join('\n');
+      try {
+        await navigator.clipboard.writeText(txt);
+        copyBtn.classList.add('copied');
+        const orig = copyBtn.textContent;
+        copyBtn.textContent = 'Copied to clipboard';
+        setTimeout(() => {
+          copyBtn.classList.remove('copied');
+          copyBtn.textContent = orig;
+        }, 1500);
+      } catch (e) {
+        copyBtn.textContent = 'Copy failed — long-press to select';
+      }
+    });
+  }
 })();
 
 /* ============================================================
