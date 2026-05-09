@@ -1087,6 +1087,7 @@
           <div class="chip" data-filter="3br"><span class="sw c3br"></span>3 Bedroom</div>
           <div class="chip" data-filter="4br"><span class="sw c4br"></span>4 Bedroom</div>
         </div>
+        <div class="filters" id="type-filters" style="margin-top:8px;display:none;"></div>
         <div class="filters" style="margin-top:8px;">
           <button class="chip" id="tower-focus" type="button" aria-pressed="false">
             <span class="focus-dot"></span>Available focus
@@ -1424,6 +1425,7 @@ function parkingForUnit(u) {
  * ========================================================== */
 const state = {
   bedroomFilter: 'all',         // bedroom filter applied to tower
+  typeFilter: 'all',            // product_type filter applied to tower (A/B/C/...)
   statusFilter: null,           // tower highlight by status: 'bh_let'|'hh_let'|'available'|'lost'|'show_flat'|null
   drawer: null,                 // { kind:'list', view:'available'|'bh_let'|'hh_let'|'lost', bedroom:null|'1br'... } or { kind:'detail', uid:'05-03' }
   listSort: { col: 'f', dir: 'asc' },
@@ -1479,6 +1481,7 @@ function buildTower() {
       if (u.d) cell.classList.add('premium');
       cell.dataset.uid = u.uid;
       cell.dataset.type = u.t;
+      cell.dataset.pt = u.pt || '';
       cell.dataset.floor = u.f;
       cell.dataset.pos = u.p;
       cell.dataset.price = u.pr;
@@ -1683,14 +1686,16 @@ function buildShowFlats() {
  * FILTERS (tower)
  * ========================================================== */
 function setupFilters() {
-  // Bedroom-filter chips only — scoped by data-filter so the new
-  // #tower-focus chip in the same column isn't swept up here.
+  // Bedroom-filter chips — scoped by data-filter so the new #tower-focus
+  // and #type-filters chips aren't swept up.
   document.querySelectorAll('.chip[data-filter]').forEach(chip => {
     chip.addEventListener('click', () => {
       state.bedroomFilter = chip.dataset.filter;
+      state.typeFilter = 'all'; // reset Type filter when bedroom band changes
       document.querySelectorAll('.chip[data-filter]').forEach(c =>
         c.classList.toggle('active', c === chip),
       );
+      buildTypeChips();
       applyTowerFilter();
     });
   });
@@ -1710,6 +1715,46 @@ function setupFilters() {
       towerFrame.classList.toggle('available-focus', on);
     });
   }
+  buildTypeChips();
+}
+
+// Type chips — built dynamically and scoped to the active bedroom band.
+// Only the type letters that exist for the current bedroom selection appear,
+// so brokers don't see (and click) types that yield no results.
+function buildTypeChips() {
+  const host = document.getElementById('type-filters');
+  if (!host) return;
+  const pool = state.bedroomFilter === 'all'
+    ? UNITS
+    : UNITS.filter(u => u.t === state.bedroomFilter);
+  const types = [...new Set(
+    pool.map(u => (u.pt || '').trim().toUpperCase()).filter(Boolean),
+  )].sort();
+  if (types.length <= 1) {
+    host.style.display = 'none';
+    host.innerHTML = '';
+    if (state.typeFilter !== 'all') state.typeFilter = 'all';
+    return;
+  }
+  host.style.display = '';
+  const html = [
+    `<div class="chip ${state.typeFilter === 'all' ? 'active' : ''}" data-type-filter="all">All types</div>`,
+  ];
+  for (const t of types) {
+    html.push(
+      `<div class="chip ${state.typeFilter === t ? 'active' : ''}" data-type-filter="${t}">Type ${t}</div>`,
+    );
+  }
+  host.innerHTML = html.join('');
+  host.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      state.typeFilter = chip.dataset.typeFilter;
+      host.querySelectorAll('.chip').forEach(c =>
+        c.classList.toggle('active', c === chip),
+      );
+      applyTowerFilter();
+    });
+  });
 }
 
 function statusMatchesView(unitStatus, view, showFlat) {
@@ -1725,8 +1770,10 @@ function statusMatchesView(unitStatus, view, showFlat) {
 function applyTowerFilter() {
   const tower = document.getElementById('tower');
   const bed = state.bedroomFilter;
-  const st = state.statusFilter;
-  if (bed === 'all' && !st) {
+  const ty  = state.typeFilter;
+  const st  = state.statusFilter;
+  const anyFilter = (bed !== 'all') || (ty !== 'all') || !!st;
+  if (!anyFilter) {
     tower.classList.remove('filtered');
     document.querySelectorAll('.unit-cell').forEach(c => c.classList.remove('match'));
   } else {
@@ -1734,6 +1781,7 @@ function applyTowerFilter() {
     document.querySelectorAll('.unit-cell').forEach(c => {
       let ok = true;
       if (bed !== 'all' && c.dataset.type !== bed) ok = false;
+      if (ty !== 'all' && (c.dataset.pt || '').toUpperCase() !== ty) ok = false;
       if (st && !statusMatchesView(c.dataset.status, st, c.dataset.showFlat === '1')) ok = false;
       c.classList.toggle('match', ok);
     });
@@ -2540,6 +2588,7 @@ function rebuildAll() {
   buildAvailableTiles();
   buildMix();
   buildTower();
+  if (typeof buildTypeChips === 'function') buildTypeChips();
   applyTowerFilter();
   renderRecentDesktop();
   if (state.drawer) renderDrawer();
