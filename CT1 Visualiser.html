@@ -328,48 +328,44 @@
     background: #E8DBC8;
     box-shadow: inset 0 0 0 0.5px rgba(31,52,63,0.18);
   }
-  .unit-cell.s-available    { background: rgba(122, 160, 178, 0.5); box-shadow: inset 0 0 0 0.5px rgba(31,52,63,0.15); }  /* available, not yet listed */
+  .unit-cell.s-available    { background: #A8C5D6; box-shadow: inset 0 0 0 0.5px rgba(31,52,63,0.18); }
   .unit-cell.s-marketing    {
     background:
       linear-gradient(180deg, rgba(255,255,255,0.12) 0, transparent 50%),
       linear-gradient(180deg, transparent 50%, rgba(31,52,63,0.12) 100%),
       #B39470;
   }
-  .unit-cell.s-viewing      { background: var(--sand); }                         /* active showing (legacy) */
-  .unit-cell.s-inflight     { background: #BF956E; }                             /* offer/negotiating/pipeline (legacy) */
-  /* Reserved sits OFF the leasing pipeline - render as empty fill with a bold BH/H&H border */
-  .unit-cell.s-reserved_bh  { background: white; box-shadow: inset 0 0 0 2px var(--slate);  }
-  .unit-cell.s-reserved_hh  { background: white; box-shadow: inset 0 0 0 2px #9B2C2C; }
-  .unit-cell.s-signed_bh    { background: var(--slate);  }
-  .unit-cell.s-signed_hh    { background: #9B2C2C; }
-  .unit-cell.s-occupied_bh  { background: var(--slate);  box-shadow: inset 0 0 0 1px var(--sand);  }
-  .unit-cell.s-occupied_hh  { background: #9B2C2C; box-shadow: inset 0 0 0 1px var(--sand); }
-  .unit-cell.s-show_flat    { background: var(--denim);  box-shadow: inset 0 0 0 1.5px white; }
-  .unit-cell.s-lost         { background: var(--salmon); }
+  .unit-cell.s-viewing      { background: var(--sand); }                         /* legacy */
+  .unit-cell.s-inflight     { background: #BF956E; }                             /* legacy */
+  /* Lifecycle progression: light → dark from Reserved → Signed → Occupied within
+     each agency. Cool/slate family = bh, warm/terracotta family = H&H. */
+  .unit-cell.s-reserved_bh  { background: white; box-shadow: inset 0 0 0 2px var(--slate); }
+  .unit-cell.s-reserved_hh  { background: white; box-shadow: inset 0 0 0 2px #A06767; }
+  .unit-cell.s-signed_bh    { background: #5A7889; }
+  .unit-cell.s-signed_hh    { background: #A06767; }
+  .unit-cell.s-occupied_bh  { background: #1F343F; }
+  .unit-cell.s-occupied_hh  { background: #6B2B26; }
+  .unit-cell.s-show_flat    { background: var(--denim); box-shadow: inset 0 0 0 1.5px white; }
+  /* Lost — rare/legacy. Greyed out so it recedes; not in the legend. */
+  .unit-cell.s-lost         { background: #C0C0C0; opacity: 0.45; }
   /* Show-flat marker: a unit can be Marketing/etc AND a designated show flat at the same time.
      The white inner border lets brokers spot show flats over any underlying status colour. */
   .unit-cell.is-show        { box-shadow: inset 0 0 0 1.5px white; }
 
-  /* Centre dot reinforces BH/H&H on signed + occupied (colour-blind safety) */
-  .unit-cell.s-signed_bh::before,
-  .unit-cell.s-occupied_bh::before {
-    content: ''; position: absolute; left: 50%; top: 50%;
-    width: 5px; height: 5px; background: var(--sand);
-    transform: translate(-50%, -50%);
-  }
-  .unit-cell.s-signed_hh::before,
-  .unit-cell.s-occupied_hh::before {
-    content: ''; position: absolute; left: 50%; top: 50%;
-    width: 5px; height: 5px; background: var(--sand);
-    transform: translate(-50%, -50%);
-  }
+  /* Bedroom-type overlay: right-edge stripe (Option C palette — distinct hues
+     so each band reads independently of the lifecycle status fill). */
+  .unit-cell.t-studio::after { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: #7BA0B2; }
+  .unit-cell.t-1br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: #3D7AA0; }
+  .unit-cell.t-2br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: #7C9A6B; }
+  .unit-cell.t-3br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: #D9B27A; }
+  .unit-cell.t-4br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:4px; background: #5A4438; }
 
-  /* Bedroom-type overlay: right-edge stripe */
-  .unit-cell.t-studio::after { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: rgba(122,160,178,0.85); }
-  .unit-cell.t-1br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: var(--denim); }
-  .unit-cell.t-2br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: rgba(31,52,63,0.65); }
-  .unit-cell.t-3br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: var(--terra); opacity: 0.85; }
-  .unit-cell.t-4br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:4px; background: var(--terra); }
+  /* Available-focus mode — fades non-Available units to a near-monochrome
+     low-opacity wash so brokers can spot live stock instantly. */
+  .tower-frame.available-focus .unit-cell:not(.s-available):not(.s-marketing) {
+    opacity: 0.18;
+    filter: grayscale(0.85);
+  }
   .unit-cell.premium { outline: 1.5px solid var(--ct-gold); outline-offset: -1px; z-index: 2; }
   .unit-cell:hover { transform: scale(1.4); z-index: 10; box-shadow: 0 0 0 1px var(--slate); }
   .tower.filtered .unit-cell:not(.match) { opacity: 0.12; }
@@ -394,19 +390,19 @@
     display: inline-block; padding: 2px 8px; font-size: 9px; letter-spacing: 0.18em;
     text-transform: uppercase; margin-bottom: 8px;
   }
-  .tt-status.s-not_launched { background: #E8DBC8;       color: var(--slate); }
-  .tt-status.s-available    { background: rgba(122,160,178,0.65); color: var(--slate); }
-  .tt-status.s-marketing    { background: #B39470;       color: white; }
-  .tt-status.s-viewing      { background: var(--sand);  color: var(--slate); }
-  .tt-status.s-inflight     { background: #BF956E;       color: white; }
-  .tt-status.s-reserved_bh  { background: var(--sand);  color: var(--slate); border: 1px solid var(--slate); }
-  .tt-status.s-reserved_hh  { background: white; color: #9B2C2C; border: 1.5px solid #9B2C2C; }
-  .tt-status.s-signed_bh,
-  .tt-status.s-occupied_bh  { background: var(--slate); color: var(--sand); border: 1px solid var(--sand); }
-  .tt-status.s-signed_hh,
-  .tt-status.s-occupied_hh  { background: #9B2C2C; color: var(--sand); }
+  .tt-status.s-not_launched { background: #E8DBC8; color: var(--slate); }
+  .tt-status.s-available    { background: #A8C5D6; color: var(--slate); }
+  .tt-status.s-marketing    { background: #B39470; color: white; }
+  .tt-status.s-viewing      { background: var(--sand); color: var(--slate); }
+  .tt-status.s-inflight     { background: #BF956E; color: white; }
+  .tt-status.s-reserved_bh  { background: white; color: var(--slate); border: 1.5px solid var(--slate); }
+  .tt-status.s-reserved_hh  { background: white; color: #A06767; border: 1.5px solid #A06767; }
+  .tt-status.s-signed_bh    { background: #5A7889; color: var(--mist); }
+  .tt-status.s-signed_hh    { background: #A06767; color: var(--mist); }
+  .tt-status.s-occupied_bh  { background: #1F343F; color: var(--sand); }
+  .tt-status.s-occupied_hh  { background: #6B2B26; color: var(--sand); }
   .tt-status.s-show_flat    { background: var(--denim); color: var(--mist); }
-  .tt-status.s-lost         { background: var(--salmon); color: white; }
+  .tt-status.s-lost         { background: #C0C0C0; color: var(--slate); opacity: 0.6; }
   .tooltip .tt-row { display: flex; justify-content: space-between; padding: 2px 0; border-top: 1px solid rgba(255,255,255,0.08); }
   .tooltip .tt-row:first-of-type { border-top: none; }
   .tooltip .tt-row span:first-child { opacity: 0.7; }
@@ -450,12 +446,20 @@
   }
   .chip:hover { border-color: var(--slate); }
   .chip.active { background: var(--slate); color: var(--mist); border-color: var(--slate); }
+  #tower-focus { font-family: inherit; }
+  #tower-focus .focus-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: transparent; border: 1.5px solid var(--ct-gold-dark);
+    transition: background 0.18s ease;
+    flex-shrink: 0;
+  }
+  #tower-focus.active .focus-dot { background: var(--ct-gold-dark); border-color: var(--ct-gold-dark); }
   .chip .sw { width: 10px; height: 10px; }
-  .sw.studio { background: var(--powder); }
-  .sw.c1br   { background: var(--denim); }
-  .sw.c2br   { background: var(--slate); outline: 1px solid var(--rule); outline-offset: -1px; }
-  .sw.c3br   { background: var(--terra); opacity: 0.85; }
-  .sw.c4br   { background: var(--terra); }
+  .sw.studio { background: #7BA0B2; }
+  .sw.c1br   { background: #3D7AA0; }
+  .sw.c2br   { background: #7C9A6B; }
+  .sw.c3br   { background: #D9B27A; }
+  .sw.c4br   { background: #5A4438; }
 
   /* Legend — lifecycle progression, agency split, specials */
   .legend { background: white; border: 1px solid var(--rule); padding: 12px 14px; }
@@ -465,22 +469,17 @@
   .legend .item { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; color: var(--slate); }
   .legend .swatch { width: 14px; height: 8px; position: relative; flex-shrink: 0; }
   .legend .swatch.nl          { background: #E8DBC8; box-shadow: inset 0 0 0 1px rgba(31,52,63,0.18); }
-  .legend .swatch.available   { background: rgba(122,160,178,0.55); box-shadow: inset 0 0 0 0.5px rgba(31,52,63,0.18); }
+  .legend .swatch.available   { background: #A8C5D6; box-shadow: inset 0 0 0 0.5px rgba(31,52,63,0.18); }
   .legend .swatch.marketing   { background: #B39470; }
   .legend .swatch.viewing     { background: var(--sand); }
   .legend .swatch.inflight    { background: #BF956E; }
-  .legend .swatch.reserved-bh { background: var(--sand);  box-shadow: inset 0 0 0 1.5px var(--slate); }
-  .legend .swatch.reserved-hh { background: white;  box-shadow: inset 0 0 0 2px #9B2C2C; }
-  .legend .swatch.signed-bh   { background: var(--slate); }
-  .legend .swatch.signed-bh::before { content:''; position:absolute; left:50%; top:50%; width:3px; height:3px; background: var(--sand);  transform: translate(-50%,-50%); }
-  .legend .swatch.signed-hh   { background: #9B2C2C; }
-  .legend .swatch.signed-hh::before { content:''; position:absolute; left:50%; top:50%; width:3px; height:3px; background: var(--sand); transform: translate(-50%,-50%); }
-  .legend .swatch.occupied-bh { background: var(--slate); box-shadow: inset 0 0 0 1px var(--sand); }
-  .legend .swatch.occupied-bh::before { content:''; position:absolute; left:50%; top:50%; width:3px; height:3px; background: var(--sand); transform: translate(-50%,-50%); }
-  .legend .swatch.occupied-hh { background: #9B2C2C; box-shadow: inset 0 0 0 1px var(--sand); }
-  .legend .swatch.occupied-hh::before { content:''; position:absolute; left:50%; top:50%; width:3px; height:3px; background: var(--sand); transform: translate(-50%,-50%); }
+  .legend .swatch.reserved-bh { background: white; box-shadow: inset 0 0 0 2px var(--slate); }
+  .legend .swatch.reserved-hh { background: white; box-shadow: inset 0 0 0 2px #A06767; }
+  .legend .swatch.signed-bh   { background: #5A7889; }
+  .legend .swatch.signed-hh   { background: #A06767; }
+  .legend .swatch.occupied-bh { background: #1F343F; }
+  .legend .swatch.occupied-hh { background: #6B2B26; }
   .legend .swatch.show        { background: var(--denim); box-shadow: inset 0 0 0 1.5px white; }
-  .legend .swatch.lost        { background: var(--salmon); }
 
   /* Mix table — wrapped in a horizontally-scrollable shell so narrow screens don't overflow */
   .mix-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--rule); }
@@ -704,18 +703,18 @@
   .dlist .num { text-align: right; }
   .dlist .uid { font-family: Georgia, serif; color: var(--slate); font-weight: 600; }
   .dlist .pill { display: inline-block; padding: 2px 6px; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; }
-  .pill.s-not_launched { background: #E8DBC8;       color: var(--slate); }
-  .pill.s-marketing    { background: #B39470;       color: white; }
-  .pill.s-viewing      { background: var(--sand);  color: var(--slate); }
-  .pill.s-inflight     { background: #BF956E;       color: white; }
-  .pill.s-reserved_bh  { background: var(--sand);  color: var(--slate); border: 1px solid var(--slate); }
-  .pill.s-reserved_hh  { background: white; color: #9B2C2C; border: 1.5px solid #9B2C2C; }
-  .pill.s-signed_bh,
-  .pill.s-occupied_bh  { background: var(--slate); color: var(--sand); }
-  .pill.s-signed_hh,
-  .pill.s-occupied_hh  { background: #9B2C2C; color: var(--sand); }
+  .pill.s-not_launched { background: #E8DBC8; color: var(--slate); }
+  .pill.s-marketing    { background: #B39470; color: white; }
+  .pill.s-viewing      { background: var(--sand); color: var(--slate); }
+  .pill.s-inflight     { background: #BF956E; color: white; }
+  .pill.s-reserved_bh  { background: white; color: var(--slate); border: 1.5px solid var(--slate); }
+  .pill.s-reserved_hh  { background: white; color: #A06767; border: 1.5px solid #A06767; }
+  .pill.s-signed_bh    { background: #5A7889; color: var(--mist); }
+  .pill.s-signed_hh    { background: #A06767; color: var(--mist); }
+  .pill.s-occupied_bh  { background: #1F343F; color: var(--sand); }
+  .pill.s-occupied_hh  { background: #6B2B26; color: var(--sand); }
   .pill.s-show_flat    { background: var(--denim); color: var(--mist); }
-  .pill.s-lost         { background: var(--salmon); color: white; }
+  .pill.s-lost         { background: #C0C0C0; color: var(--slate); opacity: 0.6; }
   .dlist .cut { color: var(--terra); font-size: 10px; }
   .dlist .dup { display: inline-block; margin-left: 4px; font-size: 8px; padding: 1px 5px; background: var(--ct-gold); color: var(--slate); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; }
   .dlist .balc-yes { color: var(--slate); font-weight: 500; }
@@ -1052,6 +1051,11 @@
           <div class="chip" data-filter="2br"><span class="sw c2br"></span>2 Bedroom</div>
           <div class="chip" data-filter="3br"><span class="sw c3br"></span>3 Bedroom</div>
           <div class="chip" data-filter="4br"><span class="sw c4br"></span>4 Bedroom</div>
+        </div>
+        <div class="filters" style="margin-top:8px;">
+          <button class="chip" id="tower-focus" type="button" aria-pressed="false">
+            <span class="focus-dot"></span>Available focus
+          </button>
         </div>
       </section>
 
@@ -1558,10 +1562,14 @@ function buildShowFlats() {
  * FILTERS (tower)
  * ========================================================== */
 function setupFilters() {
-  document.querySelectorAll('.chip').forEach(chip => {
+  // Bedroom-filter chips only — scoped by data-filter so the new
+  // #tower-focus chip in the same column isn't swept up here.
+  document.querySelectorAll('.chip[data-filter]').forEach(chip => {
     chip.addEventListener('click', () => {
       state.bedroomFilter = chip.dataset.filter;
-      document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === chip));
+      document.querySelectorAll('.chip[data-filter]').forEach(c =>
+        c.classList.toggle('active', c === chip),
+      );
       applyTowerFilter();
     });
   });
@@ -1569,6 +1577,18 @@ function setupFilters() {
   document.querySelectorAll('.headline').forEach(b => {
     b.addEventListener('click', () => openList(b.dataset.view));
   });
+  // Available focus toggle — fades non-Available units to a near-monochrome
+  // low-opacity wash so brokers can spot live stock instantly.
+  const focusBtn = document.getElementById('tower-focus');
+  const towerFrame = document.querySelector('.tower-frame');
+  if (focusBtn && towerFrame) {
+    focusBtn.addEventListener('click', () => {
+      const on = !focusBtn.classList.contains('active');
+      focusBtn.classList.toggle('active', on);
+      focusBtn.setAttribute('aria-pressed', String(on));
+      towerFrame.classList.toggle('available-focus', on);
+    });
+  }
 }
 
 function statusMatchesView(unitStatus, view, showFlat) {
@@ -2385,7 +2405,7 @@ document.addEventListener('keydown', e => {
   if (k in map) {
     const target = map[k];
     state.bedroomFilter = target;
-    document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.filter === target));
+    document.querySelectorAll('.chip[data-filter]').forEach(c => c.classList.toggle('active', c.dataset.filter === target));
     applyTowerFilter();
   }
 });
