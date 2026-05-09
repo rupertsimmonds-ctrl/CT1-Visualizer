@@ -146,6 +146,20 @@
     font-size: 12px; font-style: italic;
   }
   .meta strong { display: block; color: var(--slate); margin-bottom: 4px; }
+  .unit-toggle {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 28px; min-width: 38px; padding: 0 10px;
+    margin-top: 10px;
+    background: var(--mist);
+    border: 1px solid var(--rule);
+    color: var(--denim);
+    font-family: inherit; font-size: 11px; letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer; user-select: none; flex-shrink: 0;
+    transition: all 0.18s ease;
+  }
+  .unit-toggle:hover { border-color: var(--slate); color: var(--slate); }
+  .unit-toggle:active { opacity: 0.7; }
   .live-pill {
     display: inline-flex; align-items: center; gap: 8px;
     margin-top: 10px; padding: 6px 12px;
@@ -967,6 +981,9 @@
         <span class="ks-label">Search</span>
         <span class="ks-keys"><kbd>⌘</kbd><kbd>K</kbd></span>
       </button>
+      <button class="unit-toggle" id="unit-toggle" type="button" aria-label="Toggle size unit">
+        <span id="unit-toggle-label">ft</span>
+      </button>
       <div class="live-pill loading" id="live-pill">
         <span class="live-dot"></span>
         <span id="live-status">Connecting…</span>
@@ -1324,7 +1341,83 @@ const fmtN = n => Math.round(n).toLocaleString('en-GB');
 const fmtAED = n => 'AED ' + fmtN(n);
 const fmtK = n => Math.round(n/1000).toLocaleString('en-GB') + 'k';
 const fmtSqft = n => fmtN(n) + ' sq ft';
+const fmtSqm  = n => (Math.round(n * 10) / 10).toFixed(1) + ' m²';
 const fmtDate = iso => iso ? new Date(iso).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+
+/* ============================================================
+ * SIZE UNITS — sq ft ↔ m², persisted across sessions in localStorage.
+ * Same key as mobile so a broker switching devices keeps their preference.
+ * ========================================================== */
+const SQFT_PER_SQM = 10.7639;
+let sizeUnit = (function () {
+  try { return localStorage.getItem('ct1.sizeUnit') === 'sqm' ? 'sqm' : 'sqft'; }
+  catch (e) { return 'sqft'; }
+})();
+function unitSqft(u)   { return Math.max(0, (u.sq || 0) - (u.bsq || 0)); }
+function balconySqft(u){ return u.b ? (u.bsq || 0) : 0; }
+function unitSqm(u) {
+  if (u.nsqm) return u.nsqm;
+  if (u.tsqm && u.b) return Math.max(0, u.tsqm - balconySqm(u));
+  return unitSqft(u) / SQFT_PER_SQM;
+}
+function balconySqm(u) {
+  if (!u.b) return 0;
+  if (u.tsqm && u.nsqm) return Math.max(0, u.tsqm - u.nsqm);
+  return balconySqft(u) / SQFT_PER_SQM;
+}
+// Returns the unit / balcony / sort-key triple in the active unit, no
+// combined total (per spec).
+function sizeView(u) {
+  if (sizeUnit === 'sqm') {
+    const u_ = unitSqm(u), b_ = balconySqm(u);
+    return {
+      unitStr: fmtSqm(u_),
+      balcStr: u.b ? fmtSqm(b_) : null,
+      oneLine: u.b ? `${fmtSqm(u_)} · +${fmtSqm(b_)} balcony` : fmtSqm(u_),
+      sortKey: u_,
+      sliderRaw: u_,
+    };
+  }
+  const u_ = unitSqft(u), b_ = balconySqft(u);
+  return {
+    unitStr: fmtSqft(u_),
+    balcStr: u.b ? fmtSqft(b_) : null,
+    oneLine: u.b ? `${fmtSqft(u_)} · +${fmtSqft(b_)} balcony` : fmtSqft(u_),
+    sortKey: u_,
+    sliderRaw: u_,
+  };
+}
+
+/* ============================================================
+ * PARKING — derived from the published allocation matrix.
+ *   Studio                       limited (~22/64 → 'subject to availability')
+ *   1 Bedroom                    1 bay
+ *   2 Bedroom · net_sqm < 180    1 bay   (interior only — balcony excluded)
+ *   2 Bedroom · net_sqm ≥ 180    2 bays
+ *   3 Bedroom                    2 bays
+ *   4 Bedroom · top floor        3 bays (penthouse)
+ *   4 Bedroom · other floors     2 bays
+ * ========================================================== */
+function topFloor() {
+  let max = 0;
+  for (const u of UNITS) if (u.f > max) max = u.f;
+  return max;
+}
+function parkingForUnit(u) {
+  if (!u || !u.t) return '—';
+  if (u.t === 'studio') return 'Subject to availability — confirm with the team';
+  if (u.t === '1br') return '1 bay';
+  if (u.t === '2br') {
+    const netSqm = u.nsqm || (u.sq ? unitSqft(u) / SQFT_PER_SQM : 0);
+    return netSqm >= 180 ? '2 bays' : '1 bay';
+  }
+  if (u.t === '3br') return '2 bays';
+  if (u.t === '4br') {
+    const isPenthouse = u.f && u.f === topFloor();
+    return isPenthouse ? '3 bays · penthouse' : '2 bays';
+  }
+  return '—';
+}
 
 /* ============================================================
  * UI STATE
@@ -1416,12 +1509,20 @@ function attachUnitInteractions() {
       const m = TYPE_META[c.dataset.type];
       const status = c.dataset.status;
       const premiumBadge = c.dataset.premium === '1' ? '<span class="premium-badge">Duplex</span>' : '';
+      // Look up the live unit object so we can use sizeView() with the
+      // active sq ft / m² toggle and surface the new fields (pt, balcony).
+      const u = UNITS.find(x => x.uid === c.dataset.uid);
+      const sv = u ? sizeView(u) : null;
+      const sizeRows = sv
+        ? `<div class="tt-row"><span>Unit</span><span>${sv.unitStr}</span></div>` +
+          (sv.balcStr ? `<div class="tt-row"><span>Balcony</span><span>${sv.balcStr}</span></div>` : '')
+        : `<div class="tt-row"><span>Size</span><span>${fmtSqft(parseFloat(c.dataset.sq))}</span></div>`;
       tip.innerHTML = `
         <div class="tt-title">Unit ${c.dataset.uid}${premiumBadge}</div>
-        <div class="tt-type">${m.label}</div>
+        <div class="tt-type">${m.label}${u && u.pt ? ' · Type ' + u.pt : ''}</div>
         <div class="tt-status s-${status}">${STATUS_LABEL[status]||status}</div>
         <div class="tt-row"><span>View</span><span>${VIEW_NAMES[c.dataset.view] || c.dataset.view}</span></div>
-        <div class="tt-row"><span>Size</span><span>${fmtSqft(parseFloat(c.dataset.sq))}</span></div>
+        ${sizeRows}
         <div class="tt-row"><span>Rent p.a.</span><span>${fmtAED(parseFloat(c.dataset.price))}</span></div>
         <div class="tt-hint">Click for detail</div>
       `;
@@ -2470,6 +2571,8 @@ function processUnitsResponse(resp) {
     const iAvA = ix('asking_vs_achieved_pct'), iLt = ix('lost_to'), iLr = ix('lost_reason');
     const iBalc = ix('balcony'), iBsq = ix('balcony_sqft');
     const iSf = ix('show_flat');
+    const iPt = ix('product_type');
+    const iNsqm = ix('net_sqm'), iTsqm = ix('total_sqm');
     const isYes = v => /^(y|yes|true|1)$/i.test(String(v == null ? '' : v).trim());
     if ([iFloor,iUnit,iBed,iView,iTr,iSt].some(i => i < 0)) {
       throw new Error('Expected column missing in 07_HTML_Export. Got: ' + cols.join(', '));
@@ -2506,10 +2609,14 @@ function processUnitsResponse(resp) {
       const uid = (parseCell(row, iUid) || `${String(f).padStart(2,'0')}-${String(p).padStart(2,'0')}`).toString();
       fresh.push({
         uid, f, p, t: tCode,
+        bedRaw: bedroom, // raw bedroom_type ('Studio', '3 Bedroom') for floorplan lookup
+        pt: String(parseCell(row, iPt)||'').trim().toUpperCase() || null,
         d: String(parseCell(row, iDup)||'').toUpperCase() === 'Y',
         v: String(parseCell(row, iView)||'').trim(),
         fb: parseCell(row, iFb) ? String(parseCell(row, iFb)).trim() : null,
         sq: parseFloat(parseCell(row, iSqft)) || 0,
+        nsqm: parseFloat(parseCell(row, iNsqm)) || 0,
+        tsqm: parseFloat(parseCell(row, iTsqm)) || 0,
         pr: cur, orig: orig,
         psf: parseFloat(parseCell(row, iPsf)) || null,
         tr: String(parseCell(row, iTr)||'').trim(),
@@ -2574,10 +2681,32 @@ function refreshFromSheet() {
 }
 
 /* ============================================================
+ * SIZE-UNIT TOGGLE WIRING
+ * ========================================================== */
+function applySizeUnit() {
+  const lbl = document.getElementById('unit-toggle-label');
+  if (lbl) lbl.textContent = sizeUnit === 'sqm' ? 'm²' : 'ft';
+  // Re-render anything that shows a size — tower tooltip rebuilds on hover
+  // so it doesn't need an explicit refresh, but the visible surfaces do.
+  if (typeof rebuildAll === 'function') rebuildAll();
+  if (typeof renderDrawer === 'function' && state && state.drawer) renderDrawer();
+}
+(function () {
+  const btn = document.getElementById('unit-toggle');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    sizeUnit = sizeUnit === 'sqft' ? 'sqm' : 'sqft';
+    try { localStorage.setItem('ct1.sizeUnit', sizeUnit); } catch (e) {}
+    applySizeUnit();
+  });
+})();
+
+/* ============================================================
  * BOOT
  * ========================================================== */
 rebuildAll();
 setupFilters();
+applySizeUnit();
 setTimeout(refreshFromSheet, 100);
 setInterval(refreshFromSheet, REFRESH_MS);
 </script>
