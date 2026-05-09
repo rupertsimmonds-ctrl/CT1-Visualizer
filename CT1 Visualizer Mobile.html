@@ -733,7 +733,7 @@
   .tw-cell.t-4br::after    { content:''; position:absolute; right:0; top:0; bottom:0; width:3px; background: #5A4438; }
   /* Available — rentable in-house, NOT yet on portals. Saturated powder so the
      primary broker target reads loud, not pale. */
-  .tw-cell.s-available    { background: #A8C5D6; box-shadow: inset 0 0 0 0.5px rgba(31,52,63,0.18); }
+  .tw-cell.s-available    { background: #86A88E; box-shadow: inset 0 0 0 0.5px rgba(31,52,63,0.18); }
   /* Listed (internal code: marketing) — actively on portals. Bronze fill pops. */
   .tw-cell.s-marketing    { background: #B39470; }
   /* Legacy — older snapshots may still have these */
@@ -2109,9 +2109,9 @@ function unitMatchesTowerFilter() {
 function chipsForMode(mode) {
   if (mode === 'status') {
     const items = [
-      { v: 'available', label: 'Available (all)', sw: 'linear-gradient(90deg,#B39470 50%,#A8C5D6 50%)' },
+      { v: 'available', label: 'Available (all)', sw: 'linear-gradient(90deg,#B39470 50%,#86A88E 50%)' },
       { v: 'listed',    label: 'Listed on portals', sw: '#B39470' },
-      { v: 'in_house',  label: 'In-house only', sw: '#A8C5D6' },
+      { v: 'in_house',  label: 'In-house only', sw: '#86A88E' },
       { v: 'bh_let',    label: 'bh let',    sw: '#1F343F' },
       { v: 'hh_let',    label: 'H&H Let',   sw: '#6B2B26' },
       { v: 'show_flat', label: 'Show flat', sw: '#2C537A' },
@@ -2149,7 +2149,7 @@ function chipsForMode(mode) {
 function legendForMode(mode) {
   const item = (sw, label, ring) => `<span class="legend-item"><span class="legend-sw ${ring?'ring':''}" style="${ring?'color:'+sw:'background:'+sw}"></span>${label}</span>`;
   if (mode === 'status') return [
-    item('#A8C5D6', 'Available · in-house'),
+    item('#86A88E', 'Available · in-house'),
     item('#B39470', 'Listed · on portals'),
     item('#1F343F', 'Reserved · bh', true),
     item('#A06767', 'Reserved · H&H', true),
