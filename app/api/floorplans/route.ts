@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 
 const SHEET_ID = "1FOofWcGkSXXnBWZ70dB7tix9T5lHjV3BL8evePp-URk";
 const SHEET_TAB = "08_Floorplans";
+// `headers=1` tells gviz to treat row 1 as headers explicitly. Without it
+// gviz auto-detects based on the tab's freeze setting, which fails (columns
+// come back labelled a/b/c/d) on tabs that don't have row 1 frozen.
 const DEFAULT_GVIZ_URL =
   `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq` +
-  `?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}`;
+  `?tqx=out:json&headers=1&sheet=${encodeURIComponent(SHEET_TAB)}`;
 const GVIZ_URL = process.env.CT1_FLOORPLANS_URL || DEFAULT_GVIZ_URL;
 
 export const dynamic = "force-dynamic";
