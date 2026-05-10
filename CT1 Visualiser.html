@@ -1130,6 +1130,14 @@
   .pill.s-lost         { background: #C0C0C0; color: var(--slate); opacity: 0.6; }
   .dlist .cut { color: var(--terra); font-size: 10px; }
   .dlist .dup { display: inline-block; margin-left: 4px; font-size: 8px; padding: 1px 5px; background: var(--ct-gold); color: var(--slate); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; }
+  .dlist .pt-tag {
+    display: inline-block; margin-left: 6px;
+    font-size: 9px; padding: 1px 6px;
+    background: var(--paper); color: var(--denim);
+    border: 1px solid var(--rule);
+    letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600;
+    vertical-align: middle;
+  }
   .dlist .balc-yes { color: var(--slate); font-weight: 500; }
   .dlist .balc-no  { color: var(--denim); opacity: 0.45; }
   .dlist .type-dot { display: inline-block; width: 8px; height: 8px; margin-right: 6px; vertical-align: middle; }
@@ -1941,7 +1949,7 @@ const state = {
   statusFilter: null,           // tower highlight by status: 'bh_let'|'hh_let'|'available'|'lost'|'show_flat'|null
   drawer: null,                 // { kind:'list', view:'available'|'bh_let'|'hh_let'|'lost', bedroom:null|'1br'... } or { kind:'detail', uid:'05-03' }
   listSort: { col: 'f', dir: 'asc' },
-  listFilters: { view:null, band:null, rentMin:null, rentMax:null, bedroom:null, duplex:false },
+  listFilters: { view:null, band:null, rentMin:null, rentMax:null, bedroom:null, type:null, duplex:false, balcony:null, balcMin:null, balcMax:null },
 };
 
 /* ============================================================
@@ -2341,6 +2349,7 @@ function positionTrancheMarkers() {
 function unitMatchesListFilters(u) {
   const lf = state.listFilters;
   if (lf.bedroom && u.t !== lf.bedroom) return false;
+  if (lf.type && (u.pt || '').toUpperCase() !== lf.type) return false;
   if (lf.view && u.v !== lf.view) return false;
   if (lf.band) {
     const band = FLOOR_BANDS.find(x => x.code === lf.band);
@@ -2382,7 +2391,7 @@ function openList(view, bedroom) {
   state.statusFilter = view;
   state.listFilters = {
     view:null, band:null, rentMin:null, rentMax:null,
-    bedroom: bedroom || null, duplex:false,
+    bedroom: bedroom || null, type:null, duplex:false,
     balcony: null, balcMin: null, balcMax: null,
   };
   state.listSort = { col:'f', dir:'asc' };
@@ -2487,7 +2496,7 @@ function titleForList(view) {
 function columnsForView(view) {
   const base = [
     { key:'uid',  label:'Unit',   num:false, render:u => `<span class="uid">${u.uid}</span>${u.d?'<span class="dup">Duplex</span>':''}` },
-    { key:'t',    label:'Type',   num:false, render:u => `<span class="type-dot ${TYPE_META[u.t].cls}"></span>${TYPE_META[u.t].label}` },
+    { key:'t',    label:'Type',   num:false, render:u => `<span class="type-dot ${TYPE_META[u.t].cls}"></span>${TYPE_META[u.t].label}${u.pt ? `<span class="pt-tag">Type ${u.pt}</span>` : ''}` },
     { key:'f',    label:'Floor',  num:true,  render:u => u.f },
     { key:'v',    label:'View',   num:false, render:u => VIEW_NAMES[u.v] || u.v },
     { key:'sq',   label:'sq ft',  num:true,  render:u => fmtN(u.sq) },
@@ -2526,8 +2535,24 @@ function renderListFilters(view) {
   const bedChips = TYPES_ORDER.map(t =>
     `<button class="mini-chip ${lf.bedroom===t?'active':''}" data-fkind="bedroom" data-v="${t}">${TYPE_META[t].label}</button>`
   ).join('');
+  // Type chips — dynamically built from product_type values that exist in
+  // the data (scoped to the active bedroom band if one is selected). Hidden
+  // entirely when only 0–1 types are available for the current selection.
+  const typePool = lf.bedroom
+    ? UNITS.filter(u => u.t === lf.bedroom)
+    : UNITS;
+  const typeLetters = [...new Set(
+    typePool.map(u => (u.pt || '').trim().toUpperCase()).filter(Boolean),
+  )].sort();
+  const typeRow = typeLetters.length > 1
+    ? `<div class="mini-group"><span class="mini-label">Type</span>` +
+      typeLetters.map(t =>
+        `<button class="mini-chip ${lf.type===t?'active':''}" data-fkind="type" data-v="${t}">Type ${t}</button>`,
+      ).join('') + `</div>`
+    : '';
   return `
     <div class="mini-group"><span class="mini-label">Bed</span>${bedChips}</div>
+    ${typeRow}
     <div class="mini-group"><span class="mini-label">View</span>${viewChips}</div>
     <div class="mini-group"><span class="mini-label">Band</span>${bandChips}</div>
     <div class="mini-group"><span class="mini-label">Rent AED</span>
@@ -2566,8 +2591,14 @@ function wireListFilters() {
       const v = chip.dataset.v;
       if (kind === 'duplex') state.listFilters.duplex = !state.listFilters.duplex;
       else state.listFilters[kind] = state.listFilters[kind] === v ? null : v;
-      // Toggle chip classes locally; sibling chips in same kind toggle off
-      if (kind !== 'duplex') {
+      // Bedroom changes: types are scoped to bedroom band, so reset the type
+      // filter and rebuild the entire filter row (the Type chips depend on
+      // which bedroom is active). Other filter kinds: toggle chip class only.
+      if (kind === 'bedroom') {
+        state.listFilters.type = null;
+        host.innerHTML = renderListFilters(state.drawer.view);
+        wireListFilters();
+      } else if (kind !== 'duplex') {
         host.querySelectorAll(`.mini-chip[data-fkind="${kind}"]`).forEach(c => {
           c.classList.toggle('active', state.listFilters[kind] === c.dataset.v);
         });
@@ -2601,7 +2632,7 @@ function wireListFilters() {
   host.querySelector('#drawer-clear').addEventListener('click', () => {
     state.listFilters = {
       view:null, band:null, rentMin:null, rentMax:null,
-      bedroom:null, duplex:false,
+      bedroom:null, type:null, duplex:false,
       balcony:null, balcMin:null, balcMax:null,
     };
     renderList(state.drawer.view);  // full re-render to reset chrome
