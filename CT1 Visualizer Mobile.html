@@ -163,11 +163,17 @@
     font-weight: 400; padding: 0 2px;
   }
 
-  /* Big stat hero — Available */
+  /* Big stat hero — Available + bh / H&H tallies share a single dark
+     container with a continuous gold-rule frame so the three pieces read
+     as one unit. */
   .stat-hero {
     background: var(--ct-afterlight);
     color: var(--ct-haze);
-    padding: 0 16px 18px;
+    padding: 18px 16px;
+  }
+  .stat-frame {
+    border: 1px solid rgba(215,168,111,0.32);
+    overflow: hidden;
   }
   .stat-card {
     background: rgba(244,242,238,0.04);
@@ -179,11 +185,11 @@
   .stat-card.primary {
     text-align: center;
     border: 0;
-    border-bottom: 1px solid rgba(215,168,111,0.25);
+    border-bottom: 1px solid rgba(215,168,111,0.32);
     background: rgba(215,168,111,0.08);
-    /* edge-to-edge — negative margin compensates the .stat-hero 16px gutter */
-    margin: 0 -16px 12px;
+    margin: 0;
     padding: 26px 24px 22px;
+    width: 100%;
   }
   .stat-card .stat-lbl { font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ct-gold); margin-bottom: 6px; }
   .stat-card .stat-val { font-family: Georgia, serif; font-size: 56px; line-height: 0.95; color: var(--ct-gold); }
@@ -220,13 +226,12 @@
   .stat-row .stat-card { padding: 16px 16px; }
   .stat-row .stat-card.dim { border-left: 3px solid var(--ct-sun); }
   .stat-row .stat-card.dim.hh { border-left-color: var(--powder); }
-  /* KPI banner — single full-width pill split into bh / H&H halves with
-     Reserved + Let tallies stacked under each agency. */
+  /* KPI banner — bh / H&H halves with Reserved + Let tallies. Sits inside
+     the .stat-frame which already provides the outer border, so no border
+     of its own (keeps the visual continuous with the Available card above). */
   .kpi-banner {
     display: grid; grid-template-columns: 1fr 1fr;
     background: rgba(244, 242, 238, 0.04);
-    border: 1px solid rgba(215, 168, 111, 0.2);
-    overflow: hidden;
   }
   .kpi-half {
     display: grid; grid-template-rows: auto auto auto auto;
@@ -487,14 +492,20 @@
     font-size: 14px; color: var(--slate); font-weight: 500;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .league-deals {
+  .league-stats {
+    display: flex; gap: 14px;
+  }
+  .league-stat {
+    display: flex; flex-direction: column; align-items: flex-end;
+    line-height: 1.1;
+  }
+  .league-stat .lbl {
+    font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--denim); margin-bottom: 2px;
+  }
+  .league-stat .val {
     font-family: Georgia, serif; font-size: 18px; color: var(--slate);
     font-variant-numeric: tabular-nums;
-  }
-  .league-deals .lbl {
-    display: block; font-size: 9px; letter-spacing: 0.16em;
-    color: var(--denim); font-family: inherit;
-    text-transform: uppercase; text-align: right; margin-top: 2px;
   }
   .league-revenue {
     text-align: right; font-size: 11px; color: var(--denim);
@@ -677,17 +688,83 @@
   .pill.denim { background: var(--denim); color: white; }
   .pill.outline { background: transparent; color: var(--ct-haze); border: 1px solid rgba(244,242,238,0.4); }
 
-  .um-floorplan-btn {
+  .um-actions {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin-top: 14px;
+  }
+  .um-floorplan-btn, .um-book-btn {
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    width: 100%; margin-top: 14px;
-    padding: 12px 16px;
+    padding: 12px 12px;
     background: var(--ct-gold); color: var(--ct-afterlight);
     border: 0; font-family: inherit;
-    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
     cursor: pointer;
   }
-  .um-floorplan-btn:active { opacity: 0.85; }
+  .um-book-btn {
+    background: transparent; color: var(--ct-gold);
+    border: 1px solid var(--ct-gold);
+  }
+  .um-floorplan-btn:active, .um-book-btn:active { opacity: 0.85; }
   .um-fp-icon { font-size: 14px; }
+  /* Booking modal — slide-up form for the viewing-request WhatsApp message */
+  .bk-modal {
+    position: fixed; inset: 0; z-index: 120;
+    background: var(--ct-haze);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    display: flex; flex-direction: column;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .bk-modal.open { transform: translateY(0); }
+  .bk-body { padding: 18px 18px 30px; }
+  .bk-intro { font-size: 13px; color: var(--denim); line-height: 1.5; margin-bottom: 16px; }
+  .bk-form { display: flex; flex-direction: column; gap: 10px; }
+  .bk-row {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .bk-row > span {
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--denim);
+  }
+  .bk-row input {
+    padding: 11px 12px; background: white; border: 1px solid var(--rule);
+    color: var(--slate); font-family: inherit; font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .bk-row input:focus { outline: none; border-color: var(--ct-gold-dark); }
+  .bk-row input[readonly] { background: var(--paper); color: var(--denim); cursor: default; }
+  .bk-error {
+    background: rgba(255, 120, 122, 0.12);
+    border-left: 3px solid var(--salmon);
+    padding: 10px 12px; font-size: 12px; color: var(--terra);
+  }
+  .bk-submit {
+    margin-top: 8px; padding: 14px 16px;
+    background: #25D366; color: white;
+    border: 0; font-family: inherit;
+    font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    font-weight: 600; cursor: pointer;
+  }
+  .bk-submit:active { opacity: 0.85; }
+  .bk-copy {
+    padding: 12px 16px;
+    background: transparent; color: var(--ct-gold-dark);
+    border: 1px solid var(--ct-gold-dark);
+    font-family: inherit; font-size: 11px;
+    letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer;
+  }
+  .bk-copy.copied { background: var(--ct-gold-dark); color: var(--ct-haze); }
+  .bk-preview-wrap { margin-top: 16px; }
+  .bk-preview-head {
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--denim); margin-bottom: 6px;
+  }
+  .bk-preview {
+    background: white; border: 1px solid var(--rule);
+    padding: 12px 14px; font-family: inherit; font-size: 13px;
+    line-height: 1.5; color: var(--slate); white-space: pre-wrap;
+    word-break: break-word; margin: 0;
+  }
   .fp-modal {
     position: fixed; inset: 0; z-index: 110;
     background: var(--ct-haze);
@@ -936,7 +1013,22 @@
   .tw-cell.s-show_flat    { background: var(--denim); }
   /* Lost — rare/legacy. Greyed out so it recedes; not in the legend. */
   .tw-cell.s-lost         { background: #C0C0C0; opacity: 0.45; }
-  .tw-cell.is-duplex { outline: 1.2px solid var(--ct-gold); outline-offset: -1px; z-index: 2; }
+  /* Duplex marker — a thin horizontal gold line drawn through the middle of
+     the tile via a stacked background-image gradient. Sits on top of the
+     status fill. Replaces the previous gold outline so the marker reads
+     'duplex' at a glance without competing with the cell border. */
+  .tw-cell.is-duplex {
+    background-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent calc(50% - 0.75px),
+      var(--ct-gold) calc(50% - 0.75px),
+      var(--ct-gold) calc(50% + 0.75px),
+      transparent calc(50% + 0.75px),
+      transparent 100%
+    );
+    z-index: 2;
+  }
   .tw-cell.is-balcony::before { content:''; position:absolute; left:0; top:0; bottom:0; width:1.5px; background: var(--ct-sun); }
   .tower-frame.filtered .tw-cell:not(.match) { opacity: 0.14; }
   /* Available-focus toggle — fades non-Available units to a near-monochrome low-opacity
@@ -965,6 +1057,17 @@
   .legend-item { display: inline-flex; align-items: center; gap: 6px; }
   .legend-sw { width: 10px; height: 10px; border-radius: 2px; }
   .legend-sw.ring { background: transparent !important; outline: 1.5px solid currentColor; outline-offset: -1px; }
+  /* 'Duplex' swatch — same approach as the tower cell: bronze fill + a
+     horizontal gold line through the middle. */
+  .legend-sw.dup-line {
+    background:
+      linear-gradient(to bottom,
+        transparent 0%, transparent calc(50% - 0.75px),
+        var(--ct-gold) calc(50% - 0.75px), var(--ct-gold) calc(50% + 0.75px),
+        transparent calc(50% + 0.75px), transparent 100%
+      ),
+      #B39470 !important;
+  }
 
   /* ==========================================================
    * BROWSE — search + view chips + price slider + sort
@@ -1130,6 +1233,7 @@
     </div>
 
     <div class="stat-hero">
+     <div class="stat-frame">
       <button class="stat-card primary" id="card-avail">
         <div class="stat-lbl">Available</div>
         <div class="stat-val" id="kpi-avail">0</div>
@@ -1162,6 +1266,7 @@
           <div class="kpi-half-sub" id="kpi-hh-sub">Signed + Occupied</div>
         </button>
       </div>
+     </div>
     </div>
 
     <div class="pulse-card" id="pulse-card" hidden></div>
@@ -1296,10 +1401,6 @@
       <div class="league-eyebrow">League · CT1</div>
       <h2 class="league-title">Top brokers <em>this month</em></h2>
       <div class="league-sub" id="league-sub">Ranked by signed deals · resets on the 1st</div>
-    </div>
-    <div class="league-mode" id="league-mode">
-      <button class="seg-btn active" data-league-mode="month">This month</button>
-      <button class="seg-btn" data-league-mode="all">All time</button>
     </div>
     <div class="league-board" id="league-board"></div>
     <div class="league-foot">
@@ -1509,6 +1610,32 @@
     <div class="um-title" id="fp-title">Floorplan</div>
   </div>
   <div id="fp-body"></div>
+</div>
+
+<!-- Booking — slide-up modal for sending a viewing request to the WhatsApp group -->
+<div class="bk-modal" id="bk-modal" aria-hidden="true">
+  <div class="um-topbar">
+    <button class="um-close" id="bk-close" aria-label="Close">×</button>
+    <div class="um-title" id="bk-title">Book viewing</div>
+  </div>
+  <div class="bk-body">
+    <p class="bk-intro">Send a viewing request to the bh brokers group. We'll format the message — you tap to send.</p>
+    <form id="bk-form" class="bk-form" autocomplete="off">
+      <label class="bk-row"><span>Unit</span><input type="text" id="bk-unit" readonly></label>
+      <label class="bk-row"><span>Day</span><input type="date" id="bk-date" required></label>
+      <label class="bk-row"><span>Time</span><input type="time" id="bk-time" required></label>
+      <label class="bk-row"><span>Engage ref no.</span><input type="text" id="bk-ref" inputmode="text" required placeholder="e.g. 123456"></label>
+      <label class="bk-row"><span>Applicant first name</span><input type="text" id="bk-name" required placeholder="e.g. Sarah"></label>
+      <label class="bk-row"><span>Mobile last 4 digits</span><input type="text" id="bk-mob" required pattern="[0-9]{4}" maxlength="4" inputmode="numeric" placeholder="0000"></label>
+      <div class="bk-error" id="bk-error" hidden></div>
+      <button type="submit" class="bk-submit" id="bk-submit">Open in WhatsApp</button>
+      <button type="button" class="bk-copy" id="bk-copy">Copy message instead</button>
+    </form>
+    <div class="bk-preview-wrap" hidden>
+      <div class="bk-preview-head">Message preview</div>
+      <pre class="bk-preview" id="bk-preview"></pre>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1773,18 +1900,12 @@ function switchTab(name) {
 // Experimental UI; will be promoted into the main page if it
 // proves useful.
 // ============================================================
-let leagueMode = 'month'; // 'month' | 'all'
+// All-time only for now — month-mode toggle removed by request; can be
+// reintroduced later once a 'reserved_date' column lands on the sheet.
 function renderLeague() {
   const board = document.getElementById('league-board');
   const sub = document.getElementById('league-sub');
   if (!board) return;
-  const today = new Date();
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
-    .toISOString().slice(0, 10);
-  // Count brokers' won deals — Reserved counts the moment they hold the unit,
-  // not just at signing. Date used for 'this month' filter:
-  //   Signed/Occupied → signed_date
-  //   Reserved        → last_activity_date (best proxy for the reservation date)
   const byBroker = new Map();
   for (const u of UNITS) {
     if (!u.br) continue;
@@ -1794,10 +1915,6 @@ function renderLeague() {
     const isLet      = u.s === 'signed_bh' || u.s === 'signed_hh' ||
                        u.s === 'occupied_bh' || u.s === 'occupied_hh';
     if (!isReserved && !isLet) continue;
-    const dealDate = isLet ? u.sgnD : u.lastD;
-    if (leagueMode === 'month') {
-      if (!dealDate || dealDate < startOfMonth) continue;
-    }
     const row = byBroker.get(key)
       || { name: key, deals: 0, reserved: 0, let: 0, revenue: 0 };
     row.deals += 1;
@@ -1808,52 +1925,35 @@ function renderLeague() {
   const ranked = [...byBroker.values()].sort((a, b) =>
     b.deals - a.deals || b.let - a.let || b.revenue - a.revenue,
   );
-  const totalDeals = ranked.reduce((s, r) => s + r.deals, 0);
-  sub.textContent = leagueMode === 'month'
-    ? `Reserved + Let, this calendar month · ${totalDeals} deals across ${ranked.length} broker${ranked.length === 1 ? '' : 's'}`
-    : `Reserved + Let, all time · ${totalDeals} deals across ${ranked.length} broker${ranked.length === 1 ? '' : 's'}`;
+  const totalReserved = ranked.reduce((s, r) => s + r.reserved, 0);
+  const totalLet      = ranked.reduce((s, r) => s + r.let, 0);
+  sub.textContent =
+    `${totalLet} let · ${totalReserved} reserved · across ${ranked.length} broker${ranked.length === 1 ? '' : 's'}`;
 
   if (!ranked.length) {
     board.innerHTML = `
       <div class="league-empty">
-        No reservations or signed deals ${leagueMode === 'month' ? 'this month yet' : 'on record yet'}.<br>
+        No reservations or signed deals on record yet.<br>
         Check back once activity hits the sheet — the leaderboard refreshes every 5 minutes.
       </div>`;
     return;
   }
   board.innerHTML = ranked.map((r, i) => {
     const rankClass = i < 3 ? `rank-${i + 1}` : '';
-    // Big number = total deals; small line = stage breakdown.
-    const breakdown = (r.reserved && r.let)
-      ? `${r.let} let · ${r.reserved} res.`
-      : r.let
-        ? (r.let === 1 ? 'let' : 'all let')
-        : (r.reserved === 1 ? 'reserved' : 'all reserved');
+    // Show Let + Reserved as separate tallies, mirroring the bh / H&H banner.
     return `
       <div class="league-row ${rankClass}">
         <div class="league-rank">${i + 1}</div>
         <div class="league-name">${r.name}</div>
-        <div class="league-deals">${r.deals}<span class="lbl">${breakdown}</span></div>
+        <div class="league-stats">
+          <div class="league-stat"><span class="lbl">Let</span><span class="val">${r.let}</span></div>
+          <div class="league-stat"><span class="lbl">Reserved</span><span class="val">${r.reserved}</span></div>
+        </div>
         <div class="league-revenue"><strong>${fmtAED(r.revenue)}</strong> p.a.</div>
       </div>
     `;
   }).join('');
 }
-// League mode toggle — clicked even before live data lands, so guard the
-// element lookup.
-(function () {
-  const seg = document.getElementById('league-mode');
-  if (!seg) return;
-  seg.querySelectorAll('.seg-btn').forEach(b => {
-    b.addEventListener('click', () => {
-      seg.querySelectorAll('.seg-btn').forEach(x =>
-        x.classList.toggle('active', x === b),
-      );
-      leagueMode = b.dataset.leagueMode;
-      renderLeague();
-    });
-  });
-})();
 
 // ============================================================
 // OVERVIEW — KPIs, bedroom strip, show flats
@@ -2561,7 +2661,7 @@ function legendForMode(mode) {
     item('#1F343F', 'Occupied · bh'),
     item('#6B2B26', 'Occupied · H&H'),
     item('#2C537A', 'Show flat'),
-    item('#D7A86F', 'Duplex (gold ring)', true),
+    `<span class="legend-item"><span class="legend-sw dup-line"></span>Duplex (gold line)</span>`,
   ].join('');
   if (mode === 'bedroom') return TYPES_ORDER.map(t => {
     const colorMap = { studio: '#7BA0B2', '1br': '#3D7AA0', '2br': '#7C9A6B', '3br': '#D9B27A', '4br': '#5A4438' };
@@ -2638,10 +2738,16 @@ function openUnit(uid, opts) {
         <span class="pill outline">Unfurnished</span>
         ${cut ? `<span class="pill" style="background:var(--terra);color:white;">Price cut ${cutPct}%</span>` : ''}
       </div>
-      <button class="um-floorplan-btn" id="um-floorplan-btn" type="button" data-uid="${u.uid}">
-        <span class="um-fp-icon">▦</span>
-        <span>${fpReady ? 'View floorplan' : 'Floorplan not available'}</span>
-      </button>
+      <div class="um-actions">
+        <button class="um-floorplan-btn" id="um-floorplan-btn" type="button" data-uid="${u.uid}">
+          <span class="um-fp-icon">▦</span>
+          <span>${fpReady ? 'View floorplan' : 'Floorplan not available'}</span>
+        </button>
+        <button class="um-book-btn" id="um-book-btn" type="button" data-uid="${u.uid}">
+          <span class="um-fp-icon">✎</span>
+          <span>Book viewing</span>
+        </button>
+      </div>
     </div>
 
     <div class="um-stats">
@@ -2725,6 +2831,8 @@ function openUnit(uid, opts) {
 
   const fpBtn = document.getElementById('um-floorplan-btn');
   if (fpBtn) fpBtn.addEventListener('click', () => openFloorplanModal(u));
+  const bkBtn = document.getElementById('um-book-btn');
+  if (bkBtn) bkBtn.addEventListener('click', () => openBookingModal(u));
 
   modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
@@ -3114,6 +3222,116 @@ function closeFloorplanModal() {
   document.body.style.overflow = '';
   document.getElementById('fp-body').innerHTML = '';
 }
+
+// ============================================================
+// BOOK VIEWING — slide-up form that builds a WhatsApp message for the
+// brokers group. We can't send to a group directly from the browser
+// (WhatsApp's URL scheme only opens a personal chat), so the flow is:
+//   1. Broker fills the form
+//   2. We construct the message text
+//   3. 'Open in WhatsApp' uses wa.me/?text=… (opens WhatsApp with the
+//      message pre-filled — broker picks the group manually)
+//   4. 'Copy message instead' falls back if WhatsApp won't open
+// ============================================================
+function openBookingModal(u) {
+  const modal = document.getElementById('bk-modal');
+  document.getElementById('bk-unit').value = `${u.uid} · ${TYPE_META[u.t].label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''}`;
+  // Default day = tomorrow, time = 11:00 (lobby opens 10:00, viewing slot)
+  const tomorrow = new Date(Date.now() + 86400000);
+  const yyyy = tomorrow.getFullYear();
+  const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+  const dd = String(tomorrow.getDate()).padStart(2, '0');
+  document.getElementById('bk-date').value = `${yyyy}-${mm}-${dd}`;
+  document.getElementById('bk-time').value = '11:00';
+  document.getElementById('bk-error').hidden = true;
+  document.querySelector('.bk-preview-wrap').hidden = true;
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  modal.dataset.uid = u.uid;
+}
+function closeBookingModal() {
+  const modal = document.getElementById('bk-modal');
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+function buildBookingMessage() {
+  const $ = id => document.getElementById(id);
+  const unit = $('bk-unit').value.trim();
+  const date = $('bk-date').value;
+  const time = $('bk-time').value;
+  const ref  = $('bk-ref').value.trim();
+  const name = $('bk-name').value.trim();
+  const mob  = $('bk-mob').value.trim();
+  const errEl = $('bk-error');
+  errEl.hidden = true;
+  // Validation
+  if (!date || !time || !ref || !name || !/^\d{4}$/.test(mob)) {
+    errEl.hidden = false;
+    errEl.textContent = !/^\d{4}$/.test(mob)
+      ? 'Mobile last 4 digits must be exactly 4 numbers.'
+      : 'Please fill all fields.';
+    return null;
+  }
+  // Format date as 'Mon 12 May 2026' for human readability
+  const d = new Date(date + 'T00:00:00');
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const mons = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dayLine = `${days[d.getDay()]} ${d.getDate()} ${mons[d.getMonth()]} ${d.getFullYear()}`;
+  return [
+    '*Viewing request — City Tower 1*',
+    '',
+    `Unit: ${unit}`,
+    `Day: ${dayLine}`,
+    `Time: ${time}`,
+    `Engage ref: ${ref}`,
+    `Applicant: ${name} · mobile ends ${mob}`,
+  ].join('\n');
+}
+
+// Wire booking buttons
+(function () {
+  const closeBtn = document.getElementById('bk-close');
+  if (closeBtn) closeBtn.addEventListener('click', closeBookingModal);
+
+  const form = document.getElementById('bk-form');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const txt = buildBookingMessage();
+      if (!txt) return;
+      // wa.me with no number opens the WhatsApp share sheet — broker picks
+      // the bh brokers group manually. text= pre-fills the message.
+      window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank');
+      // Show the preview so the broker can verify what was sent.
+      document.getElementById('bk-preview').textContent = txt;
+      document.querySelector('.bk-preview-wrap').hidden = false;
+    });
+  }
+  const copyBtn = document.getElementById('bk-copy');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const txt = buildBookingMessage();
+      if (!txt) return;
+      try {
+        await navigator.clipboard.writeText(txt);
+        copyBtn.classList.add('copied');
+        const orig = copyBtn.textContent;
+        copyBtn.textContent = 'Copied — paste into WhatsApp';
+        setTimeout(() => {
+          copyBtn.classList.remove('copied');
+          copyBtn.textContent = orig;
+        }, 1800);
+      } catch (e) {
+        copyBtn.textContent = 'Copy failed — long-press the preview to select';
+      }
+      document.getElementById('bk-preview').textContent = txt;
+      document.querySelector('.bk-preview-wrap').hidden = false;
+    });
+  }
+})();
 
 function refreshOpenUnitModal() {
   // If the unit modal is currently open, re-render it so size-unit toggles
