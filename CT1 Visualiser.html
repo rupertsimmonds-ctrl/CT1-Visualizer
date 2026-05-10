@@ -285,6 +285,97 @@
   }
   .headline.hh-let .kpi-pill { background: rgba(160, 103, 103, 0.28); color: #E8C8C2; }
 
+  /* Broker league — full-width section between show flats and the tower stage. */
+  .league-row {
+    background: var(--ct-afterlight);
+    color: var(--ct-haze);
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    border-top: 1px solid var(--ct-gold-dark);
+    border-bottom: 1px solid var(--ct-gold-dark);
+  }
+  .league-row .league-head {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .league-row .league-head h2 {
+    font-family: Georgia, serif; font-size: 18px;
+    color: var(--ct-haze); margin: 0; font-weight: 400;
+  }
+  .league-row .league-head .tag {
+    font-size: 11px; letter-spacing: 0.04em;
+    color: var(--ct-sun); opacity: 0.85;
+    flex: 1; min-width: 0;
+  }
+  .league-row .league-mode {
+    display: inline-flex; padding: 3px;
+    background: rgba(244, 242, 238, 0.06);
+    border: 1px solid rgba(215, 168, 111, 0.18);
+  }
+  .league-row .league-mode .seg-btn {
+    border: 0; background: transparent;
+    padding: 7px 14px;
+    font: 600 11px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--ct-sun); cursor: pointer;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    transition: all 0.18s ease;
+  }
+  .league-row .league-mode .seg-btn.active {
+    background: var(--ct-gold); color: var(--ct-afterlight);
+  }
+  .league-row .league-board {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 8px;
+  }
+  .league-row .league-row-item {
+    display: grid;
+    grid-template-columns: 36px 1fr auto auto;
+    gap: 14px; align-items: center;
+    padding: 14px 16px;
+    background: var(--ct-afterlight2);
+    border-left: 3px solid transparent;
+  }
+  .league-row .league-row-item.rank-1 { border-left-color: var(--ct-gold); }
+  .league-row .league-row-item.rank-2 { border-left-color: var(--ct-sun); }
+  .league-row .league-row-item.rank-3 { border-left-color: var(--terra); }
+  .league-row .league-rank {
+    font-family: Georgia, serif; font-size: 22px; line-height: 1;
+    color: var(--ct-gold-dark); text-align: center;
+  }
+  .league-row .league-row-item.rank-1 .league-rank { color: var(--ct-gold); }
+  .league-row .league-name {
+    font-size: 14px; color: var(--ct-haze); font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .league-row .league-deals {
+    font-family: Georgia, serif; font-size: 18px;
+    color: var(--ct-haze); font-variant-numeric: tabular-nums;
+  }
+  .league-row .league-deals .lbl {
+    display: block; font-size: 9px; letter-spacing: 0.16em;
+    color: var(--ct-sun); font-family: inherit; opacity: 0.75;
+    text-transform: uppercase; text-align: right; margin-top: 2px;
+  }
+  .league-row .league-revenue {
+    text-align: right; font-size: 11px; color: var(--ct-sun);
+    font-variant-numeric: tabular-nums; min-width: 100px;
+  }
+  .league-row .league-revenue strong {
+    display: block; color: var(--ct-haze); font-size: 13px; font-weight: 500;
+  }
+  .league-row .league-empty {
+    background: var(--ct-afterlight2); padding: 28px 16px;
+    text-align: center; color: var(--ct-sun); opacity: 0.85;
+    font-style: italic; font-size: 13px; line-height: 1.5;
+  }
+  .league-row .league-foot {
+    margin-top: 14px; font-size: 11px; line-height: 1.5;
+    color: var(--ct-sun); opacity: 0.7;
+  }
+  .league-row .league-foot code {
+    background: rgba(244, 242, 238, 0.08); padding: 1px 5px; font-size: 11px;
+  }
+
   /* SHOW FLATS ROW (promoted) */
   .showflats-row {
     background: white; border: 1px solid var(--rule);
@@ -1235,6 +1326,23 @@
     <div class="showflats-grid" id="showflats-grid"></div>
   </section>
 
+  <section class="league-row" id="league-row">
+    <div class="league-head">
+      <h2>Broker league · CT1</h2>
+      <div class="tag" id="league-sub">Reserved + Let, this calendar month · — deals</div>
+      <div class="league-mode" id="league-mode">
+        <button class="seg-btn active" data-league-mode="month">This month</button>
+        <button class="seg-btn" data-league-mode="all">All time</button>
+      </div>
+    </div>
+    <div class="league-board" id="league-board"></div>
+    <div class="league-foot">
+      A broker only appears if they're recorded on at least one Reserved or
+      signed/occupied row. If a name's missing, check the <code>broker</code>
+      column on the master sheet.
+    </div>
+  </section>
+
   <section class="stage">
 
     <aside class="tower-col">
@@ -1365,8 +1473,8 @@
             <div class="hours-sub">Pre-booked appointments only · After-hours by exception with H&amp;H</div>
           </div>
           <div>
-            <div class="hours-lbl">First viewings</div>
-            <div class="hours-val">From Monday 4 May 2026</div>
+            <div class="hours-lbl">Viewings</div>
+            <div class="hours-val">Now open · pre-booked</div>
             <div class="hours-sub">Move-in from June 2026</div>
           </div>
         </div>
@@ -2887,9 +2995,93 @@ function rebuildAll() {
   if (typeof buildTypeChips === 'function') buildTypeChips();
   applyTowerFilter();
   renderRecentDesktop();
+  if (typeof renderLeague === 'function') renderLeague();
   if (state.drawer) renderDrawer();
   requestAnimationFrame(() => requestAnimationFrame(positionTrancheMarkers));
 }
+
+/* ============================================================
+ * BROKER LEAGUE — counts Reserved + Signed/Occupied deals,
+ * sorted by total deals → let count → revenue. Same logic as
+ * mobile so a broker switching devices sees the same ranking.
+ * ========================================================== */
+let leagueMode = 'month'; // 'month' | 'all'
+function renderLeague() {
+  const board = document.getElementById('league-board');
+  const sub = document.getElementById('league-sub');
+  if (!board) return;
+  const today = new Date();
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+    .toISOString().slice(0, 10);
+  const byBroker = new Map();
+  for (const u of UNITS) {
+    if (!u.br) continue;
+    const key = u.br.trim();
+    if (!key) continue;
+    const isReserved = u.s === 'reserved_bh' || u.s === 'reserved_hh';
+    const isLet      = u.s === 'signed_bh' || u.s === 'signed_hh' ||
+                       u.s === 'occupied_bh' || u.s === 'occupied_hh';
+    if (!isReserved && !isLet) continue;
+    const dealDate = isLet ? u.sgnD : u.lastD;
+    if (leagueMode === 'month') {
+      if (!dealDate || dealDate < startOfMonth) continue;
+    }
+    const row = byBroker.get(key)
+      || { name: key, deals: 0, reserved: 0, let: 0, revenue: 0 };
+    row.deals += 1;
+    if (isReserved) row.reserved += 1; else row.let += 1;
+    row.revenue += (u.sgnR || u.pr || 0);
+    byBroker.set(key, row);
+  }
+  const ranked = [...byBroker.values()].sort((a, b) =>
+    b.deals - a.deals || b.let - a.let || b.revenue - a.revenue,
+  );
+  const totalDeals = ranked.reduce((s, r) => s + r.deals, 0);
+  if (sub) {
+    sub.textContent = leagueMode === 'month'
+      ? `Reserved + Let, this calendar month · ${totalDeals} deals across ${ranked.length} broker${ranked.length === 1 ? '' : 's'}`
+      : `Reserved + Let, all time · ${totalDeals} deals across ${ranked.length} broker${ranked.length === 1 ? '' : 's'}`;
+  }
+
+  if (!ranked.length) {
+    board.innerHTML = `
+      <div class="league-empty">
+        No reservations or signed deals ${leagueMode === 'month' ? 'this month yet' : 'on record yet'}.<br>
+        The leaderboard refreshes every 5 minutes with the live sheet.
+      </div>`;
+    return;
+  }
+  board.innerHTML = ranked.map((r, i) => {
+    const rankClass = i < 3 ? `rank-${i + 1}` : '';
+    const breakdown = (r.reserved && r.let)
+      ? `${r.let} let · ${r.reserved} res.`
+      : r.let
+        ? (r.let === 1 ? 'let' : 'all let')
+        : (r.reserved === 1 ? 'reserved' : 'all reserved');
+    return `
+      <div class="league-row-item ${rankClass}">
+        <div class="league-rank">${i + 1}</div>
+        <div class="league-name">${r.name}</div>
+        <div class="league-deals">${r.deals}<span class="lbl">${breakdown}</span></div>
+        <div class="league-revenue"><strong>${fmtAED(r.revenue)}</strong> p.a.</div>
+      </div>
+    `;
+  }).join('');
+}
+// Mode toggle wiring (this-month / all-time)
+(function () {
+  const seg = document.getElementById('league-mode');
+  if (!seg) return;
+  seg.querySelectorAll('.seg-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      seg.querySelectorAll('.seg-btn').forEach(x =>
+        x.classList.toggle('active', x === b),
+      );
+      leagueMode = b.dataset.leagueMode;
+      renderLeague();
+    });
+  });
+})();
 
 window.addEventListener('resize', () => {
   requestAnimationFrame(positionTrancheMarkers);
