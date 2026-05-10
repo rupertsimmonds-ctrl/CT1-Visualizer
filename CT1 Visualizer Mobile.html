@@ -153,6 +153,11 @@
     color: var(--slate);
     display: flex; align-items: center; gap: 10px;
   }
+  /* The browser's default '[hidden] { display: none }' has the same
+     specificity as the .pulse-card rule above, so source order made the
+     class rule win and an empty pulse banner stayed visible when there
+     was no recent activity to surface. Explicit override fixes that. */
+  .pulse-card[hidden] { display: none; }
   .pulse-card .pulse-mark {
     flex-shrink: 0; font-size: 11px; color: var(--ct-gold-dark);
     letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600;
