@@ -105,69 +105,69 @@
   /* ============================================================
    * TAB 1 — OVERVIEW
    * ========================================================== */
+  .hero {
+    background: linear-gradient(180deg, var(--ct-afterlight) 0%, var(--ct-afterlight2) 100%);
+    color: var(--ct-haze);
+    padding: 18px 16px 22px;
+    text-align: center;
+  }
+  .hero .ct-lock svg { width: 130px; color: var(--ct-gold); display: block; margin: 0 auto; }
+  .hero .ct-tag {
+    margin-top: 10px;
+    font-size: 9.5px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--ct-sun); opacity: 0.85;
+  }
   .guide-card {
-    background: var(--paper); margin: 14px 16px 0;
-    padding: 14px 16px; border-left: 3px solid var(--ct-gold);
+    background: var(--paper); margin: 0;
+    padding: 12px 16px; border-bottom: 1px solid var(--rule);
+    border-left: 3px solid var(--ct-gold);
     position: relative;
   }
   .guide-card .guide-head {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
   .guide-card .guide-title {
     font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
     color: var(--ct-gold-dark); font-weight: 600;
   }
   .guide-card .guide-close {
-    width: 28px; height: 28px; padding: 0; line-height: 1;
+    width: 24px; height: 24px; padding: 0; line-height: 1;
     background: transparent; border: 0; color: var(--denim);
-    font-size: 22px; cursor: pointer;
+    font-size: 20px; cursor: pointer;
   }
   .guide-card .guide-close:active { opacity: 0.5; }
   .guide-card .guide-list {
     list-style: none; padding: 0; margin: 0;
-    font-size: 12px; color: var(--slate); line-height: 1.55;
+    font-size: 11.5px; color: var(--slate); line-height: 1.5;
   }
-  .guide-card .guide-list li { padding: 2px 0; }
+  .guide-card .guide-list li { padding: 1px 0; }
   .guide-card .guide-list b { color: var(--ct-afterlight); }
   .pulse-card {
-    background: var(--ct-afterlight2);
-    color: var(--ct-haze);
-    margin: 14px 16px 0;
-    padding: 12px 16px;
-    border-top: 1px solid var(--ct-gold-dark);
-    border-bottom: 1px solid var(--ct-gold-dark);
-    font-size: 12px; letter-spacing: 0.04em;
-    line-height: 1.45;
+    background: white;
+    margin: 14px 16px 18px;
+    padding: 10px 14px;
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ct-gold);
+    font-size: 12px; line-height: 1.4;
+    color: var(--slate);
     display: flex; align-items: center; gap: 10px;
   }
   .pulse-card .pulse-mark {
-    flex-shrink: 0; font-size: 14px; color: var(--ct-gold);
+    flex-shrink: 0; font-size: 11px; color: var(--ct-gold-dark);
+    letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600;
   }
+  .pulse-card .pulse-text { color: var(--slate); }
   .pulse-card .pulse-text b {
-    color: var(--ct-gold); font-family: Georgia, serif; font-size: 14px;
+    color: var(--ct-afterlight); font-family: Georgia, serif; font-size: 14px;
+    font-weight: 400; padding: 0 2px;
   }
-  .hero {
-    background: linear-gradient(180deg, var(--ct-afterlight) 0%, var(--ct-afterlight2) 100%);
-    color: var(--ct-haze);
-    padding: 22px 16px 28px;
-    position: relative;
-  }
-  .hero::after { content:''; position: absolute; left: 16px; right: 16px; bottom: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--ct-gold) 50%, transparent); opacity: 0.6; }
-  .hero-eyebrow { font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ct-gold); margin-bottom: 8px; }
-  .hero h1 { font-size: 34px; line-height: 1; color: var(--ct-haze); margin-bottom: 6px; }
-  .hero h1 em { font-style: italic; color: var(--ct-gold); }
-  .hero h1 .period { color: var(--ct-gold); }
-  .hero .ct-lock { margin-top: 10px; }
-  .hero .ct-lock svg { width: 110px; color: var(--ct-gold); }
-  .hero .ct-tag { margin-top: 4px; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ct-sun); }
 
   /* Big stat hero — Available */
   .stat-hero {
     background: var(--ct-afterlight);
     color: var(--ct-haze);
-    padding: 0 16px 22px;
+    padding: 0 16px 18px;
   }
   .stat-card {
     background: rgba(244,242,238,0.04);
@@ -179,13 +179,11 @@
   .stat-card.primary {
     text-align: center;
     border: 0;
-    border-top: 1px solid rgba(215,168,111,0.35);
-    border-bottom: 1px solid rgba(215,168,111,0.35);
+    border-bottom: 1px solid rgba(215,168,111,0.25);
     background: rgba(215,168,111,0.08);
     /* edge-to-edge — negative margin compensates the .stat-hero 16px gutter */
-    margin: 0 -16px 14px;
-    padding: 30px 24px 28px;
-    margin-bottom: 12px;
+    margin: 0 -16px 12px;
+    padding: 26px 24px 22px;
   }
   .stat-card .stat-lbl { font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--ct-gold); margin-bottom: 6px; }
   .stat-card .stat-val { font-family: Georgia, serif; font-size: 56px; line-height: 0.95; color: var(--ct-gold); }
@@ -1112,6 +1110,11 @@
 
   <!-- TAB 1 — OVERVIEW -->
   <section class="tab active" id="tab-tower">
+    <div class="hero">
+      <div class="ct-lock"><svg viewBox="490 340 930 400" xmlns="http://www.w3.org/2000/svg" aria-label="City Tower" role="img"><path fill="currentColor" d="M843,347.8l-4.5,12.1s-7.2-5.5-19.7-5.5h-27.9v148.6s-.5,6.9,4.4,10.5v.2h-21.8v-.2c4.9-3.6,4.4-10.5,4.4-10.5v-148.6h-28c-12.5,0-19.7,5.5-19.7,5.5l-4.5-12.1h117.1ZM725.9,566.3l4.5,12.1s7.2-5.5,19.7-5.5h28v148.6s.5,6.9-4.4,10.5v.2h21.8v-.2c-4.9-3.6-4.4-10.5-4.4-10.5v-148.6h27.9c12.5,0,19.7,5.5,19.7,5.5l4.5-12.1h-117.1ZM1144.7,566.3c2.3,5.7.5,12.2.5,12.2l-50.2,138.5c0-.2-25.7-70.2-25.7-70.2,10.9-31.4,21-60.5,22.3-64.5,3.2-9.4,10.3-15.9,10.3-15.9h-18c2.3,5.7.5,12.2.5,12.2l-19.9,55.3-17.2-47s-.7-1.8-1.8-6.2c-1.6-6.3.2-14.2.2-14.2h-25.2c5.4,2.7,9.6,12,9.6,12l27.2,75.5-22.6,63.2c0-.2-16.2-43.4-21.9-58.6-7-18.7-12.8-38.2-23.6-55.2-7.7-12-17.6-22.1-29.7-29.7-12.7-8-28.4-10.7-43.2-10.7-48.7,0-88.2,38.8-88.2,86.6s39.5,86.6,88.2,86.6,63.4-18.8,78.2-46.4l-7.5-17.8c-8.7,33.8-37,58.6-70.7,58.6s-73.4-36-73.4-80.4,32.9-80.3,73.4-80.3,43.3,11.6,56.5,29.3c9.1,12.3,13.5,26.7,18.4,40.9,3.6,10.3,7.1,20.7,10.5,31.1l21.7,61.3h15.8s13.3-37.6,22.8-65l23.1,65h14.4s49.9-141.6,52.7-150c3.2-9.5,10.3-15.9,10.3-15.9h-18,0ZM1233.6,723.7h-40.6v-75c7.4.3,20,1,31.9,2.9,14,2.2,27.4,5.7,27.4,5.7l5.7-13.6h-65v-69.6h51.1c14.2,0,25.7,4.9,25.7,4.9v-12.6h-94.2v.2c4.9,3.6,4.4,10.5,4.4,10.5v144.4s.5,6.9-4.4,10.5v.2h94.8l10.9-20.2s-15.5,11.7-47.8,11.7h0ZM1410,732v.2h-27c-3.5-8.4-11.9-24.6-11.9-24.6l-22.1-42.8c-19.1.9-35-4.6-40.5-6.8v63.5s-.6,6.9,4.3,10.5v.2h-21.7v-.2c4.9-3.6,4.4-10.5,4.4-10.5v-144.4s.5-6.9-4.4-10.5v-.2h42.6c8.4,0,17.5,0,25.8,1.3,17.8,2.8,33.8,13,39.6,30.5,1.8,5.5,2.6,11.3,2.6,17.1,0,16.2-13.1,41.4-40.5,48,2.6,5.3,7.4,15.4,16.4,32.1,13.8,25.4,29.7,35.3,32.3,36.8h0ZM1357.6,656.2c10.4-3,18.8-10,23.8-19.6,5.8-11.2,7.4-28.3,1.9-40-4.2-8.8-12.6-15.3-21.7-18.7-10.6-4-21.7-3.9-32.8-3.9,0,0-18.4,0-20.2,0v77c15.4,5.7,32.9,9.8,49,5.2h0ZM710,348v-.2h-21.8v.2c3.7,2.7,4.4,7.4,4.4,9.5,0,.7,0,1.1,0,1.1v144.4s0,.4,0,1.1c0,2.1-.7,6.7-4.4,9.5v.2h21.8v-.2c-3.7-2.7-4.3-7.4-4.4-9.5v-145.5s0-.4,0-1.1c0-2.1.7-6.7,4.4-9.5ZM962.2,364.2c4.9-8.7,13.1-16.4,13.1-16.4h-20.8c3.1,5.7.5,12.1.5,12.1l-35.9,66.1c-10.1-18.1-34.8-59-36.5-63.8-2.9-7.7,0-14.5,0-14.5h-23.7c5.5,3.3,9.6,12,9.6,12l42.5,74.9v68.3s0,.4,0,1.1c0,2.1-.7,6.7-4.4,9.5v.2h21.8v-.2c-3.7-2.7-4.3-7.4-4.4-9.5v-69.4c20.3-39.9,35.4-65.5,38.2-70.5h0ZM663,481.9c-18,21.4-38.8,29.8-64.8,29.8-40.5,0-73.4-36-73.4-80.4s32.9-80.4,73.4-80.4,36.5,11.6,49.8,26.4l10.5-10c-15.8-14.5-37-23.4-60.3-23.4-48.7,0-88.2,38.8-88.2,86.6s39.5,86.6,88.2,86.6,52.3-12.5,68.5-32l-3.8-3.4h0Z"/></svg></div>
+      <div class="ct-tag">695 residences · Sheikh Zayed Road</div>
+    </div>
+
     <div class="guide-card" id="guide-card" hidden>
       <div class="guide-head">
         <span class="guide-title">How to use this</span>
@@ -1121,12 +1124,9 @@
         <li><b>Overview</b> — daily snapshot, available stock, who's let what.</li>
         <li><b>Tower</b> — visualise the building, filter by bedroom / type / view.</li>
         <li><b>Browse</b> — searchable list with rent &amp; size sliders.</li>
+        <li><b>League</b> — broker leaderboard.</li>
         <li><b>Info</b> — calculators, reservation form, parking, contact details.</li>
       </ul>
-    </div>
-    <div class="pulse-card" id="pulse-card" hidden></div>
-    <div class="hero">
-      <div class="ct-lock"><svg viewBox="490 340 930 400" xmlns="http://www.w3.org/2000/svg" aria-label="City Tower" role="img"><path fill="currentColor" d="M843,347.8l-4.5,12.1s-7.2-5.5-19.7-5.5h-27.9v148.6s-.5,6.9,4.4,10.5v.2h-21.8v-.2c4.9-3.6,4.4-10.5,4.4-10.5v-148.6h-28c-12.5,0-19.7,5.5-19.7,5.5l-4.5-12.1h117.1ZM725.9,566.3l4.5,12.1s7.2-5.5,19.7-5.5h28v148.6s.5,6.9-4.4,10.5v.2h21.8v-.2c-4.9-3.6-4.4-10.5-4.4-10.5v-148.6h27.9c12.5,0,19.7,5.5,19.7,5.5l4.5-12.1h-117.1ZM1144.7,566.3c2.3,5.7.5,12.2.5,12.2l-50.2,138.5c0-.2-25.7-70.2-25.7-70.2,10.9-31.4,21-60.5,22.3-64.5,3.2-9.4,10.3-15.9,10.3-15.9h-18c2.3,5.7.5,12.2.5,12.2l-19.9,55.3-17.2-47s-.7-1.8-1.8-6.2c-1.6-6.3.2-14.2.2-14.2h-25.2c5.4,2.7,9.6,12,9.6,12l27.2,75.5-22.6,63.2c0-.2-16.2-43.4-21.9-58.6-7-18.7-12.8-38.2-23.6-55.2-7.7-12-17.6-22.1-29.7-29.7-12.7-8-28.4-10.7-43.2-10.7-48.7,0-88.2,38.8-88.2,86.6s39.5,86.6,88.2,86.6,63.4-18.8,78.2-46.4l-7.5-17.8c-8.7,33.8-37,58.6-70.7,58.6s-73.4-36-73.4-80.4,32.9-80.3,73.4-80.3,43.3,11.6,56.5,29.3c9.1,12.3,13.5,26.7,18.4,40.9,3.6,10.3,7.1,20.7,10.5,31.1l21.7,61.3h15.8s13.3-37.6,22.8-65l23.1,65h14.4s49.9-141.6,52.7-150c3.2-9.5,10.3-15.9,10.3-15.9h-18,0ZM1233.6,723.7h-40.6v-75c7.4.3,20,1,31.9,2.9,14,2.2,27.4,5.7,27.4,5.7l5.7-13.6h-65v-69.6h51.1c14.2,0,25.7,4.9,25.7,4.9v-12.6h-94.2v.2c4.9,3.6,4.4,10.5,4.4,10.5v144.4s.5,6.9-4.4,10.5v.2h94.8l10.9-20.2s-15.5,11.7-47.8,11.7h0ZM1410,732v.2h-27c-3.5-8.4-11.9-24.6-11.9-24.6l-22.1-42.8c-19.1.9-35-4.6-40.5-6.8v63.5s-.6,6.9,4.3,10.5v.2h-21.7v-.2c4.9-3.6,4.4-10.5,4.4-10.5v-144.4s.5-6.9-4.4-10.5v-.2h42.6c8.4,0,17.5,0,25.8,1.3,17.8,2.8,33.8,13,39.6,30.5,1.8,5.5,2.6,11.3,2.6,17.1,0,16.2-13.1,41.4-40.5,48,2.6,5.3,7.4,15.4,16.4,32.1,13.8,25.4,29.7,35.3,32.3,36.8h0ZM1357.6,656.2c10.4-3,18.8-10,23.8-19.6,5.8-11.2,7.4-28.3,1.9-40-4.2-8.8-12.6-15.3-21.7-18.7-10.6-4-21.7-3.9-32.8-3.9,0,0-18.4,0-20.2,0v77c15.4,5.7,32.9,9.8,49,5.2h0ZM710,348v-.2h-21.8v.2c3.7,2.7,4.4,7.4,4.4,9.5,0,.7,0,1.1,0,1.1v144.4s0,.4,0,1.1c0,2.1-.7,6.7-4.4,9.5v.2h21.8v-.2c-3.7-2.7-4.3-7.4-4.4-9.5v-145.5s0-.4,0-1.1c0-2.1.7-6.7,4.4-9.5ZM962.2,364.2c4.9-8.7,13.1-16.4,13.1-16.4h-20.8c3.1,5.7.5,12.1.5,12.1l-35.9,66.1c-10.1-18.1-34.8-59-36.5-63.8-2.9-7.7,0-14.5,0-14.5h-23.7c5.5,3.3,9.6,12,9.6,12l42.5,74.9v68.3s0,.4,0,1.1c0,2.1-.7,6.7-4.4,9.5v.2h21.8v-.2c-3.7-2.7-4.3-7.4-4.4-9.5v-69.4c20.3-39.9,35.4-65.5,38.2-70.5h0ZM663,481.9c-18,21.4-38.8,29.8-64.8,29.8-40.5,0-73.4-36-73.4-80.4s32.9-80.4,73.4-80.4,36.5,11.6,49.8,26.4l10.5-10c-15.8-14.5-37-23.4-60.3-23.4-48.7,0-88.2,38.8-88.2,86.6s39.5,86.6,88.2,86.6,52.3-12.5,68.5-32l-3.8-3.4h0Z"/></svg></div>
     </div>
 
     <div class="stat-hero">
@@ -1163,6 +1163,8 @@
         </button>
       </div>
     </div>
+
+    <div class="pulse-card" id="pulse-card" hidden></div>
 
     <div id="conn-help" style="display:none"></div>
 
@@ -1689,10 +1691,18 @@ function setLive(state, label) {
   try {
     const sync = document.getElementById('kpi-sync');
     if (sync) {
+      // The topbar pill already conveys live/connecting/offline state — only
+      // surface the in-card sync line when something needs the broker's
+      // attention (offline / pre-live). Hidden once live to avoid duplication.
       sync.classList.toggle('offline', state === 'offline');
-      const count = (typeof UNITS !== 'undefined' && UNITS) ? UNITS.length : 0;
-      const hint = state === 'offline' ? ' · tap pill to retry' : '';
-      sync.innerHTML = `<span class="dot"></span>${label} · ${count} units${hint}`;
+      if (state === 'live') {
+        sync.hidden = true;
+      } else {
+        sync.hidden = false;
+        const count = (typeof UNITS !== 'undefined' && UNITS) ? UNITS.length : 0;
+        const hint = state === 'offline' ? ' · tap pill to retry' : '';
+        sync.innerHTML = `<span class="dot"></span>${label}${count ? ' · ' + count + ' units' : ''}${hint}`;
+      }
     }
   } catch (e) {}
 }
@@ -1946,31 +1956,34 @@ function renderPulse() {
   const today = new Date();
   const sevenDaysAgo = new Date(today.getTime() - 7 * 86400000)
     .toISOString().slice(0, 10);
+  const fourteenDaysAgo = new Date(today.getTime() - 14 * 86400000)
+    .toISOString().slice(0, 10);
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
     .toISOString().slice(0, 10);
-  let signedThisWeek = 0;
-  let signedThisMonth = 0;
+  let signedThisWeek = 0, signedThisMonth = 0, reservedRecent = 0;
   for (const u of UNITS) {
-    if (!u.sgnD) continue;
-    if (u.sgnD >= startOfMonth) signedThisMonth++;
-    if (u.sgnD >= sevenDaysAgo)  signedThisWeek++;
+    if (u.sgnD) {
+      if (u.sgnD >= startOfMonth) signedThisMonth++;
+      if (u.sgnD >= sevenDaysAgo)  signedThisWeek++;
+    }
+    // Recent reservations: status is reserved AND last activity in last 14 days.
+    // Skips units that have just been sitting reserved for months.
+    if ((u.s === 'reserved_bh' || u.s === 'reserved_hh')
+        && u.lastD && u.lastD >= fourteenDaysAgo) {
+      reservedRecent++;
+    }
   }
-  // Reserved counted off current state (we don't have a reservation date),
-  // surfaced here as 'currently reserved' so brokers see active holds.
-  const reservedNow = UNITS.filter(u =>
-    u.s === 'reserved_bh' || u.s === 'reserved_hh',
-  ).length;
   const parts = [];
-  if (signedThisWeek)  parts.push(`<b>${signedThisWeek}</b> signed this week`);
+  if (signedThisWeek)       parts.push(`<b>${signedThisWeek}</b> signed this week`);
   else if (signedThisMonth) parts.push(`<b>${signedThisMonth}</b> signed this month`);
-  if (reservedNow)     parts.push(`<b>${reservedNow}</b> reserved now`);
+  if (reservedRecent)       parts.push(`<b>${reservedRecent}</b> reserved this fortnight`);
   if (!parts.length) {
     card.hidden = true;
     return;
   }
   card.hidden = false;
   card.innerHTML = `
-    <span class="pulse-mark">▸</span>
+    <span class="pulse-mark">This week</span>
     <span class="pulse-text">${parts.join(' · ')}</span>
   `;
 }
