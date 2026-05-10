@@ -1034,6 +1034,64 @@
   }
   .drawer-toolbar .btn:hover { background: var(--slate); color: var(--mist); }
   .drawer-toolbar .btn.copied { background: var(--denim); color: var(--mist); border-color: var(--denim); }
+  .drawer-toolbar .btn.btn-floorplan { background: var(--ct-gold); color: var(--ct-afterlight); border-color: var(--ct-gold); }
+  .drawer-toolbar .btn.btn-floorplan:hover { background: var(--ct-gold-dark); border-color: var(--ct-gold-dark); }
+  .drawer-toolbar .btn.btn-floorplan.disabled { background: var(--paper); color: var(--denim); border-color: var(--rule); cursor: not-allowed; opacity: 0.7; }
+  .drawer-toolbar .btn.btn-floorplan.disabled:hover { background: var(--paper); color: var(--denim); }
+
+  /* Floorplan modal — full-screen overlay above the drawer. */
+  .fp-modal {
+    position: fixed; inset: 0; z-index: 400;
+    background: var(--ct-haze);
+    display: none;
+    flex-direction: column;
+  }
+  .fp-modal.open { display: flex; }
+  .fp-modal-head {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px;
+    background: var(--ct-afterlight); color: var(--ct-haze);
+    border-bottom: 1.5px solid var(--ct-gold);
+  }
+  .fp-modal .fp-close {
+    width: 36px; height: 36px;
+    background: transparent; border: 1px solid rgba(244,242,238,0.18);
+    color: var(--ct-haze); font-size: 22px; line-height: 1;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .fp-modal .fp-close:hover { background: rgba(244,242,238,0.06); }
+  .fp-modal .fp-title {
+    font-family: Georgia, serif; font-size: 17px;
+    color: var(--ct-haze); flex: 1;
+  }
+  .fp-modal .fp-body {
+    flex: 1; min-height: 0;
+    display: flex; flex-direction: column;
+    background: #1a1a1a;
+  }
+  .fp-modal .fp-iframe {
+    flex: 1; width: 100%; border: 0; background: #000;
+  }
+  .fp-modal .fp-empty {
+    margin: auto; padding: 60px 32px; text-align: center;
+    max-width: 480px; color: var(--slate);
+    background: var(--paper);
+    border: 1px solid var(--rule);
+  }
+  .fp-modal .fp-empty h4 {
+    font-family: Georgia, serif; font-size: 24px; margin-bottom: 14px;
+    color: var(--ct-afterlight);
+  }
+  .fp-modal .fp-empty p {
+    font-size: 14px; line-height: 1.55; margin-bottom: 10px;
+  }
+  .fp-modal .fp-empty .fp-hint {
+    font-size: 12px; color: var(--denim); font-style: italic; opacity: 0.85;
+  }
+  .fp-modal .fp-empty code {
+    background: rgba(31,52,63,0.08); padding: 2px 6px;
+    font-family: monospace; font-size: 12px;
+  }
 
   .drawer-body { flex: 1; overflow-y: auto; padding: 0; }
   .drawer-empty { padding: 48px 26px; text-align: center; color: var(--denim); font-style: italic; }
@@ -1656,6 +1714,17 @@
 </div>
 
 <div class="tooltip" id="tooltip"></div>
+
+<!-- Floorplan modal — overlays the drawer when 'View floorplan' is clicked.
+     Embedded Drive PDF preview, with a clear empty state when no Drive entry
+     exists for the bedroom + product_type combo. -->
+<div class="fp-modal" id="fp-modal" aria-hidden="true">
+  <div class="fp-modal-head">
+    <button class="fp-close" id="fp-close" type="button" aria-label="Close">×</button>
+    <div class="fp-title" id="fp-title">Floorplan</div>
+  </div>
+  <div class="fp-body" id="fp-body"></div>
+</div>
 
 <!-- bh brokers group QR — embedded as data URI by build.py if bh-brokers-qr.png exists.
      Wrapped in its own info-grid section so it slots in as a normal grid item
@@ -2639,13 +2708,19 @@ function renderDetail(uid) {
   document.getElementById('drawer-toolbar').style.display = 'flex';
   const toolbar = document.getElementById('drawer-toolbar');
   // Replace toolbar contents with unit-specific actions
+  const fpReady = floorplanFor(u);
   toolbar.innerHTML = `
     <span class="count">Unit ${u.uid}</span>
     <div class="actions">
+      <button class="btn btn-floorplan ${fpReady ? '' : 'disabled'}" id="btn-floorplan">${fpReady ? 'View floorplan' : 'Floorplan not available'}</button>
       <button class="btn" id="btn-copy-unit">Copy for WhatsApp</button>
     </div>
   `;
   document.getElementById('btn-copy-unit').addEventListener('click', () => copyUnitToClipboard(u));
+  const fpBtn = document.getElementById('btn-floorplan');
+  if (fpBtn && fpReady) {
+    fpBtn.addEventListener('click', () => openFloorplanModal(u));
+  }
 
   const priceCut = u.orig && u.orig > u.pr;
   const cutPct = priceCut ? Math.round((1 - u.pr / u.orig) * 100) : 0;
@@ -3407,6 +3482,84 @@ function applySizeUnit() {
 })();
 
 /* ============================================================
+ * FLOORPLANS — fetched once from /api/floorplans (the same proxy mobile
+ * uses, reads the 08_Floorplans tab and extracts Drive file IDs).
+ * Index keyed by `${bedroom_type}::${product_type}::${duplexTag}`. Lookup
+ * is two-tier: try the Y/N specific row first, then fall back to a
+ * catch-all (is_duplex blank). 1:1 with mobile.
+ * ========================================================== */
+const FLOORPLANS_URL = '/api/floorplans';
+let FLOORPLAN_INDEX = {};
+function fpKey(bed, type, dup) {
+  return (bed || '').trim() + '::' + (type || '').trim().toUpperCase() + '::' + (dup || '').trim().toUpperCase();
+}
+function floorplanFor(u) {
+  if (!u || !u.bedRaw || !u.pt) return null;
+  const dupTag = u.d ? 'Y' : 'N';
+  return FLOORPLAN_INDEX[fpKey(u.bedRaw, u.pt, dupTag)]
+      || FLOORPLAN_INDEX[fpKey(u.bedRaw, u.pt, '')]
+      || null;
+}
+async function fetchFloorplans() {
+  try {
+    const r = await fetch(FLOORPLANS_URL + '?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return;
+    const body = await r.json();
+    if (!body || body.status !== 'ok' || !Array.isArray(body.rows)) return;
+    const next = {};
+    for (const row of body.rows) {
+      next[fpKey(row.bedroom_type, row.product_type, row.is_duplex)] = row.file_id;
+    }
+    FLOORPLAN_INDEX = next;
+    // If the unit detail drawer is currently open, refresh it so the
+    // 'View floorplan' button picks up its newly enabled state.
+    if (state && state.drawer && state.drawer.kind === 'detail' && typeof renderDetail === 'function') {
+      renderDetail(state.drawer.uid);
+    }
+  } catch (e) {
+    // Silent — floorplan availability is best-effort. The button shows a
+    // clear 'not available' state when no Drive entry exists.
+  }
+}
+function openFloorplanModal(u) {
+  const fileId = floorplanFor(u);
+  const modal = document.getElementById('fp-modal');
+  const body  = document.getElementById('fp-body');
+  const title = document.getElementById('fp-title');
+  title.textContent = `Floorplan · ${u.bedRaw}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''}`;
+  if (fileId) {
+    body.innerHTML = `<iframe class="fp-iframe" src="https://drive.google.com/file/d/${fileId}/preview" allow="autoplay" loading="lazy"></iframe>`;
+  } else {
+    body.innerHTML = `<div class="fp-empty">
+      <h4>Floorplan not available</h4>
+      <p>No floorplan registered for <b>${u.bedRaw}${u.pt ? ' · Type ' + u.pt : ''}</b>.</p>
+      <p class="fp-hint">Add a row to <code>08_Floorplans</code> on the master sheet to enable this.</p>
+    </div>`;
+  }
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+function closeFloorplanModal() {
+  const modal = document.getElementById('fp-modal');
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  document.getElementById('fp-body').innerHTML = '';
+}
+document.getElementById('fp-close').addEventListener('click', closeFloorplanModal);
+// Tap outside the iframe (the dark fp-body backdrop) to close.
+document.getElementById('fp-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'fp-modal') closeFloorplanModal();
+});
+// Escape key closes it.
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('fp-modal').classList.contains('open')) {
+    closeFloorplanModal();
+  }
+});
+
+/* ============================================================
  * BOOT
  * ========================================================== */
 rebuildAll();
@@ -3414,6 +3567,7 @@ setupFilters();
 applySizeUnit();
 setTimeout(refreshFromSheet, 100);
 setInterval(refreshFromSheet, REFRESH_MS);
+setTimeout(fetchFloorplans, 250);
 </script>
 </body>
 </html>
