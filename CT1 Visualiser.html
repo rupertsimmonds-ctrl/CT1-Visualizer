@@ -1950,26 +1950,8 @@ function buildTower() {
 
 function attachUnitInteractions() {
   const tip = document.getElementById('tooltip');
-  // Tooltip auto-hide is delayed so brokers can move the cursor off a tiny
-  // 16x12 px cell and still read the panel. 10s feels long enough to absorb
-  // the data without making the tooltip linger over content brokers want to
-  // click on. Cleared the moment another cell is hovered.
-  let tipHideTimer = null;
-  const cancelHide = () => { if (tipHideTimer) { clearTimeout(tipHideTimer); tipHideTimer = null; } };
-  const scheduleHide = () => {
-    cancelHide();
-    tipHideTimer = setTimeout(() => {
-      tip.classList.remove('visible');
-      tipHideTimer = null;
-    }, 10000);
-  };
-  // If the cursor enters the tooltip itself, cancel the hide so the broker
-  // can read it without it disappearing under them. Schedule again on leave.
-  tip.addEventListener('mouseenter', cancelHide);
-  tip.addEventListener('mouseleave', scheduleHide);
   document.querySelectorAll('.unit-cell').forEach(c => {
     c.addEventListener('mouseenter', () => {
-      cancelHide();
       const m = TYPE_META[c.dataset.type];
       const status = c.dataset.status;
       const premiumBadge = c.dataset.premium === '1' ? '<span class="premium-badge">Duplex</span>' : '';
@@ -2006,12 +1988,8 @@ function attachUnitInteractions() {
       tip.style.left = x + 'px';
       tip.style.top = y + 'px';
     });
-    c.addEventListener('mouseleave', scheduleHide);
-    c.addEventListener('click', () => {
-      cancelHide();
-      tip.classList.remove('visible');
-      openDetail(c.dataset.uid);
-    });
+    c.addEventListener('mouseleave', () => tip.classList.remove('visible'));
+    c.addEventListener('click', () => openDetail(c.dataset.uid));
   });
 }
 

@@ -968,7 +968,16 @@
   .band-marker.b-mid       { border-left-color: var(--powder); }
   .band-marker.b-upper     { border-left-color: var(--denim); }
   .band-marker.b-penthouse { border-left-color: var(--terra); }
-  .tower-frame { display: flex; flex-direction: column-reverse; gap: 1px; }
+  .tower-frame {
+    display: flex; flex-direction: column-reverse; gap: 1px;
+    /* iOS interrupts a continuous touch after ~5s with a system callout /
+       long-press menu, which fires touchcancel on the tower and kills the
+       preview tooltip. Disabling these (and user-select on the cells) lets
+       the broker hold and drag for as long as they want. */
+    touch-action: none;
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
+  }
   .tw-row { display: flex; align-items: center; gap: 2px; height: 12px; position: relative; }
   .tw-row.tranche-divider { margin-top: 4px; padding-top: 2px; height: 14px; border-top: 1px dashed rgba(31,52,63,0.22); }
   .tw-num {
@@ -983,6 +992,8 @@
     width: 16px; flex: none; height: 12px;
     border: 0; padding: 0; cursor: pointer; position: relative;
     transition: transform 0.16s ease, opacity 0.18s ease;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none; user-select: none;
   }
   .tw-cell:active { transform: scaleY(1.6); z-index: 5; }
   .tw-cell.t-studio::after { content:''; position:absolute; right:0; top:0; bottom:0; width:2px; background: #7BA0B2; }
@@ -2582,7 +2593,10 @@ function setupTowerTouchPreview() {
       clearPreview();
     }
   });
-  frame.addEventListener('touchcancel', clearPreview);
+  // touchcancel intentionally NOT bound — iOS sometimes fires it spuriously
+  // after a long continuous hold (system long-press / callout). Letting the
+  // preview persist is harmless: the next real touchstart re-syncs activeCell,
+  // and a clean touchend lifts as normal.
 }
 
 function unitMatchesTowerFilter() {
