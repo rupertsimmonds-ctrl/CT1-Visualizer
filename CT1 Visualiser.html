@@ -1737,15 +1737,6 @@
     </article>
 
     <article class="info-block">
-      <h2>Payment reference</h2>
-      <p style="font-size:12px;color:var(--denim);margin-bottom:12px;">Unit + applicant name — included on every payment message you copy below.</p>
-      <div class="ic-inputs">
-        <label class="ic-row"><span>Unit no.</span><input type="text" id="pr-unit" placeholder="e.g. 05-01" autocomplete="off"></label>
-        <label class="ic-row"><span>Applicant name</span><input type="text" id="pr-name" placeholder="e.g. Sarah Smith" autocomplete="off"></label>
-      </div>
-    </article>
-
-    <article class="info-block">
       <h2>Agency fee · payable to betterhomes</h2>
       <p style="font-size:12px;color:var(--denim);margin-bottom:12px;">Agency fee is on the contract value at the stated monthly rate. Rent-free does <strong>not</strong> reduce the fee.</p>
       <div class="ic-inputs">
@@ -1762,7 +1753,7 @@
       <div class="cq-payee">
         <div class="cq-payee-head">bh bank details</div>
         <div class="cq-payee-name">Better Homes LLC</div>
-        <div class="cq-payee-foot">CBD · Sh. Zayed Road Branch · A/C 1000257947 · IBAN AE560230000001000257947</div>
+        <div class="cq-payee-foot">CBD · Sh. Zayed Road Branch · A/C 1000257947 · IBAN AE560230000001000257947<br><strong>Payment reference:</strong> unit no. + applicant name (include on transfer).</div>
         <button class="cq-copy" type="button" id="fc-copy">Copy fee + bh bank details</button>
       </div>
     </article>
@@ -1781,7 +1772,7 @@
       <div class="cq-payee">
         <div class="cq-payee-head">Pay to landlord</div>
         <div class="cq-payee-name">THE GALLERIA INVESTMENTS LLC</div>
-        <div class="cq-payee-foot">Landlord bank transfer details on the reservation form. Tenant adds the payment reference above on the transfer.</div>
+        <div class="cq-payee-foot">Landlord bank transfer details on the reservation form.<br><strong>Payment reference:</strong> unit no. + applicant name (include on transfer).</div>
         <button class="cq-copy" type="button" id="dp-copy">Copy deposit + payee</button>
       </div>
     </article>
@@ -3518,28 +3509,12 @@ document.querySelectorAll('#unit-toggle .unit-toggle-btn').forEach(b => {
 });
 
 /* ============================================================
- * PAYMENT REFERENCE — shared across fee/deposit/cheque copy.
+ * PAYMENT MESSAGE HELPERS
+ *   Reference is filled in manually by the broker before sending —
+ *   the copied message ends with an instruction to include
+ *   "unit no. + applicant name" on the transfer.
  * ========================================================== */
-function paymentRef() {
-  const $ = id => document.getElementById(id);
-  const u = ($('pr-unit')?.value || '').trim();
-  const n = ($('pr-name')?.value || '').trim();
-  if (u && n) return `${u} / ${n}`;
-  if (u) return u;
-  if (n) return n;
-  return '';
-}
-function refLines() {
-  const $ = id => document.getElementById(id);
-  const u = ($('pr-unit')?.value || '').trim();
-  const n = ($('pr-name')?.value || '').trim();
-  const r = paymentRef();
-  const lines = [];
-  if (u) lines.push(`Unit: ${u}`);
-  if (n) lines.push(`Applicant: ${n}`);
-  if (r) lines.push(`Reference: ${r}`);
-  return lines;
-}
+const PAYMENT_REF_NOTE = 'Please include payment reference on the transfer: unit no. + applicant name.';
 async function copyWithFeedback(btn, text) {
   try {
     await navigator.clipboard.writeText(text);
@@ -3599,18 +3574,20 @@ async function copyWithFeedback(btn, text) {
   const copyBtn = $('fc-copy');
   if (copyBtn) {
     copyBtn.addEventListener('click', () => {
-      const lines = ['*Agency fee — City Tower 1*', ''];
-      const r = refLines();
-      if (r.length) { lines.push(...r); lines.push(''); }
-      lines.push(`Fee (5% of contract): ${fmt2(lastFee)}`);
-      lines.push(`VAT (5%): ${fmt2(lastVat)}`);
-      lines.push(`Total due: ${fmt2(lastTot)}`);
-      lines.push('');
-      lines.push('Pay to: Better Homes LLC');
-      lines.push('Bank: CBD · Sh. Zayed Road Branch');
-      lines.push('A/C: 1000257947');
-      lines.push('IBAN: AE560230000001000257947');
-      if (paymentRef()) lines.push('', `Please include "${paymentRef()}" on the transfer.`);
+      const lines = [
+        '*Agency fee — City Tower 1*',
+        '',
+        `Fee (5% of contract): ${fmt2(lastFee)}`,
+        `VAT (5%): ${fmt2(lastVat)}`,
+        `Total due: ${fmt2(lastTot)}`,
+        '',
+        'Pay to: Better Homes LLC',
+        'Bank: CBD · Sh. Zayed Road Branch',
+        'A/C: 1000257947',
+        'IBAN: AE560230000001000257947',
+        '',
+        PAYMENT_REF_NOTE,
+      ];
       copyWithFeedback(copyBtn, lines.join('\n'));
     });
   }
@@ -3644,15 +3621,19 @@ async function copyWithFeedback(btn, text) {
   const copyBtn = $('dp-copy');
   if (copyBtn) {
     copyBtn.addEventListener('click', () => {
-      const lines = ['*Security deposit — City Tower 1*', '', 'Initial amount due to reserve the unit.', ''];
-      const r = refLines();
-      if (r.length) { lines.push(...r); lines.push(''); }
-      lines.push(`Deposit due: ${fmt2(lastDue)}`);
-      lines.push('(5% of annual rent, floor AED 10,000 — refundable on move-out.)');
-      lines.push('');
-      lines.push('Pay to landlord: THE GALLERIA INVESTMENTS LLC');
-      lines.push('Landlord bank transfer details are on the reservation form.');
-      if (paymentRef()) lines.push('', `Please include "${paymentRef()}" on the transfer.`);
+      const lines = [
+        '*Security deposit — City Tower 1*',
+        '',
+        'Initial amount due to reserve the unit.',
+        '',
+        `Deposit due: ${fmt2(lastDue)}`,
+        '(5% of annual rent, floor AED 10,000 — refundable on move-out.)',
+        '',
+        'Pay to landlord: THE GALLERIA INVESTMENTS LLC',
+        'Landlord bank transfer details are on the reservation form.',
+        '',
+        PAYMENT_REF_NOTE,
+      ];
       copyWithFeedback(copyBtn, lines.join('\n'));
     });
   }
@@ -3750,11 +3731,12 @@ async function copyWithFeedback(btn, text) {
   const copyBtn = $('cq-copy');
   if (copyBtn) {
     copyBtn.addEventListener('click', () => {
-      const lines = ['*Cheque schedule — City Tower 1*', ''];
-      const r = typeof refLines === 'function' ? refLines() : [];
-      if (r.length) { lines.push(...r); lines.push(''); }
-      lines.push('Cheques payable to: THE GALLERIA INVESTMENTS LLC');
-      lines.push('');
+      const lines = [
+        '*Cheque schedule — City Tower 1*',
+        '',
+        'Cheques payable to: THE GALLERIA INVESTMENTS LLC',
+        '',
+      ];
       const trs = $('cq-table').querySelectorAll('tbody tr');
       trs.forEach(tr => {
         const cells = [...tr.querySelectorAll('td')].map(td => td.textContent.trim());
@@ -3762,8 +3744,7 @@ async function copyWithFeedback(btn, text) {
           lines.push(`${cells[0]}. ${cells[1]} · ${cells[2]} · ${cells[3]}`);
         }
       });
-      const ref = typeof paymentRef === 'function' ? paymentRef() : '';
-      if (ref) lines.push('', `Tenant writes "${ref}" on each cheque + bank transfer.`);
+      lines.push('', 'Tenant writes payment reference (unit no. + applicant name) on each cheque + the first bank transfer.');
       copyWithFeedback(copyBtn, lines.join('\n'));
     });
   }
