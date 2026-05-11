@@ -343,20 +343,20 @@
    * ========================================================== */
   .filter-bar {
     position: sticky; top: var(--topbar-h); z-index: 30;
-    background: var(--ct-haze); padding: 12px 16px 10px;
+    background: var(--ct-haze); padding: 8px 16px 6px;
     border-bottom: 1px solid var(--rule);
   }
   .filter-row {
-    display: flex; gap: 8px; overflow-x: auto;
+    display: flex; gap: 6px; overflow-x: auto;
     -webkit-overflow-scrolling: touch; scrollbar-width: none;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
   }
   .filter-row::-webkit-scrollbar { display: none; }
   .filter-row:last-child { margin-bottom: 0; }
   .chip {
-    flex: 0 0 auto; padding: 9px 14px; min-height: 36px;
+    flex: 0 0 auto; padding: 7px 12px; min-height: 30px;
     border: 1px solid var(--rule); background: white;
-    font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
     color: var(--slate); cursor: pointer; white-space: nowrap;
     transition: all 0.1s ease;
   }
@@ -365,12 +365,13 @@
   .chip.gold.active { background: var(--ct-gold); color: var(--ct-afterlight); border-color: var(--ct-gold-dark); }
   .filter-meta {
     display: flex; justify-content: space-between; align-items: center;
-    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--denim);
+    margin-top: 4px;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--denim);
   }
-  .filter-meta b { font-family: Georgia, serif; font-size: 14px; color: var(--slate); letter-spacing: 0; text-transform: none; }
-  .filter-clear { color: var(--ct-gold-dark); cursor: pointer; text-decoration: underline; font-size: 11px; }
+  .filter-meta b { font-family: Georgia, serif; font-size: 13px; color: var(--slate); letter-spacing: 0; text-transform: none; }
+  .filter-clear { color: var(--ct-gold-dark); cursor: pointer; text-decoration: underline; font-size: 10px; }
 
-  .unit-list { padding: 8px 16px 24px; }
+  .unit-list { padding: 6px 16px 24px; }
   .unit-card {
     background: white; border: 1px solid var(--rule);
     margin-bottom: 10px; padding: 14px 16px;
@@ -1099,19 +1100,19 @@
    * BROWSE — search + view chips + price slider + sort
    * ========================================================== */
   .search-wrap {
-    position: relative; margin-bottom: 12px;
-    background: var(--paper); border: 1px solid var(--rule); border-radius: 12px;
+    position: relative; margin-bottom: 8px;
+    background: var(--paper); border: 1px solid var(--rule); border-radius: 10px;
     transition: border-color 0.18s ease, box-shadow 0.18s ease;
   }
   .search-wrap:focus-within { border-color: var(--ct-gold-dark); box-shadow: 0 0 0 3px rgba(215,168,111,0.18); }
   .search-icon {
     position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-    font-size: 16px; color: var(--denim); opacity: 0.7; pointer-events: none;
+    font-size: 15px; color: var(--denim); opacity: 0.7; pointer-events: none;
   }
   .search-input {
     width: 100%; border: 0; background: transparent;
-    font: 400 15px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    padding: 12px 36px 12px 36px; color: var(--slate); border-radius: 12px;
+    font: 400 14px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 9px 36px; color: var(--slate); border-radius: 10px;
   }
   .search-input::placeholder { color: var(--denim); opacity: 0.55; }
   .search-input:focus { outline: none; }
@@ -1122,13 +1123,13 @@
   }
   .search-clear.visible { display: block; }
   .price-wrap {
-    margin: 8px 4px 4px; padding: 10px 4px;
+    margin: 4px 4px 2px; padding: 4px 4px 2px;
   }
-  .price-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .price-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
   .price-label { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim); }
-  .price-vals { font-size: 13px; color: var(--slate); font-variant-numeric: tabular-nums; }
+  .price-vals { font-size: 12px; color: var(--slate); font-variant-numeric: tabular-nums; }
   .price-vals b { font-weight: 700; color: var(--ct-gold-dark); }
-  .price-track { position: relative; height: 28px; }
+  .price-track { position: relative; height: 24px; }
   .price-rail {
     position: absolute; top: 50%; left: 0; right: 0; height: 4px;
     background: rgba(31,52,63,0.12); border-radius: 2px; transform: translateY(-50%);
@@ -1138,7 +1139,7 @@
     background: var(--ct-gold); border-radius: 2px;
   }
   .price-track input[type="range"] {
-    position: absolute; top: 0; left: 0; width: 100%; height: 28px;
+    position: absolute; top: 0; left: 0; width: 100%; height: 24px;
     background: transparent; pointer-events: none; -webkit-appearance: none; appearance: none;
   }
   .price-track input[type="range"]::-webkit-slider-thumb {
@@ -1156,13 +1157,13 @@
   }
   .sort-wrap {
     position: relative;
-    display: flex; align-items: center; gap: 10px; margin: 6px 4px 0;
+    display: flex; align-items: center; gap: 10px; margin: 4px 4px 0;
     font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--denim);
   }
   .sort-label { flex-shrink: 0; }
   .sort-trigger {
-    flex: 1; padding: 9px 12px; border: 1px solid var(--rule); border-radius: 10px;
-    background: var(--paper); color: var(--slate); font: 500 13px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    flex: 1; padding: 7px 12px; border: 1px solid var(--rule); border-radius: 10px;
+    background: var(--paper); color: var(--slate); font: 500 12px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     letter-spacing: normal; text-transform: none; cursor: pointer;
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
