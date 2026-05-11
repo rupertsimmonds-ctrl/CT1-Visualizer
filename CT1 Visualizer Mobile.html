@@ -1593,8 +1593,8 @@
       </div>
       <div class="cq-payee">
         <div class="cq-payee-head">Pay to landlord</div>
-        <div class="cq-payee-name">THE GALLERIA INVESTMENTS LLC</div>
-        <div class="cq-payee-foot">Landlord bank transfer details on the reservation form.<br><strong>Payment reference:</strong> unit no. + applicant name (include on transfer).</div>
+        <div class="cq-payee-name">THE GALLERIA INVESTMENTS LLC - CITY TOWER</div>
+        <div class="cq-payee-foot">Emirates NBD · A/C 1014808692906 · IBAN AE290260001014808692906 · PO Box 777, Dubai, UAE<br><strong>Payment reference:</strong> unit no. + applicant name (include on transfer).</div>
         <button class="cq-copy" type="button" id="dp-copy">Copy deposit + payee</button>
       </div>
     </div>
@@ -3181,13 +3181,13 @@ async function copyWithFeedback(btn, text) {
       const lines = [
         '*Security deposit — City Tower 1*',
         '',
-        'Initial amount due to reserve the unit.',
-        '',
         `Deposit due: ${fmt2(lastDue)}`,
-        '(5% of annual rent, floor AED 10,000 — refundable on move-out.)',
+        '(5% of annual rent, minimum AED 10,000)',
         '',
-        'Pay to landlord: THE GALLERIA INVESTMENTS LLC',
-        'Landlord bank transfer details are on the reservation form.',
+        'Pay to landlord: THE GALLERIA INVESTMENTS LLC - CITY TOWER',
+        'Bank: Emirates NBD',
+        'A/C: 1014808692906',
+        'IBAN: AE290260001014808692906',
         '',
         PAYMENT_REF_NOTE,
       ];
