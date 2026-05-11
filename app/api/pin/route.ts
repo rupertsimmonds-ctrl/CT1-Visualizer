@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 
+// Hardcoded broker PIN. Kept in sync with middleware.ts.
+const PIN = "1986";
+
 async function sha256Hex(input: string): Promise<string> {
   const data = new TextEncoder().encode(input);
   const hash = await crypto.subtle.digest("SHA-256", data);
@@ -12,20 +15,15 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   const { pin } = await req.json().catch(() => ({}) as { pin?: string });
-  const expected = process.env.CT1_PIN;
 
-  if (!expected) {
-    return NextResponse.json({ ok: true, gateOff: true });
-  }
-
-  if (typeof pin !== "string" || pin.trim() !== expected) {
+  if (typeof pin !== "string" || pin.trim() !== PIN) {
     return NextResponse.json(
       { ok: false, message: "Wrong PIN" },
       { status: 401 },
     );
   }
 
-  const token = await sha256Hex(expected + ":ct1-visualizer");
+  const token = await sha256Hex(PIN + ":ct1-visualizer");
   const res = NextResponse.json({ ok: true });
   res.cookies.set("ct1_auth", token, {
     httpOnly: true,

@@ -2,6 +2,10 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const MOBILE_UA = /iPhone|iPod|Android.*Mobile|Mobile.*Firefox|IEMobile|BlackBerry|webOS/i;
 
+// Hardcoded broker PIN. Every request must carry a session cookie hashed
+// from this value or it gets rewritten to /pin.
+const PIN = "1986";
+
 // Paths that bypass the PIN gate.
 const PUBLIC_EXACT = new Set([
   "/pin",
@@ -18,10 +22,8 @@ async function sha256Hex(input: string): Promise<string> {
     .join("");
 }
 
-async function expectedAuthToken(): Promise<string | null> {
-  const pin = process.env.CT1_PIN;
-  if (!pin) return null;
-  return sha256Hex(pin + ":ct1-visualizer");
+async function expectedAuthToken(): Promise<string> {
+  return sha256Hex(PIN + ":ct1-visualizer");
 }
 
 export async function middleware(req: NextRequest) {
@@ -33,12 +35,10 @@ export async function middleware(req: NextRequest) {
   }
 
   const expected = await expectedAuthToken();
-  if (expected !== null) {
-    const have = req.cookies.get("ct1_auth")?.value;
-    if (have !== expected) {
-      const target = new URL("/pin", req.url);
-      return NextResponse.rewrite(target);
-    }
+  const have = req.cookies.get("ct1_auth")?.value;
+  if (have !== expected) {
+    const target = new URL("/pin", req.url);
+    return NextResponse.rewrite(target);
   }
 
   if (path === "/" || path === "") {
