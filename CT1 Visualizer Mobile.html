@@ -75,16 +75,29 @@
   .live-pill.live .live-dot { background: #7BE495; animation: pulse 1.6s ease-in-out infinite; }
   .live-pill.offline { background: rgba(255,120,122,0.1); border-color: var(--salmon); color: var(--salmon); }
   @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
+  /* Size-unit toggle — two-button segmented control. Both states always
+     visible so brokers see the toggle at a glance. */
   .unit-toggle {
-    display: inline-flex; align-items: center; justify-content: center;
-    height: 24px; min-width: 36px; padding: 0 8px;
+    display: inline-flex; align-items: stretch;
+    height: 28px;
     background: rgba(244,242,238,0.06);
-    border: 1px solid rgba(215,168,111,0.3);
-    color: var(--ct-sun);
-    font-family: inherit; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
-    cursor: pointer; user-select: none; flex-shrink: 0;
+    border: 1px solid rgba(215,168,111,0.4);
+    flex-shrink: 0; padding: 2px;
   }
-  .unit-toggle:active { opacity: 0.7; }
+  .unit-toggle-btn {
+    border: 0; background: transparent;
+    padding: 0 10px; min-width: 30px;
+    color: var(--ct-sun);
+    font-family: inherit; font-size: 11px; letter-spacing: 0.16em;
+    text-transform: uppercase; font-weight: 600;
+    cursor: pointer; user-select: none;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .unit-toggle-btn.active {
+    background: var(--ct-gold);
+    color: var(--ct-afterlight);
+  }
+  .unit-toggle-btn:not(.active):active { opacity: 0.6; }
 
   /* ============================================================
    * CONTENT — between top + bottom bars, scrollable
@@ -1217,9 +1230,10 @@
 <header class="topbar">
   <div class="brand-mark"><img src="/bh-mark.svg" alt="bh" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'bh'}))"></div>
   <div class="topbar-title"></div>
-  <button class="unit-toggle" id="unit-toggle" type="button" aria-label="Toggle size unit">
-    <span id="unit-toggle-label">ft</span>
-  </button>
+  <div class="unit-toggle" id="unit-toggle" role="group" aria-label="Size unit">
+    <button class="unit-toggle-btn" data-unit="sqft" type="button">ft</button>
+    <button class="unit-toggle-btn" data-unit="sqm"  type="button">m²</button>
+  </div>
   <div class="live-pill" id="live-pill">
     <span class="live-dot"></span><span id="live-status">Connecting</span>
   </div>
@@ -1504,8 +1518,8 @@
     <div class="info-card">
       <h3>Tenant requirements</h3>
       <ul class="info-list">
-        <li><strong>Credit score:</strong> 650+</li>
-        <li><strong>Cheques:</strong> 4 cheques standard. 12 cheques considered for credit score 750+.</li>
+        <li><strong>Credit report:</strong> full credit report required. 650+ minimum score.</li>
+        <li><strong>Cheques:</strong> 4 cheques standard. 12 cheques also accepted — same minimum credit score either way.</li>
         <li><strong>Bank statements:</strong> only required if credit score below 650 or new to country.</li>
         <li><strong>Third-party payment accepted:</strong> EID + passport + visa copy + 3rd-party letter.</li>
         <li><strong>International transfers:</strong> from tenant only — allow 3 – 4 working days for clearance.</li>
@@ -1545,7 +1559,16 @@
     </div>
 
     <div class="info-card">
-      <h3>Fee calculator</h3>
+      <h3>Payment reference</h3>
+      <div class="info-note" style="margin-top:0;">Unit + applicant name — included on every payment message you copy below.</div>
+      <div class="calc-inputs" style="background:transparent;padding:8px 0 0;">
+        <div class="calc-row"><label>Unit no.</label><input type="text" id="pr-unit" placeholder="e.g. 05-01" autocomplete="off"></div>
+        <div class="calc-row"><label>Applicant name</label><input type="text" id="pr-name" placeholder="e.g. Sarah Smith" autocomplete="off"></div>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>Agency fee · payable to betterhomes</h3>
       <div class="info-note" style="margin-top:0;">Agency fee is on the contract value at the stated monthly rate. Rent-free does <strong>not</strong> reduce the fee.</div>
       <div class="calc-inputs" style="background:transparent;padding:8px 0 0;">
         <div class="calc-row"><label>Stated annual rent (AED)</label><input type="number" id="fc-rent" value="250000" step="5000" inputmode="numeric"></div>
@@ -1557,6 +1580,31 @@
         <div class="calc-out-row head"><span class="lbl">Fee · 5%</span><span class="val" id="fc-fee">—</span></div>
         <div class="calc-out-row"><span class="lbl">VAT · 5%</span><span class="val" id="fc-vat">—</span></div>
         <div class="calc-out-row"><span class="lbl">Fee total inc VAT</span><span class="val" id="fc-tot">—</span></div>
+      </div>
+      <div class="cq-payee">
+        <div class="cq-payee-head">bh bank details</div>
+        <div class="cq-payee-name">Better Homes LLC</div>
+        <div class="cq-payee-foot">CBD · Sh. Zayed Road Branch · A/C 1000257947 · IBAN AE560230000001000257947</div>
+        <button class="cq-copy" type="button" id="fc-copy">Copy fee + bh bank details</button>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>Security deposit · payable to landlord</h3>
+      <div class="info-note" style="margin-top:0;">Initial amount due on agreeing an offer — reserves the unit. 5% of annual rent, or AED 10,000, whichever is higher. Refundable on move-out.</div>
+      <div class="calc-inputs" style="background:transparent;padding:8px 0 0;">
+        <div class="calc-row"><label>Annual rent (AED)</label><input type="number" id="dp-rent" value="250000" step="5000" inputmode="numeric"></div>
+      </div>
+      <div class="calc-out" style="margin-top:12px;">
+        <div class="calc-out-row"><span class="lbl">5% of annual rent</span><span class="val" id="dp-pct">—</span></div>
+        <div class="calc-out-row"><span class="lbl">Floor</span><span class="val">AED 10,000.00</span></div>
+        <div class="calc-out-row head"><span class="lbl">Deposit due</span><span class="val" id="dp-due">—</span></div>
+      </div>
+      <div class="cq-payee">
+        <div class="cq-payee-head">Pay to landlord</div>
+        <div class="cq-payee-name">THE GALLERIA INVESTMENTS LLC</div>
+        <div class="cq-payee-foot">Landlord bank transfer details on the reservation form. Tenant adds the payment reference above on the transfer.</div>
+        <button class="cq-copy" type="button" id="dp-copy">Copy deposit + payee</button>
       </div>
     </div>
 
@@ -1876,9 +1924,12 @@ function fallToSnapshot(reason) {
 // Tap the pill to retry
 document.getElementById('live-pill').addEventListener('click', () => refresh());
 
-// Size-unit toggle
+// Size-unit toggle — two-button segmented control. applySizeUnit highlights
+// the active option; clicks set sizeUnit + persist.
 function applySizeUnit() {
-  document.getElementById('unit-toggle-label').textContent = sizeUnit === 'sqm' ? 'm²' : 'ft';
+  document.querySelectorAll('#unit-toggle .unit-toggle-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.unit === sizeUnit),
+  );
   // Rebuild the size slider's bounds for the new unit BEFORE rendering, so
   // the active filter range stays consistent with the data.
   if (typeof setupSizeSlider === 'function') setupSizeSlider();
@@ -1888,10 +1939,13 @@ function applySizeUnit() {
   if (document.getElementById('tab-tower-viz').classList.contains('active') && typeof renderTower === 'function') renderTower();
   if (typeof refreshOpenUnitModal === 'function') refreshOpenUnitModal();
 }
-document.getElementById('unit-toggle').addEventListener('click', () => {
-  sizeUnit = sizeUnit === 'sqft' ? 'sqm' : 'sqft';
-  try { localStorage.setItem('ct1.sizeUnit', sizeUnit); } catch (e) {}
-  applySizeUnit();
+document.querySelectorAll('#unit-toggle .unit-toggle-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    if (b.dataset.unit === sizeUnit) return;
+    sizeUnit = b.dataset.unit;
+    try { localStorage.setItem('ct1.sizeUnit', sizeUnit); } catch (e) {}
+    applySizeUnit();
+  });
 });
 
 // ============================================================
@@ -3023,14 +3077,55 @@ function refresh() {
 })();
 
 // ============================================================
+// PAYMENT REFERENCE — shared across fee/deposit/cheque copy.
+// ============================================================
+function paymentRef() {
+  const $ = id => document.getElementById(id);
+  const u = ($('pr-unit')?.value || '').trim();
+  const n = ($('pr-name')?.value || '').trim();
+  if (u && n) return `${u} / ${n}`;
+  if (u) return u;
+  if (n) return n;
+  return '';
+}
+function refLines() {
+  const $ = id => document.getElementById(id);
+  const u = ($('pr-unit')?.value || '').trim();
+  const n = ($('pr-name')?.value || '').trim();
+  const r = paymentRef();
+  const lines = [];
+  if (u) lines.push(`Unit: ${u}`);
+  if (n) lines.push(`Applicant: ${n}`);
+  if (r) lines.push(`Reference: ${r}`);
+  return lines;
+}
+async function copyWithFeedback(btn, text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.classList.add('copied');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied to clipboard';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.textContent = orig;
+    }, 1500);
+  } catch (e) {
+    btn.textContent = 'Copy failed — long-press to select';
+  }
+}
+
+// ============================================================
 // FEE CALCULATOR
 // Fee is on the contract value at the stated monthly rate.
 // Rent-free does NOT reduce the fee.
+// Copy button builds a WhatsApp-ready payment message with
+// the payment reference + bh bank details.
 // ============================================================
 (function () {
   const $ = id => document.getElementById(id);
   if (!$('fc-rent')) return;
   const ids = ['fc-rent', 'fc-term'];
+  let lastFee = 0, lastVat = 0, lastTot = 0;
   function fmt2(n) {
     return 'AED ' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
@@ -3042,17 +3137,82 @@ function refresh() {
     const fee = cv * 0.05;
     const vat = fee * 0.05;
     const tot = fee + vat;
+    lastFee = fee; lastVat = vat; lastTot = tot;
     $('fc-mon').textContent = fmt2(monthly);
     $('fc-cv').textContent  = fmt2(cv);
     $('fc-fee').textContent = fmt2(fee);
     $('fc-vat').textContent = fmt2(vat);
     $('fc-tot').textContent = fmt2(tot);
+    const dp = $('dp-rent');
+    if (dp && !dp.dataset.userEdited) dp.value = rent;
+    if (dp) dp.dispatchEvent(new Event('input', { bubbles: true }));
   }
   ids.forEach(id => {
     const el = $(id);
     if (el) { el.addEventListener('input', recalc); el.addEventListener('change', recalc); }
   });
   recalc();
+
+  const copyBtn = $('fc-copy');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const lines = ['*Agency fee — City Tower 1*', ''];
+      const r = refLines();
+      if (r.length) { lines.push(...r); lines.push(''); }
+      lines.push(`Fee (5% of contract): ${fmt2(lastFee)}`);
+      lines.push(`VAT (5%): ${fmt2(lastVat)}`);
+      lines.push(`Total due: ${fmt2(lastTot)}`);
+      lines.push('');
+      lines.push('Pay to: Better Homes LLC');
+      lines.push('Bank: CBD · Sh. Zayed Road Branch');
+      lines.push('A/C: 1000257947');
+      lines.push('IBAN: AE560230000001000257947');
+      if (paymentRef()) lines.push('', `Please include "${paymentRef()}" on the transfer.`);
+      copyWithFeedback(copyBtn, lines.join('\n'));
+    });
+  }
+})();
+
+// ============================================================
+// DEPOSIT CALCULATOR
+// Security deposit = max(5% of annual rent, AED 10,000).
+// Paid to landlord on agreeing offer. Refundable on move-out.
+// ============================================================
+(function () {
+  const $ = id => document.getElementById(id);
+  if (!$('dp-rent')) return;
+  let lastDue = 0;
+  function fmt2(n) {
+    return 'AED ' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function recalc() {
+    const rent = parseFloat($('dp-rent').value) || 0;
+    const pct = rent * 0.05;
+    const due = Math.max(pct, 10000);
+    lastDue = due;
+    $('dp-pct').textContent = fmt2(pct);
+    $('dp-due').textContent = fmt2(due);
+  }
+  const rentEl = $('dp-rent');
+  rentEl.addEventListener('input', () => { rentEl.dataset.userEdited = '1'; recalc(); });
+  rentEl.addEventListener('change', () => { rentEl.dataset.userEdited = '1'; recalc(); });
+  recalc();
+
+  const copyBtn = $('dp-copy');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const lines = ['*Security deposit — City Tower 1*', '', 'Initial amount due to reserve the unit.', ''];
+      const r = refLines();
+      if (r.length) { lines.push(...r); lines.push(''); }
+      lines.push(`Deposit due: ${fmt2(lastDue)}`);
+      lines.push('(5% of annual rent, floor AED 10,000 — refundable on move-out.)');
+      lines.push('');
+      lines.push('Pay to landlord: THE GALLERIA INVESTMENTS LLC');
+      lines.push('Landlord bank transfer details are on the reservation form.');
+      if (paymentRef()) lines.push('', `Please include "${paymentRef()}" on the transfer.`);
+      copyWithFeedback(copyBtn, lines.join('\n'));
+    });
+  }
 })();
 
 // ============================================================
@@ -3145,13 +3305,17 @@ function refresh() {
   });
   recalc();
 
-  // Copy payee + the live cheque schedule — what the tenant needs to fill
-  // out the cheques. Bank details are intentionally omitted; they live on
-  // the reservation form.
+  // Copy payee + the live cheque schedule. Includes the payment reference
+  // (unit + applicant) if entered. Bank details intentionally omitted —
+  // they live on the reservation form.
   const copyBtn = $('cq-copy');
   if (copyBtn) {
-    copyBtn.addEventListener('click', async () => {
-      const lines = ['Cheques payable to: THE GALLERIA INVESTMENTS LLC', ''];
+    copyBtn.addEventListener('click', () => {
+      const lines = ['*Cheque schedule — City Tower 1*', ''];
+      const r = typeof refLines === 'function' ? refLines() : [];
+      if (r.length) { lines.push(...r); lines.push(''); }
+      lines.push('Cheques payable to: THE GALLERIA INVESTMENTS LLC');
+      lines.push('');
       const trs = $('cq-table').querySelectorAll('tbody tr');
       trs.forEach(tr => {
         const cells = [...tr.querySelectorAll('td')].map(td => td.textContent.trim());
@@ -3159,19 +3323,9 @@ function refresh() {
           lines.push(`${cells[0]}. ${cells[1]} · ${cells[2]} · ${cells[3]}`);
         }
       });
-      const txt = lines.join('\n');
-      try {
-        await navigator.clipboard.writeText(txt);
-        copyBtn.classList.add('copied');
-        const orig = copyBtn.textContent;
-        copyBtn.textContent = 'Copied to clipboard';
-        setTimeout(() => {
-          copyBtn.classList.remove('copied');
-          copyBtn.textContent = orig;
-        }, 1500);
-      } catch (e) {
-        copyBtn.textContent = 'Copy failed — long-press to select';
-      }
+      const ref = typeof paymentRef === 'function' ? paymentRef() : '';
+      if (ref) lines.push('', `Tenant writes "${ref}" on each cheque + bank transfer.`);
+      copyWithFeedback(copyBtn, lines.join('\n'));
     });
   }
 })();

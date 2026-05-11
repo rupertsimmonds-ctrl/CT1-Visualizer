@@ -146,20 +146,28 @@
     font-size: 12px; font-style: italic;
   }
   .meta strong { display: block; color: var(--slate); margin-bottom: 4px; }
+  /* Size-unit toggle — two-button segmented control. Both states always
+     visible at the top so brokers can spot the toggle without hunting. */
   .unit-toggle {
-    display: inline-flex; align-items: center; justify-content: center;
-    height: 28px; min-width: 38px; padding: 0 10px;
+    display: inline-flex; align-items: stretch;
     margin-top: 10px;
     background: var(--mist);
     border: 1px solid var(--rule);
+    padding: 2px; flex-shrink: 0;
+  }
+  .unit-toggle-btn {
+    border: 0; background: transparent;
+    padding: 0 12px; min-width: 36px; height: 26px;
     color: var(--denim);
     font-family: inherit; font-size: 11px; letter-spacing: 0.18em;
-    text-transform: uppercase;
-    cursor: pointer; user-select: none; flex-shrink: 0;
-    transition: all 0.18s ease;
+    text-transform: uppercase; font-weight: 600;
+    cursor: pointer; user-select: none;
+    transition: background 0.15s ease, color 0.15s ease;
   }
-  .unit-toggle:hover { border-color: var(--slate); color: var(--slate); }
-  .unit-toggle:active { opacity: 0.7; }
+  .unit-toggle-btn.active {
+    background: var(--slate); color: var(--mist);
+  }
+  .unit-toggle-btn:not(.active):hover { color: var(--slate); }
   .live-pill {
     display: inline-flex; align-items: center; gap: 8px;
     margin-top: 10px; padding: 6px 12px;
@@ -1093,6 +1101,87 @@
     font-family: monospace; font-size: 12px;
   }
 
+  /* Book viewing modal — centred dialog over the drawer. Builds a
+     WhatsApp message for the bh brokers group. */
+  .bk-modal {
+    position: fixed; inset: 0; z-index: 410;
+    background: rgba(33, 3, 2, 0.55);
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 28px;
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  }
+  .bk-modal.open { display: flex; }
+  .bk-modal-card {
+    background: var(--ct-haze);
+    border: 1.5px solid var(--ct-gold-dark);
+    width: 100%; max-width: 460px;
+    max-height: calc(100vh - 56px);
+    display: flex; flex-direction: column;
+  }
+  .bk-modal-head {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px;
+    background: var(--ct-afterlight); color: var(--ct-haze);
+    border-bottom: 1.5px solid var(--ct-gold);
+  }
+  .bk-modal-head .fp-close { color: var(--ct-haze); border-color: rgba(244,242,238,0.18); }
+  .bk-modal-head .fp-close:hover { background: rgba(244,242,238,0.06); }
+  .bk-modal-body { padding: 20px 22px 24px; overflow-y: auto; }
+  .bk-modal .bk-intro {
+    font-size: 13px; color: var(--denim); line-height: 1.5; margin-bottom: 16px;
+  }
+  .bk-modal .bk-form { display: flex; flex-direction: column; gap: 10px; }
+  .bk-modal .bk-row { display: flex; flex-direction: column; gap: 4px; }
+  .bk-modal .bk-row > span {
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--denim);
+  }
+  .bk-modal .bk-row input {
+    padding: 10px 12px; background: white; border: 1px solid var(--rule);
+    color: var(--slate); font-family: inherit; font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .bk-modal .bk-row input:focus { outline: none; border-color: var(--ct-gold-dark); }
+  .bk-modal .bk-row input[readonly] { background: var(--paper); color: var(--denim); cursor: default; }
+  .bk-modal .bk-error {
+    background: rgba(255, 120, 122, 0.12);
+    border-left: 3px solid var(--salmon);
+    padding: 10px 12px; font-size: 12px; color: var(--terra);
+  }
+  .bk-modal .bk-submit {
+    margin-top: 8px; padding: 13px 16px;
+    background: #25D366; color: white;
+    border: 0; font-family: inherit;
+    font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    font-weight: 600; cursor: pointer;
+  }
+  .bk-modal .bk-submit:hover { background: #20bd5b; }
+  .bk-modal .bk-copy {
+    padding: 11px 16px;
+    background: transparent; color: var(--ct-gold-dark);
+    border: 1px solid var(--ct-gold-dark);
+    font-family: inherit; font-size: 11px;
+    letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer;
+  }
+  .bk-modal .bk-copy:hover { background: rgba(215, 168, 111, 0.08); }
+  .bk-modal .bk-copy.copied { background: var(--ct-gold-dark); color: var(--ct-haze); }
+  .bk-modal .bk-preview-wrap { margin-top: 16px; }
+  .bk-modal .bk-preview-head {
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--denim); margin-bottom: 6px;
+  }
+  .bk-modal .bk-preview {
+    background: white; border: 1px solid var(--rule);
+    padding: 12px 14px; font-family: inherit; font-size: 13px;
+    line-height: 1.5; color: var(--slate); white-space: pre-wrap;
+    word-break: break-word; margin: 0;
+  }
+  .drawer-toolbar .btn.btn-book {
+    background: var(--ct-afterlight); color: var(--ct-haze); border-color: var(--ct-afterlight);
+  }
+  .drawer-toolbar .btn.btn-book:hover { background: var(--slate); border-color: var(--slate); }
+
   .drawer-body { flex: 1; overflow-y: auto; padding: 0; }
   .drawer-empty { padding: 48px 26px; text-align: center; color: var(--denim); font-style: italic; }
 
@@ -1373,9 +1462,10 @@
         <span class="ks-label">Search</span>
         <span class="ks-keys"><kbd>⌘</kbd><kbd>K</kbd></span>
       </button>
-      <button class="unit-toggle" id="unit-toggle" type="button" aria-label="Toggle size unit">
-        <span id="unit-toggle-label">ft</span>
-      </button>
+      <div class="unit-toggle" id="unit-toggle" role="group" aria-label="Size unit">
+        <button class="unit-toggle-btn" data-unit="sqft" type="button">ft</button>
+        <button class="unit-toggle-btn" data-unit="sqm"  type="button">m²</button>
+      </div>
       <div class="live-pill loading" id="live-pill">
         <span class="live-dot"></span>
         <span id="live-status">Connecting…</span>
@@ -1634,8 +1724,8 @@
     <article class="info-block">
       <h2>Tenant requirements</h2>
       <ul>
-        <li><strong>Credit score:</strong> 650+</li>
-        <li><strong>Cheques:</strong> 4 cheques standard. 12 cheques considered for credit score 750+.</li>
+        <li><strong>Credit report:</strong> full credit report required. 650+ minimum score.</li>
+        <li><strong>Cheques:</strong> 4 cheques standard. 12 cheques also accepted — same minimum credit score either way.</li>
         <li><strong>Bank statements:</strong> only if credit score below 650 or new to country.</li>
         <li><strong>Third-party payment accepted:</strong> EID + passport + visa copy + 3rd-party letter.</li>
         <li><strong>International transfers:</strong> from tenant only — allow 3 – 4 working days for clearance.</li>
@@ -1647,7 +1737,16 @@
     </article>
 
     <article class="info-block">
-      <h2>Fee calculator</h2>
+      <h2>Payment reference</h2>
+      <p style="font-size:12px;color:var(--denim);margin-bottom:12px;">Unit + applicant name — included on every payment message you copy below.</p>
+      <div class="ic-inputs">
+        <label class="ic-row"><span>Unit no.</span><input type="text" id="pr-unit" placeholder="e.g. 05-01" autocomplete="off"></label>
+        <label class="ic-row"><span>Applicant name</span><input type="text" id="pr-name" placeholder="e.g. Sarah Smith" autocomplete="off"></label>
+      </div>
+    </article>
+
+    <article class="info-block">
+      <h2>Agency fee · payable to betterhomes</h2>
       <p style="font-size:12px;color:var(--denim);margin-bottom:12px;">Agency fee is on the contract value at the stated monthly rate. Rent-free does <strong>not</strong> reduce the fee.</p>
       <div class="ic-inputs">
         <label class="ic-row"><span>Stated annual rent (AED)</span><input type="number" id="fc-rent" value="250000" step="5000" inputmode="numeric"></label>
@@ -1659,6 +1758,31 @@
         <div class="ic-out-row head"><span>Fee · 5%</span><strong id="fc-fee">—</strong></div>
         <div class="ic-out-row"><span>VAT · 5%</span><strong id="fc-vat">—</strong></div>
         <div class="ic-out-row"><span>Fee total inc VAT</span><strong id="fc-tot">—</strong></div>
+      </div>
+      <div class="cq-payee">
+        <div class="cq-payee-head">bh bank details</div>
+        <div class="cq-payee-name">Better Homes LLC</div>
+        <div class="cq-payee-foot">CBD · Sh. Zayed Road Branch · A/C 1000257947 · IBAN AE560230000001000257947</div>
+        <button class="cq-copy" type="button" id="fc-copy">Copy fee + bh bank details</button>
+      </div>
+    </article>
+
+    <article class="info-block">
+      <h2>Security deposit · payable to landlord</h2>
+      <p style="font-size:12px;color:var(--denim);margin-bottom:12px;">Initial amount due on agreeing an offer — reserves the unit. 5% of the annual rent, or AED 10,000, whichever is higher. Refundable on move-out.</p>
+      <div class="ic-inputs">
+        <label class="ic-row"><span>Annual rent (AED)</span><input type="number" id="dp-rent" value="250000" step="5000" inputmode="numeric"></label>
+      </div>
+      <div class="ic-out">
+        <div class="ic-out-row"><span>5% of annual rent</span><strong id="dp-pct">—</strong></div>
+        <div class="ic-out-row"><span>Floor</span><strong>AED 10,000.00</strong></div>
+        <div class="ic-out-row head"><span>Deposit due</span><strong id="dp-due">—</strong></div>
+      </div>
+      <div class="cq-payee">
+        <div class="cq-payee-head">Pay to landlord</div>
+        <div class="cq-payee-name">THE GALLERIA INVESTMENTS LLC</div>
+        <div class="cq-payee-foot">Landlord bank transfer details on the reservation form. Tenant adds the payment reference above on the transfer.</div>
+        <button class="cq-copy" type="button" id="dp-copy">Copy deposit + payee</button>
       </div>
     </article>
 
@@ -1732,6 +1856,35 @@
     <div class="fp-title" id="fp-title">Floorplan</div>
   </div>
   <div class="fp-body" id="fp-body"></div>
+</div>
+
+<!-- Book viewing modal — overlays the drawer when 'Book viewing' is clicked.
+     Builds a WhatsApp message for the bh brokers group. -->
+<div class="bk-modal" id="bk-modal" aria-hidden="true">
+  <div class="bk-modal-card">
+    <div class="bk-modal-head">
+      <button class="fp-close" id="bk-close" type="button" aria-label="Close">×</button>
+      <div class="fp-title" id="bk-title">Book viewing</div>
+    </div>
+    <div class="bk-modal-body">
+      <p class="bk-intro">Send a viewing request to the bh brokers group. We'll format the message — you tap to send.</p>
+      <form id="bk-form" class="bk-form" autocomplete="off">
+        <label class="bk-row"><span>Unit</span><input type="text" id="bk-unit" readonly></label>
+        <label class="bk-row"><span>Day</span><input type="date" id="bk-date" required></label>
+        <label class="bk-row"><span>Time</span><input type="time" id="bk-time" required></label>
+        <label class="bk-row"><span>Engage ref no.</span><input type="text" id="bk-ref" required placeholder="e.g. 123456"></label>
+        <label class="bk-row"><span>Applicant first name</span><input type="text" id="bk-name" required placeholder="e.g. Sarah"></label>
+        <label class="bk-row"><span>Mobile last 4 digits</span><input type="text" id="bk-mob" required pattern="[0-9]{4}" maxlength="4" inputmode="numeric" placeholder="0000"></label>
+        <div class="bk-error" id="bk-error" hidden></div>
+        <button type="submit" class="bk-submit" id="bk-submit">Open in WhatsApp</button>
+        <button type="button" class="bk-copy" id="bk-copy">Copy message instead</button>
+      </form>
+      <div class="bk-preview-wrap" hidden>
+        <div class="bk-preview-head">Message preview</div>
+        <pre class="bk-preview" id="bk-preview"></pre>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- bh brokers group QR — embedded as data URI by build.py if bh-brokers-qr.png exists.
@@ -2744,6 +2897,7 @@ function renderDetail(uid) {
     <span class="count">Unit ${u.uid}</span>
     <div class="actions">
       <button class="btn btn-floorplan ${fpReady ? '' : 'disabled'}" id="btn-floorplan">${fpReady ? 'View floorplan' : 'Floorplan not available'}</button>
+      <button class="btn btn-book" id="btn-book">Book viewing</button>
       <button class="btn" id="btn-copy-unit">Copy for WhatsApp</button>
     </div>
   `;
@@ -2752,6 +2906,7 @@ function renderDetail(uid) {
   if (fpBtn && fpReady) {
     fpBtn.addEventListener('click', () => openFloorplanModal(u));
   }
+  document.getElementById('btn-book').addEventListener('click', () => openBookingModal(u));
 
   const priceCut = u.orig && u.orig > u.pr;
   const cutPct = priceCut ? Math.round((1 - u.pr / u.orig) * 100) : 0;
@@ -3345,32 +3500,73 @@ function refreshFromSheet() {
  * SIZE-UNIT TOGGLE WIRING
  * ========================================================== */
 function applySizeUnit() {
-  const lbl = document.getElementById('unit-toggle-label');
-  if (lbl) lbl.textContent = sizeUnit === 'sqm' ? 'm²' : 'ft';
+  document.querySelectorAll('#unit-toggle .unit-toggle-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.unit === sizeUnit),
+  );
   // Re-render anything that shows a size — tower tooltip rebuilds on hover
   // so it doesn't need an explicit refresh, but the visible surfaces do.
   if (typeof rebuildAll === 'function') rebuildAll();
   if (typeof renderDrawer === 'function' && state && state.drawer) renderDrawer();
 }
-(function () {
-  const btn = document.getElementById('unit-toggle');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    sizeUnit = sizeUnit === 'sqft' ? 'sqm' : 'sqft';
+document.querySelectorAll('#unit-toggle .unit-toggle-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    if (b.dataset.unit === sizeUnit) return;
+    sizeUnit = b.dataset.unit;
     try { localStorage.setItem('ct1.sizeUnit', sizeUnit); } catch (e) {}
     applySizeUnit();
   });
-})();
+});
+
+/* ============================================================
+ * PAYMENT REFERENCE — shared across fee/deposit/cheque copy.
+ * ========================================================== */
+function paymentRef() {
+  const $ = id => document.getElementById(id);
+  const u = ($('pr-unit')?.value || '').trim();
+  const n = ($('pr-name')?.value || '').trim();
+  if (u && n) return `${u} / ${n}`;
+  if (u) return u;
+  if (n) return n;
+  return '';
+}
+function refLines() {
+  const $ = id => document.getElementById(id);
+  const u = ($('pr-unit')?.value || '').trim();
+  const n = ($('pr-name')?.value || '').trim();
+  const r = paymentRef();
+  const lines = [];
+  if (u) lines.push(`Unit: ${u}`);
+  if (n) lines.push(`Applicant: ${n}`);
+  if (r) lines.push(`Reference: ${r}`);
+  return lines;
+}
+async function copyWithFeedback(btn, text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.classList.add('copied');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied to clipboard';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.textContent = orig;
+    }, 1500);
+  } catch (e) {
+    btn.textContent = 'Copy failed — long-press to select';
+  }
+}
 
 /* ============================================================
  * STANDALONE FEE CALCULATOR
  *   Fee is on the contract value at the stated monthly rate.
  *   Rent-free does NOT reduce the fee.
+ *   Copy button builds a WhatsApp-ready payment message with
+ *   the payment reference + bh bank details.
  * ========================================================== */
 (function () {
   const $ = id => document.getElementById(id);
   if (!$('fc-rent')) return;
   const ids = ['fc-rent', 'fc-term'];
+  let lastFee = 0, lastVat = 0, lastTot = 0;
   function fmt2(n) {
     return 'AED ' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
@@ -3382,17 +3578,84 @@ function applySizeUnit() {
     const fee = cv * 0.05;
     const vat = fee * 0.05;
     const tot = fee + vat;
+    lastFee = fee; lastVat = vat; lastTot = tot;
     $('fc-mon').textContent = fmt2(monthly);
     $('fc-cv').textContent  = fmt2(cv);
     $('fc-fee').textContent = fmt2(fee);
     $('fc-vat').textContent = fmt2(vat);
     $('fc-tot').textContent = fmt2(tot);
+    // Mirror the rent figure into the deposit input if the user
+    // hasn't overridden it explicitly yet.
+    const dp = $('dp-rent');
+    if (dp && !dp.dataset.userEdited) dp.value = rent;
+    if (dp) dp.dispatchEvent(new Event('input', { bubbles: true }));
   }
   ids.forEach(id => {
     const el = $(id);
     if (el) { el.addEventListener('input', recalc); el.addEventListener('change', recalc); }
   });
   recalc();
+
+  const copyBtn = $('fc-copy');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const lines = ['*Agency fee — City Tower 1*', ''];
+      const r = refLines();
+      if (r.length) { lines.push(...r); lines.push(''); }
+      lines.push(`Fee (5% of contract): ${fmt2(lastFee)}`);
+      lines.push(`VAT (5%): ${fmt2(lastVat)}`);
+      lines.push(`Total due: ${fmt2(lastTot)}`);
+      lines.push('');
+      lines.push('Pay to: Better Homes LLC');
+      lines.push('Bank: CBD · Sh. Zayed Road Branch');
+      lines.push('A/C: 1000257947');
+      lines.push('IBAN: AE560230000001000257947');
+      if (paymentRef()) lines.push('', `Please include "${paymentRef()}" on the transfer.`);
+      copyWithFeedback(copyBtn, lines.join('\n'));
+    });
+  }
+})();
+
+/* ============================================================
+ * STANDALONE DEPOSIT CALCULATOR
+ *   Security deposit = max(5% of annual rent, AED 10,000).
+ *   Paid to landlord on agreeing offer. Refundable on move-out.
+ * ========================================================== */
+(function () {
+  const $ = id => document.getElementById(id);
+  if (!$('dp-rent')) return;
+  let lastDue = 0;
+  function fmt2(n) {
+    return 'AED ' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function recalc() {
+    const rent = parseFloat($('dp-rent').value) || 0;
+    const pct = rent * 0.05;
+    const due = Math.max(pct, 10000);
+    lastDue = due;
+    $('dp-pct').textContent = fmt2(pct);
+    $('dp-due').textContent = fmt2(due);
+  }
+  const rentEl = $('dp-rent');
+  rentEl.addEventListener('input', () => { rentEl.dataset.userEdited = '1'; recalc(); });
+  rentEl.addEventListener('change', () => { rentEl.dataset.userEdited = '1'; recalc(); });
+  recalc();
+
+  const copyBtn = $('dp-copy');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const lines = ['*Security deposit — City Tower 1*', '', 'Initial amount due to reserve the unit.', ''];
+      const r = refLines();
+      if (r.length) { lines.push(...r); lines.push(''); }
+      lines.push(`Deposit due: ${fmt2(lastDue)}`);
+      lines.push('(5% of annual rent, floor AED 10,000 — refundable on move-out.)');
+      lines.push('');
+      lines.push('Pay to landlord: THE GALLERIA INVESTMENTS LLC');
+      lines.push('Landlord bank transfer details are on the reservation form.');
+      if (paymentRef()) lines.push('', `Please include "${paymentRef()}" on the transfer.`);
+      copyWithFeedback(copyBtn, lines.join('\n'));
+    });
+  }
 })();
 
 /* ============================================================
@@ -3486,8 +3749,12 @@ function applySizeUnit() {
   // Copy payee + the live cheque schedule
   const copyBtn = $('cq-copy');
   if (copyBtn) {
-    copyBtn.addEventListener('click', async () => {
-      const lines = ['Cheques payable to: THE GALLERIA INVESTMENTS LLC', ''];
+    copyBtn.addEventListener('click', () => {
+      const lines = ['*Cheque schedule — City Tower 1*', ''];
+      const r = typeof refLines === 'function' ? refLines() : [];
+      if (r.length) { lines.push(...r); lines.push(''); }
+      lines.push('Cheques payable to: THE GALLERIA INVESTMENTS LLC');
+      lines.push('');
       const trs = $('cq-table').querySelectorAll('tbody tr');
       trs.forEach(tr => {
         const cells = [...tr.querySelectorAll('td')].map(td => td.textContent.trim());
@@ -3495,19 +3762,9 @@ function applySizeUnit() {
           lines.push(`${cells[0]}. ${cells[1]} · ${cells[2]} · ${cells[3]}`);
         }
       });
-      const txt = lines.join('\n');
-      try {
-        await navigator.clipboard.writeText(txt);
-        copyBtn.classList.add('copied');
-        const orig = copyBtn.textContent;
-        copyBtn.textContent = 'Copied to clipboard';
-        setTimeout(() => {
-          copyBtn.classList.remove('copied');
-          copyBtn.textContent = orig;
-        }, 1500);
-      } catch (e) {
-        copyBtn.textContent = 'Copy failed — long-press to select';
-      }
+      const ref = typeof paymentRef === 'function' ? paymentRef() : '';
+      if (ref) lines.push('', `Tenant writes "${ref}" on each cheque + bank transfer.`);
+      copyWithFeedback(copyBtn, lines.join('\n'));
     });
   }
 })();
@@ -3588,6 +3845,104 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && document.getElementById('fp-modal').classList.contains('open')) {
     closeFloorplanModal();
   }
+});
+
+/* ============================================================
+ * BOOK VIEWING — centred dialog over the drawer. Builds a WhatsApp
+ * message for the bh brokers group. Same logic as mobile so brokers
+ * see identical behaviour on either device.
+ * ========================================================== */
+function openBookingModal(u) {
+  const modal = document.getElementById('bk-modal');
+  document.getElementById('bk-unit').value = `${u.uid} · ${TYPE_META[u.t].label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''}`;
+  const tomorrow = new Date(Date.now() + 86400000);
+  const yyyy = tomorrow.getFullYear();
+  const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+  const dd = String(tomorrow.getDate()).padStart(2, '0');
+  document.getElementById('bk-date').value = `${yyyy}-${mm}-${dd}`;
+  document.getElementById('bk-time').value = '11:00';
+  document.getElementById('bk-error').hidden = true;
+  document.querySelector('#bk-modal .bk-preview-wrap').hidden = true;
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  modal.dataset.uid = u.uid;
+}
+function closeBookingModal() {
+  const modal = document.getElementById('bk-modal');
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+function buildBookingMessage() {
+  const $ = id => document.getElementById(id);
+  const unit = $('bk-unit').value.trim();
+  const date = $('bk-date').value;
+  const time = $('bk-time').value;
+  const ref  = $('bk-ref').value.trim();
+  const name = $('bk-name').value.trim();
+  const mob  = $('bk-mob').value.trim();
+  const errEl = $('bk-error');
+  errEl.hidden = true;
+  if (!date || !time || !ref || !name || !/^\d{4}$/.test(mob)) {
+    errEl.hidden = false;
+    errEl.textContent = !/^\d{4}$/.test(mob)
+      ? 'Mobile last 4 digits must be exactly 4 numbers.'
+      : 'Please fill all fields.';
+    return null;
+  }
+  const d = new Date(date + 'T00:00:00');
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const mons = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dayLine = `${days[d.getDay()]} ${d.getDate()} ${mons[d.getMonth()]} ${d.getFullYear()}`;
+  return [
+    '*Viewing request — City Tower 1*',
+    '',
+    `Unit: ${unit}`,
+    `Day: ${dayLine}`,
+    `Time: ${time}`,
+    `Engage ref: ${ref}`,
+    `Applicant: ${name} · mobile ends ${mob}`,
+  ].join('\n');
+}
+document.getElementById('bk-close').addEventListener('click', closeBookingModal);
+// Click the dimmed backdrop to close (but not clicks inside the card).
+document.getElementById('bk-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'bk-modal') closeBookingModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('bk-modal').classList.contains('open')) {
+    closeBookingModal();
+  }
+});
+document.getElementById('bk-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const txt = buildBookingMessage();
+  if (!txt) return;
+  // wa.me with no number opens the WhatsApp share sheet — broker picks
+  // the bh brokers group from the list. text= pre-fills the message.
+  window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank');
+  document.getElementById('bk-preview').textContent = txt;
+  document.querySelector('#bk-modal .bk-preview-wrap').hidden = false;
+});
+document.getElementById('bk-copy').addEventListener('click', async () => {
+  const txt = buildBookingMessage();
+  if (!txt) return;
+  const copyBtn = document.getElementById('bk-copy');
+  try {
+    await navigator.clipboard.writeText(txt);
+    copyBtn.classList.add('copied');
+    const orig = copyBtn.textContent;
+    copyBtn.textContent = 'Copied — paste into WhatsApp';
+    setTimeout(() => {
+      copyBtn.classList.remove('copied');
+      copyBtn.textContent = orig;
+    }, 1800);
+  } catch (e) {
+    copyBtn.textContent = 'Copy failed — long-press the preview to select';
+  }
+  document.getElementById('bk-preview').textContent = txt;
+  document.querySelector('#bk-modal .bk-preview-wrap').hidden = false;
 });
 
 /* ============================================================
