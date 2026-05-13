@@ -3172,6 +3172,8 @@ const palette = {
     if (q) {
       // numeric price hint: "230k", "230", "230,000"
       const numHint = q.replace(/[k,]/g, m => m === 'k' ? '000' : '').match(/\d+/);
+      // Dash / space / dot-tolerant token: "7002" → matches unit "70-02".
+      const qN = q.replace(/[^a-z0-9]/g, '');
       pool = UNITS.filter(u => {
         const hay = [
           u.uid, String(u.f), String(u.p), u.t, TYPE_META[u.t]?.label || '',
@@ -3182,6 +3184,7 @@ const palette = {
           (u.showFlat || u.s === 'show_flat') ? 'show flat' : '',
         ].join(' ').toLowerCase();
         if (hay.includes(q)) return true;
+        if (qN.length >= 2 && hay.replace(/[^a-z0-9]/g, '').includes(qN)) return true;
         if (numHint) {
           const n = parseInt(numHint[0], 10);
           if (Math.abs(u.pr - n) < 30000) return true;

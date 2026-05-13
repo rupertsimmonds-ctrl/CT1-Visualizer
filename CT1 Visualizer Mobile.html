@@ -2194,7 +2194,16 @@ document.getElementById('card-hh').addEventListener('click', () => { /* no list 
 // ============================================================
 function isShowFlat(u) { return u.showFlat || u.s === 'show_flat'; }
 
-function unitMatches(u) {
+// Strip non-alphanumerics + lowercase so dashes / spaces / dots in
+// unit numbers (e.g. "70-02", "70 02", "70.02") all match a "7002" search.
+function normalizeSearch(s) {
+  return (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+// Single source of truth for whether a unit passes the filter bar.
+// `except` lets the slider rebinders skip their own bound when recomputing
+// "what range of prices is currently relevant?" / "...sizes?"
+function matchesExcept(u, except) {
   const showFlat = isShowFlat(u);
   if (filter.extras.has('show')) {
     if (!showFlat) return false;
@@ -2206,13 +2215,16 @@ function unitMatches(u) {
   if (filter.view !== 'all' && u.v !== filter.view) return false;
   if (filter.extras.has('balcony') && !u.b) return false;
   if (filter.extras.has('duplex') && !u.d) return false;
-  if (filter.priceMin != null && u.pr < filter.priceMin) return false;
-  if (filter.priceMax != null && u.pr > filter.priceMax) return false;
-  // Skip the size filter for units with no size data — don't hide them by accident.
-  const sv = sizeView(u);
-  if (sv.sliderRaw > 0) {
-    if (filter.sizeMin != null && sv.sliderRaw < filter.sizeMin) return false;
-    if (filter.sizeMax != null && sv.sliderRaw > filter.sizeMax) return false;
+  if (except !== 'price') {
+    if (filter.priceMin != null && u.pr < filter.priceMin) return false;
+    if (filter.priceMax != null && u.pr > filter.priceMax) return false;
+  }
+  if (except !== 'size') {
+    const sv = sizeView(u);
+    if (sv.sliderRaw > 0) {
+      if (filter.sizeMin != null && sv.sliderRaw < filter.sizeMin) return false;
+      if (filter.sizeMax != null && sv.sliderRaw > filter.sizeMax) return false;
+    }
   }
   if (filter.search) {
     const q = filter.search.toLowerCase();
@@ -2228,10 +2240,16 @@ function unitMatches(u) {
       String(Math.round(u.pr)),
       String(Math.round(u.pr/1000))+'k',
     ].join(' ').toLowerCase();
-    if (!hay.includes(q)) return false;
+    if (hay.includes(q)) return true;
+    // Dash / space / dot-tolerant fallback: "7002" matches "70-02".
+    const qN = normalizeSearch(q);
+    if (qN.length >= 2 && normalizeSearch(hay).includes(qN)) return true;
+    return false;
   }
   return true;
 }
+
+function unitMatches(u) { return matchesExcept(u, null); }
 
 function sortUnits(list) {
   const [k, dir] = filter.sort.split('-');
@@ -2297,40 +2315,70 @@ function buildViewChips() {
     chip.addEventListener('click', () => {
       filter.view = chip.dataset.view;
       host.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === chip));
+      rebindBothSliders();
       renderList();
     });
   });
 }
 
-// Price slider — computed bounds rounded to 5,000 AED steps
-function setupPriceSlider() {
-  const prices = UNITS.filter(u => AVAILABLE_STATES.includes(u.s) || isShowFlat(u)).map(u => u.pr).filter(p => p > 0);
+// Price slider — bounds + visuals refreshable independently of listener
+// binding, so it can be linked to other filters (chips, search, size slider).
+let priceListenersBound = false;
+function renderPriceLabels() {
+  const minEl = document.getElementById('price-min');
+  const maxEl = document.getElementById('price-max');
+  const a = parseInt(minEl.value, 10), b = parseInt(maxEl.value, 10);
+  document.getElementById('price-min-val').textContent = fmtAED(a);
+  document.getElementById('price-max-val').textContent = fmtAED(b);
+  const fill = document.getElementById('price-fill');
+  const range = priceBounds.max - priceBounds.min || 1;
+  fill.style.left = ((a - priceBounds.min) / range * 100) + '%';
+  fill.style.right = (100 - (b - priceBounds.min) / range * 100) + '%';
+}
+function applyPriceBounds(pool) {
+  const prices = pool.map(u => u.pr).filter(p => p > 0);
   if (!prices.length) return;
   const lo = Math.floor(Math.min(...prices) / 5000) * 5000;
   const hi = Math.ceil(Math.max(...prices) / 5000) * 5000;
   priceBounds = { min: lo, max: hi };
-  if (filter.priceMin == null) filter.priceMin = lo;
-  if (filter.priceMax == null) filter.priceMax = hi;
+  // Clamp the current selection inside the new bounds.
+  if (filter.priceMin == null || filter.priceMin < lo) filter.priceMin = lo;
+  if (filter.priceMax == null || filter.priceMax > hi) filter.priceMax = hi;
+  if (filter.priceMin > filter.priceMax - 5000) {
+    filter.priceMin = lo; filter.priceMax = hi;
+  }
   const minEl = document.getElementById('price-min');
   const maxEl = document.getElementById('price-max');
   minEl.min = lo; minEl.max = hi; minEl.step = 5000; minEl.value = filter.priceMin;
   maxEl.min = lo; maxEl.max = hi; maxEl.step = 5000; maxEl.value = filter.priceMax;
-  const labelMin = document.getElementById('price-min-val');
-  const labelMax = document.getElementById('price-max-val');
-  const fill = document.getElementById('price-fill');
-  const update = () => {
+  renderPriceLabels();
+}
+function setupPriceSlider() {
+  applyPriceBounds(UNITS.filter(u => AVAILABLE_STATES.includes(u.s) || isShowFlat(u)));
+  if (priceListenersBound) return;
+  priceListenersBound = true;
+  const minEl = document.getElementById('price-min');
+  const maxEl = document.getElementById('price-max');
+  const onDrag = (changed) => {
     let a = parseInt(minEl.value, 10), b = parseInt(maxEl.value, 10);
-    if (a > b - 5000) { if (event && event.target === minEl) a = b - 5000; else b = a + 5000; }
+    if (a > b - 5000) {
+      if (changed === minEl) a = b - 5000; else b = a + 5000;
+    }
     minEl.value = a; maxEl.value = b;
     filter.priceMin = a; filter.priceMax = b;
-    labelMin.textContent = fmtAED(a); labelMax.textContent = fmtAED(b);
-    const range = hi - lo || 1;
-    fill.style.left = ((a - lo) / range * 100) + '%';
-    fill.style.right = (100 - (b - lo) / range * 100) + '%';
+    renderPriceLabels();
+    renderList();
+    rebindSizeSlider();
   };
-  minEl.addEventListener('input', () => { update(); renderList(); });
-  maxEl.addEventListener('input', () => { update(); renderList(); });
-  update();
+  minEl.addEventListener('input', () => onDrag(minEl));
+  maxEl.addEventListener('input', () => onDrag(maxEl));
+}
+// Recompute price slider bounds from units matching every filter except price.
+// Called whenever a chip / search / size slider changes, so the price range
+// always reflects what's available in the current view.
+function rebindPriceSlider() {
+  const pool = UNITS.filter(u => matchesExcept(u, 'price'));
+  applyPriceBounds(pool);
 }
 
 // Type chips — built dynamically and scoped to the active bedroom band.
@@ -2359,60 +2407,79 @@ function buildTypeChips() {
     chip.addEventListener('click', () => {
       filter.type = chip.dataset.type;
       host.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === chip));
+      rebindBothSliders();
       renderList();
     });
   });
 }
 
-// Size slider — bounds are derived from the data and respect the active unit
-// (sq ft / m²). When the broker flips the topbar toggle, applySizeUnit rebuilds
-// the slider so its bounds match.
+// Size slider — bounds derived from the data, respecting the active unit
+// (sq ft / m²). Bounds are refreshable independently of listener binding so
+// other filters (chips, search, price slider) can rebind it.
 let sizeBounds = { min: 0, max: 0, step: 50 };
-let sizeSliderBound = false;
-function setupSizeSlider() {
+let sizeListenersBound = false;
+function renderSizeLabels() {
   const minEl = document.getElementById('size-min');
   const maxEl = document.getElementById('size-max');
-  const fill  = document.getElementById('size-fill');
-  const tag   = document.getElementById('size-unit-tag');
-  const labelMin = document.getElementById('size-min-val');
-  const labelMax = document.getElementById('size-max-val');
-  if (!minEl || !maxEl) return;
-
-  const sizes = UNITS
-    .filter(u => AVAILABLE_STATES.includes(u.s) || isShowFlat(u))
-    .map(u => sizeView(u).sliderRaw)
-    .filter(s => s > 0);
+  const a = parseFloat(minEl.value), b = parseFloat(maxEl.value);
+  const fmt = sizeUnit === 'sqm' ? fmtSqm : fmtSqft;
+  document.getElementById('size-min-val').textContent = fmt(a);
+  document.getElementById('size-max-val').textContent = fmt(b);
+  const fill = document.getElementById('size-fill');
+  const range = sizeBounds.max - sizeBounds.min || 1;
+  fill.style.left = ((a - sizeBounds.min) / range * 100) + '%';
+  fill.style.right = (100 - (b - sizeBounds.min) / range * 100) + '%';
+}
+function applySizeBounds(pool) {
+  const sizes = pool.map(u => sizeView(u).sliderRaw).filter(s => s > 0);
   if (!sizes.length) return;
   const step = sizeUnit === 'sqm' ? 5 : 50;
   const lo = Math.floor(Math.min(...sizes) / step) * step;
   const hi = Math.ceil(Math.max(...sizes) / step) * step;
   sizeBounds = { min: lo, max: hi, step };
-  if (filter.sizeMin == null || filter.sizeMin < lo || filter.sizeMin > hi) filter.sizeMin = lo;
-  if (filter.sizeMax == null || filter.sizeMax > hi || filter.sizeMax < lo) filter.sizeMax = hi;
+  if (filter.sizeMin == null || filter.sizeMin < lo) filter.sizeMin = lo;
+  if (filter.sizeMax == null || filter.sizeMax > hi) filter.sizeMax = hi;
+  if (filter.sizeMin > filter.sizeMax - step) {
+    filter.sizeMin = lo; filter.sizeMax = hi;
+  }
+  const minEl = document.getElementById('size-min');
+  const maxEl = document.getElementById('size-max');
   minEl.min = lo; minEl.max = hi; minEl.step = step; minEl.value = filter.sizeMin;
   maxEl.min = lo; maxEl.max = hi; maxEl.step = step; maxEl.value = filter.sizeMax;
+  const tag = document.getElementById('size-unit-tag');
   if (tag) tag.textContent = sizeUnit === 'sqm' ? 'm²' : 'sq ft';
-
-  const refresh = (changed) => {
+  renderSizeLabels();
+}
+function setupSizeSlider() {
+  applySizeBounds(UNITS.filter(u => AVAILABLE_STATES.includes(u.s) || isShowFlat(u)));
+  if (sizeListenersBound) return;
+  sizeListenersBound = true;
+  const minEl = document.getElementById('size-min');
+  const maxEl = document.getElementById('size-max');
+  if (!minEl || !maxEl) return;
+  const onDrag = (changed) => {
+    const step = sizeBounds.step;
     let a = parseFloat(minEl.value), b = parseFloat(maxEl.value);
     if (a > b - step) {
       if (changed === minEl) a = b - step; else b = a + step;
     }
     minEl.value = a; maxEl.value = b;
     filter.sizeMin = a; filter.sizeMax = b;
-    const fmt = sizeUnit === 'sqm' ? fmtSqm : fmtSqft;
-    labelMin.textContent = fmt(a); labelMax.textContent = fmt(b);
-    const range = sizeBounds.max - sizeBounds.min || 1;
-    fill.style.left = ((a - sizeBounds.min) / range * 100) + '%';
-    fill.style.right = (100 - (b - sizeBounds.min) / range * 100) + '%';
+    renderSizeLabels();
+    renderList();
+    rebindPriceSlider();
   };
-  if (!sizeSliderBound) {
-    minEl.addEventListener('input', () => { refresh(minEl); renderList(); });
-    maxEl.addEventListener('input', () => { refresh(maxEl); renderList(); });
-    sizeSliderBound = true;
-  }
-  refresh();
+  minEl.addEventListener('input', () => onDrag(minEl));
+  maxEl.addEventListener('input', () => onDrag(maxEl));
 }
+// Recompute size slider bounds from units matching every filter except size.
+function rebindSizeSlider() {
+  const pool = UNITS.filter(u => matchesExcept(u, 'size'));
+  applySizeBounds(pool);
+}
+
+// Refresh both slider bounds to match the current chip / search filters.
+function rebindBothSliders() { rebindPriceSlider(); rebindSizeSlider(); }
 
 // Filter chip handlers
 document.getElementById('filter-bedroom').querySelectorAll('.chip').forEach(chip => {
@@ -2421,6 +2488,7 @@ document.getElementById('filter-bedroom').querySelectorAll('.chip').forEach(chip
     filter.type = 'all'; // reset type when bedroom band changes — types are scoped per band
     document.getElementById('filter-bedroom').querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === chip));
     buildTypeChips();
+    rebindBothSliders();
     renderList();
   });
 });
@@ -2429,6 +2497,7 @@ document.getElementById('filter-extra').querySelectorAll('.chip').forEach(chip =
     const k = chip.dataset.extra;
     if (filter.extras.has(k)) filter.extras.delete(k); else filter.extras.add(k);
     chip.classList.toggle('active');
+    rebindBothSliders();
     renderList();
   });
 });
@@ -2436,12 +2505,14 @@ document.getElementById('search-input').addEventListener('input', e => {
   const v = e.target.value.trim();
   filter.search = v;
   document.getElementById('search-clear').classList.toggle('visible', v.length > 0);
+  rebindBothSliders();
   renderList();
 });
 document.getElementById('search-clear').addEventListener('click', () => {
   document.getElementById('search-input').value = '';
   document.getElementById('search-clear').classList.remove('visible');
   filter.search = '';
+  rebindBothSliders();
   renderList();
 });
 // Custom sort menu — Apple-style popover. Trigger toggles aria-expanded;
