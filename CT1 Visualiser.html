@@ -3702,9 +3702,16 @@ async function copyWithFeedback(btn, text) {
   function chequeDate(start, n, monthOffsetExact) {
     if (n === 1) return new Date(start.getTime());
     const rounded = Math.round(monthOffsetExact);
+    // Preserve the start's day-of-month so cheques shift along with the
+    // contract start (e.g. 27 Jun → 27 Sep → 27 Dec). Use day=1 during the
+    // setMonth so we never roll the month over due to a missing day-31,
+    // then clamp back to the original day (or month-end if shorter).
+    const day = start.getDate();
     const d = new Date(start.getTime());
     d.setDate(1);
     d.setMonth(d.getMonth() + rounded);
+    const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    d.setDate(Math.min(day, lastDay));
     return d;
   }
   function fmtDate(d) {
