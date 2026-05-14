@@ -3,9 +3,26 @@ import { NextResponse } from "next/server";
 // Posts each viewing booking to a Google Apps Script web-app endpoint.
 // The endpoint URL lives in env (CT1_BOOKING_URL) so the static HTML never
 // sees it directly — keeps things gated behind the PIN-protected proxy.
-const APPS_SCRIPT_URL = process.env.CT1_BOOKING_URL || "";
+// Reading via getter rather than at module load — guarantees we always
+// see the live env. Belt and braces for serverless cold-start quirks.
+const getAppsScriptUrl = () => (process.env.CT1_BOOKING_URL || "").trim();
 
 export const dynamic = "force-dynamic";
+
+// Health probe: GET the same path in a browser to confirm whether the
+// env var is reaching the function. Returns whether CT1_BOOKING_URL is
+// configured + its length (NOT the value) so the URL itself stays out
+// of logs and screenshots.
+export async function GET() {
+  const url = getAppsScriptUrl();
+  return NextResponse.json({
+    status: "ok",
+    configured: Boolean(url),
+    url_length: url.length,
+    deployment_env: process.env.VERCEL_ENV || "local",
+    deployment_url: process.env.VERCEL_URL || null,
+  });
+}
 
 type BookingPayload = {
   unit_id?: string;
@@ -20,9 +37,15 @@ type BookingPayload = {
 };
 
 export async function POST(req: Request) {
+  const APPS_SCRIPT_URL = getAppsScriptUrl();
   if (!APPS_SCRIPT_URL) {
     return NextResponse.json(
-      { status: "error", message: "booking endpoint not configured" },
+      {
+        status: "error",
+        message: "booking endpoint not configured (CT1_BOOKING_URL missing in " +
+          (process.env.VERCEL_ENV || "this") +
+          " env)",
+      },
       { status: 503 },
     );
   }
