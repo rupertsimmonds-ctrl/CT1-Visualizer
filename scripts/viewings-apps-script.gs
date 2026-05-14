@@ -2,9 +2,11 @@
  * CT1 Viewings logger — Google Apps Script web app.
  *
  * Receives a JSON POST from /api/booking (the Next.js proxy on the
- * visualiser) and appends one row to the `Viewings` tab of this
- * spreadsheet. Adaptive to the sheet's header row, so renaming or
- * reordering columns in the sheet doesn't require any redeploy.
+ * visualiser) and inserts one row at the top of the `Viewings` tab
+ * (immediately under the header, on row 2). Adaptive to the sheet's
+ * header row, so renaming or reordering columns in the sheet doesn't
+ * require any redeploy. Manually-typed rows lower in the sheet are
+ * untouched — automated rows never interleave with them.
  *
  * How to deploy:
  *   1. Open the viewings spreadsheet
@@ -82,8 +84,13 @@ function doPost(e) {
       const v = data[key];
       return v == null ? '' : String(v);
     });
-    sheet.appendRow(row);
-    return jsonOut({ status: 'ok', appended: row.length });
+    // Insert directly under the header so the newest viewing is always on
+    // row 2. Safer than appendRow() because manual data entered further down
+    // the sheet stays put — automated rows never interleave with manual ones,
+    // they just stack at the top in submission order.
+    sheet.insertRowBefore(2);
+    sheet.getRange(2, 1, 1, row.length).setValues([row]);
+    return jsonOut({ status: 'ok', inserted_at: 2 });
   } catch (err) {
     return jsonOut({ status: 'error', message: String(err) });
   }
