@@ -3109,6 +3109,9 @@ function processGvizResponse(resp) {
     const iBalc = ix('balcony'), iBsq = ix('balcony_sqft');
     const iSf = ix('show_flat');
     const iPt = ix('product_type');
+    // Optional 'architectural_type' (or 'arch_type') column — when 07_HTML_Export
+    // carries it, the client uses it as the primary floorplan key.
+    const iArch = ix('architectural_type') >= 0 ? ix('architectural_type') : ix('arch_type');
     const iNsqm = ix('net_sqm'), iTsqm = ix('total_sqm');
     const iSgnD = ix('signed_date'), iLast = ix('last_activity_date');
     const iBroker = ix('broker'), iSgnR = ix('signed_rent_aed');
@@ -3141,6 +3144,7 @@ function processGvizResponse(resp) {
         f, p, t,
         bedRaw: bed, // raw bedroom_type string ("Studio", "1 Bedroom", "3 Bedroom") for floorplan lookup
         pt: String(get(row, iPt)||'').trim().toUpperCase() || null,
+        archType: String(get(row, iArch)||'').trim() || null,
         d: String(get(row, ix('is_duplex'))||'').toUpperCase() === 'Y',
         v: String(get(row, ix('view_code'))||'').trim(),
         sq: parseFloat(get(row, ix('total_sqft'))) || 0,
@@ -3505,20 +3509,31 @@ async function copyWithFeedback(btn, text) {
 
 // ============================================================
 // FLOORPLANS — fetched once from /api/floorplans.
-// Index keyed by `${bedroom_type}::${product_type}::${duplexTag}` where
-// duplexTag is 'Y', 'N', or '' (catch-all). Lookup is two-tier: first try
-// the specific Y/N match, then fall back to the catch-all. So a single row
-// in 08_Floorplans with is_duplex blank covers both duplex + non-duplex,
-// but a Y or N row takes priority when the unit's is_duplex matches.
+// Two parallel indices:
+//   - FLOORPLAN_BY_ARCH: keyed by the architectural_type column (preferred
+//     when both the unit row and the floorplan row carry the same key).
+//   - FLOORPLAN_INDEX: keyed by `${bedroom_type}::${product_type}::${duplex}`
+//     as the legacy fallback. Duplex Y/N first, blank as a catch-all.
+// floorplanFor() tries arch first, then composite, so the same lookup keeps
+// working whether the sheets are migrated to architectural_type yet or not.
 // ============================================================
 let FLOORPLAN_INDEX = {}; // { 'Studio::A::': '<file_id>', '3 Bedroom::A::Y': '<id>' , ... }
+let FLOORPLAN_BY_ARCH = {}; // { 'STUDIO_A': '<file_id>', '3BR_A_DUPLEX': '<id>', ... }
 let lastOpenUnitUid = null;
 
 function fpKey(bed, type, dup) {
   return (bed || '').trim() + '::' + (type || '').trim().toUpperCase() + '::' + (dup || '').trim().toUpperCase();
 }
+function archKey(s) {
+  return (s || '').trim().toUpperCase().replace(/\s+/g, '_');
+}
 function floorplanFor(u) {
-  if (!u || !u.bedRaw || !u.pt) return null;
+  if (!u) return null;
+  if (u.archType) {
+    const fromArch = FLOORPLAN_BY_ARCH[archKey(u.archType)];
+    if (fromArch) return fromArch;
+  }
+  if (!u.bedRaw || !u.pt) return null;
   const dupTag = u.d ? 'Y' : 'N';
   // Specific match first (e.g. "3 Bedroom::A::Y"), then catch-all ("3 Bedroom::A::").
   return FLOORPLAN_INDEX[fpKey(u.bedRaw, u.pt, dupTag)]
@@ -3532,10 +3547,15 @@ async function fetchFloorplans() {
     const body = await r.json();
     if (!body || body.status !== 'ok' || !Array.isArray(body.rows)) return;
     const next = {};
+    const nextArch = {};
     for (const row of body.rows) {
       next[fpKey(row.bedroom_type, row.product_type, row.is_duplex)] = row.file_id;
+      if (row.architectural_type) {
+        nextArch[archKey(row.architectural_type)] = row.file_id;
+      }
     }
     FLOORPLAN_INDEX = next;
+    FLOORPLAN_BY_ARCH = nextArch;
     refreshOpenUnitModal();
   } catch (e) {
     // Silent — floorplan availability is best-effort. The modal shows a clear

@@ -3466,6 +3466,9 @@ function processUnitsResponse(resp) {
     const iBalc = ix('balcony'), iBsq = ix('balcony_sqft');
     const iSf = ix('show_flat');
     const iPt = ix('product_type');
+    // Optional 'architectural_type' (or 'arch_type') column — when 07_HTML_Export
+    // carries it, the client uses it as the primary floorplan key.
+    const iArch = ix('architectural_type') >= 0 ? ix('architectural_type') : ix('arch_type');
     const iNsqm = ix('net_sqm'), iTsqm = ix('total_sqm');
     const isYes = v => /^(y|yes|true|1)$/i.test(String(v == null ? '' : v).trim());
     if ([iFloor,iUnit,iBed,iView,iTr,iSt].some(i => i < 0)) {
@@ -3505,6 +3508,7 @@ function processUnitsResponse(resp) {
         uid, f, p, t: tCode,
         bedRaw: bedroom, // raw bedroom_type ('Studio', '3 Bedroom') for floorplan lookup
         pt: String(parseCell(row, iPt)||'').trim().toUpperCase() || null,
+        archType: String(parseCell(row, iArch)||'').trim() || null,
         d: String(parseCell(row, iDup)||'').toUpperCase() === 'Y',
         v: String(parseCell(row, iView)||'').trim(),
         fb: parseCell(row, iFb) ? String(parseCell(row, iFb)).trim() : null,
@@ -3847,17 +3851,30 @@ async function copyWithFeedback(btn, text) {
 /* ============================================================
  * FLOORPLANS — fetched once from /api/floorplans (the same proxy mobile
  * uses, reads the 08_Floorplans tab and extracts Drive file IDs).
- * Index keyed by `${bedroom_type}::${product_type}::${duplexTag}`. Lookup
- * is two-tier: try the Y/N specific row first, then fall back to a
- * catch-all (is_duplex blank). 1:1 with mobile.
+ * Two parallel indices:
+ *   - FLOORPLAN_BY_ARCH: keyed by the architectural_type column. Used as
+ *     the primary lookup when both the unit row and the floorplan row
+ *     carry the same key.
+ *   - FLOORPLAN_INDEX: legacy composite `${bedroom_type}::${product_type}::${duplexTag}`.
+ *     Two-tier — specific Y/N first, blank as catch-all.
+ * floorplanFor() tries arch first, then composite. 1:1 with mobile.
  * ========================================================== */
 const FLOORPLANS_URL = '/api/floorplans';
 let FLOORPLAN_INDEX = {};
+let FLOORPLAN_BY_ARCH = {};
 function fpKey(bed, type, dup) {
   return (bed || '').trim() + '::' + (type || '').trim().toUpperCase() + '::' + (dup || '').trim().toUpperCase();
 }
+function archKey(s) {
+  return (s || '').trim().toUpperCase().replace(/\s+/g, '_');
+}
 function floorplanFor(u) {
-  if (!u || !u.bedRaw || !u.pt) return null;
+  if (!u) return null;
+  if (u.archType) {
+    const fromArch = FLOORPLAN_BY_ARCH[archKey(u.archType)];
+    if (fromArch) return fromArch;
+  }
+  if (!u.bedRaw || !u.pt) return null;
   const dupTag = u.d ? 'Y' : 'N';
   return FLOORPLAN_INDEX[fpKey(u.bedRaw, u.pt, dupTag)]
       || FLOORPLAN_INDEX[fpKey(u.bedRaw, u.pt, '')]
@@ -3870,10 +3887,15 @@ async function fetchFloorplans() {
     const body = await r.json();
     if (!body || body.status !== 'ok' || !Array.isArray(body.rows)) return;
     const next = {};
+    const nextArch = {};
     for (const row of body.rows) {
       next[fpKey(row.bedroom_type, row.product_type, row.is_duplex)] = row.file_id;
+      if (row.architectural_type) {
+        nextArch[archKey(row.architectural_type)] = row.file_id;
+      }
     }
     FLOORPLAN_INDEX = next;
+    FLOORPLAN_BY_ARCH = nextArch;
     // If the unit detail drawer is currently open, refresh it so the
     // 'View floorplan' button picks up its newly enabled state.
     if (state && state.drawer && state.drawer.kind === 'detail' && typeof renderDetail === 'function') {

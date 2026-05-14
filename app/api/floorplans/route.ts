@@ -31,6 +31,10 @@ type FloorplanRow = {
   // "Y", "N", or "" — empty acts as a catch-all matching either duplex or non-duplex
   // when no specific Y/N row exists for the same bedroom + product_type combo.
   is_duplex: string;
+  // Optional precomputed key from the sheet. When present (and matched against
+  // a unit carrying the same key) the client uses it as the primary lookup;
+  // otherwise it falls back to the composite key above.
+  architectural_type: string;
   file_id: string;
 };
 
@@ -90,6 +94,11 @@ export async function GET() {
     const iBed = ix("bedroom_type");
     const iType = ix("product_type");
     const iDup = ix("is_duplex"); // optional — older sheets without this column still work
+    // architectural_type (or arch_type alias) — optional. When present, lets
+    // the client key floorplans directly by this single column instead of the
+    // composite (bedroom_type + product_type + is_duplex).
+    const iArch =
+      ix("architectural_type") >= 0 ? ix("architectural_type") : ix("arch_type");
     const iUrl =
       ix("drive_url") >= 0
         ? ix("drive_url")
@@ -115,12 +124,14 @@ export async function GET() {
       const bed = String(cell(iBed) ?? "").trim();
       const type = String(cell(iType) ?? "").trim();
       const dup = iDup >= 0 ? normalizeYN(cell(iDup)) : "";
+      const arch = iArch >= 0 ? String(cell(iArch) ?? "").trim() : "";
       const fileId = extractFileId(cell(iUrl));
       if (!bed || !type || !fileId) continue;
       rows.push({
         bedroom_type: bed,
         product_type: type,
         is_duplex: dup,
+        architectural_type: arch,
         file_id: fileId,
       });
     }
