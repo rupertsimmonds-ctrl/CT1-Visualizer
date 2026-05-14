@@ -759,6 +759,14 @@
     border-left: 3px solid var(--salmon);
     padding: 10px 12px; font-size: 12px; color: var(--terra);
   }
+  .bk-status {
+    padding: 10px 12px; font-size: 12px;
+    border-left: 3px solid var(--ct-gold-dark);
+    background: rgba(179, 148, 112, 0.10);
+    color: var(--denim);
+  }
+  .bk-status.ok    { border-left-color: #25D366; background: rgba(37, 211, 102, 0.10); }
+  .bk-status.fail  { border-left-color: var(--salmon); background: rgba(255, 120, 122, 0.12); color: var(--terra); }
   .bk-submit {
     margin-top: 8px; padding: 14px 16px;
     background: #25D366; color: white;
@@ -1758,8 +1766,10 @@
       <label class="bk-row"><span>Engage ref no.</span><input type="text" id="bk-ref" inputmode="text" required placeholder="e.g. 123456"></label>
       <label class="bk-row"><span>Applicant first name</span><input type="text" id="bk-name" required placeholder="e.g. Sarah"></label>
       <label class="bk-row"><span>Mobile last 4 digits</span><input type="text" id="bk-mob" required pattern="[0-9]{4}" maxlength="4" inputmode="numeric" placeholder="0000"></label>
+      <label class="bk-row"><span>Your name (broker)</span><input type="text" id="bk-broker" required placeholder="e.g. Rupert"></label>
       <div class="bk-error" id="bk-error" hidden></div>
-      <button type="submit" class="bk-submit" id="bk-submit">Open in WhatsApp</button>
+      <div class="bk-status" id="bk-status" hidden></div>
+      <button type="submit" class="bk-submit" id="bk-submit">Log viewing + open WhatsApp</button>
       <button type="button" class="bk-copy" id="bk-copy">Copy message instead</button>
     </form>
     <div class="bk-preview-wrap" hidden>
@@ -3610,6 +3620,10 @@ function openBookingModal(u) {
   document.getElementById('bk-date').value = `${yyyy}-${mm}-${dd}`;
   document.getElementById('bk-time').value = '11:00';
   document.getElementById('bk-error').hidden = true;
+  const status = document.getElementById('bk-status');
+  status.hidden = true; status.className = 'bk-status';
+  // Broker name persists across sessions so the form only asks once.
+  try { document.getElementById('bk-broker').value = localStorage.getItem('ct1_broker_name') || ''; } catch (e) {}
   document.querySelector('.bk-preview-wrap').hidden = true;
   modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
@@ -3623,7 +3637,10 @@ function closeBookingModal() {
   document.body.style.overflow = '';
 }
 
-function buildBookingMessage() {
+// Reads + validates the booking form. Returns an object with both the
+// WhatsApp text and the structured payload for the sheet — or null when
+// validation fails. The status line and error box are owned by the caller.
+function readBookingForm() {
   const $ = id => document.getElementById(id);
   const unit = $('bk-unit').value.trim();
   const date = $('bk-date').value;
@@ -3631,22 +3648,25 @@ function buildBookingMessage() {
   const ref  = $('bk-ref').value.trim();
   const name = $('bk-name').value.trim();
   const mob  = $('bk-mob').value.trim();
+  const broker = $('bk-broker').value.trim();
   const errEl = $('bk-error');
   errEl.hidden = true;
-  // Validation
-  if (!date || !time || !ref || !name || !/^\d{4}$/.test(mob)) {
+  if (!date || !time || !ref || !name || !broker || !/^\d{4}$/.test(mob)) {
     errEl.hidden = false;
     errEl.textContent = !/^\d{4}$/.test(mob)
       ? 'Mobile last 4 digits must be exactly 4 numbers.'
-      : 'Please fill all fields.';
+      : 'Please fill all fields (including your name).';
     return null;
   }
-  // Format date as 'Mon 12 May 2026' for human readability
+  try { localStorage.setItem('ct1_broker_name', broker); } catch (e) {}
   const d = new Date(date + 'T00:00:00');
   const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const mons = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const dayLine = `${days[d.getDay()]} ${d.getDate()} ${mons[d.getMonth()]} ${d.getFullYear()}`;
-  return [
+  const uid = document.getElementById('bk-modal').dataset.uid || '';
+  const u = (typeof UNITS !== 'undefined' && Array.isArray(UNITS))
+    ? UNITS.find(x => x.uid === uid) : null;
+  const text = [
     '*Viewing request — City Tower 1*',
     '',
     `Unit: ${unit}`,
@@ -3654,7 +3674,53 @@ function buildBookingMessage() {
     `Time: ${time}`,
     `Engage ref: ${ref}`,
     `Applicant: ${name} · mobile ends ${mob}`,
+    `Broker: ${broker}`,
   ].join('\n');
+  const payload = {
+    unit_id: uid,
+    unit_label: unit,
+    bedroom_type: u ? (u.bedRaw || '') : '',
+    viewing_date: date,
+    viewing_time: time,
+    engage_ref: ref,
+    applicant_name: name,
+    mobile_last4: mob,
+    broker: broker,
+  };
+  return { text, payload };
+}
+
+// Back-compat shim. The copy-message button only needs the text.
+function buildBookingMessage() {
+  const r = readBookingForm();
+  return r ? r.text : null;
+}
+
+// Fire-and-forget POST to the sheet logger. The WhatsApp open is the
+// hard commitment — sheet logging is best-effort. We surface a status
+// chip so the broker knows whether the row landed.
+async function logBookingToSheet(payload, statusEl) {
+  statusEl.hidden = false;
+  statusEl.className = 'bk-status';
+  statusEl.textContent = 'Logging viewing to sheet…';
+  try {
+    const r = await fetch('/api/booking', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const body = await r.json().catch(() => ({}));
+    if (r.ok && body && body.status === 'ok') {
+      statusEl.className = 'bk-status ok';
+      statusEl.textContent = '✓ Logged to viewings sheet';
+    } else {
+      statusEl.className = 'bk-status fail';
+      statusEl.textContent = '⚠ Sheet sync failed (' + (body.message || r.status) + ') — message still sent on WhatsApp';
+    }
+  } catch (e) {
+    statusEl.className = 'bk-status fail';
+    statusEl.textContent = '⚠ Sheet sync offline — message still sent on WhatsApp';
+  }
 }
 
 // Wire booking buttons
@@ -3666,14 +3732,16 @@ function buildBookingMessage() {
   if (form) {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const txt = buildBookingMessage();
-      if (!txt) return;
+      const r = readBookingForm();
+      if (!r) return;
       // wa.me with no number opens the WhatsApp share sheet — broker picks
       // the bh brokers group manually. text= pre-fills the message.
-      window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank');
+      window.open('https://wa.me/?text=' + encodeURIComponent(r.text), '_blank');
       // Show the preview so the broker can verify what was sent.
-      document.getElementById('bk-preview').textContent = txt;
+      document.getElementById('bk-preview').textContent = r.text;
       document.querySelector('.bk-preview-wrap').hidden = false;
+      // Fire the sheet log in parallel; status chip reports outcome.
+      logBookingToSheet(r.payload, document.getElementById('bk-status'));
     });
   }
   const copyBtn = document.getElementById('bk-copy');
