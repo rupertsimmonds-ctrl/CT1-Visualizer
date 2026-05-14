@@ -2,11 +2,11 @@
  * CT1 Viewings logger — Google Apps Script web app.
  *
  * Receives a JSON POST from /api/booking (the Next.js proxy on the
- * visualiser) and inserts one row immediately under the column-header
- * row of the configured tab. Adaptive to the sheet's headers — rename
- * or reorder columns without redeploying. Manually-typed rows lower
- * in the sheet are untouched; automated rows stack at the top in
- * submission order.
+ * visualiser) and appends one row at the bottom of the configured
+ * tab — same direction the broker has been typing manual entries.
+ * Adaptive to the sheet's headers — rename or reorder columns
+ * without redeploying. appendRow respects manual rows: it always
+ * lands after the last non-empty row, so nothing gets overwritten.
  *
  * How to deploy (standalone — hosted on a personal Gmail to dodge
  * the Better Homes Workspace policy that blocks public web apps):
@@ -121,13 +121,12 @@ function doPost(e) {
       filled[key] = true;
       return v == null ? '' : String(v);
     });
-    // Insert the new row directly under the header. Manually-typed rows
-    // lower in the sheet (and any previous automated rows) are shifted
-    // down by one — they're never overwritten.
-    const insertAt = HEADER_ROW + 1;
-    sheet.insertRowBefore(insertAt);
-    sheet.getRange(insertAt, 1, 1, row.length).setValues([row]);
-    return jsonOut({ status: 'ok', inserted_at: insertAt, sheet: sheet.getName() });
+    // Append at the bottom of the data range. Apps Script's appendRow
+    // skips any blank rows above existing data and lands the new row
+    // after the last non-empty row, so manual entries are preserved
+    // and the new row stacks at the natural 'next entry' position.
+    sheet.appendRow(row);
+    return jsonOut({ status: 'ok', appended_at: sheet.getLastRow(), sheet: sheet.getName() });
   } catch (err) {
     return jsonOut({ status: 'error', message: String(err) });
   }
