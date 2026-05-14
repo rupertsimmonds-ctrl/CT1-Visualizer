@@ -8,23 +8,28 @@
  * in the sheet are untouched; automated rows stack at the top in
  * submission order.
  *
- * How to deploy / update:
- *   1. Open the viewings spreadsheet
- *      → Extensions → Apps Script
- *   2. Paste this entire file into Code.gs (replacing whatever's there)
- *   3. Click Deploy → New deployment → Type: Web app
- *      - Execute as: Me
- *      - Who has access: Anyone
- *   4. Copy the Web app URL (looks like https://script.google.com/macros/s/AKfycb.../exec)
- *   5. In Vercel → Project Settings → Environment Variables, add:
+ * How to deploy (standalone — hosted on a personal Gmail to dodge
+ * the Better Homes Workspace policy that blocks public web apps):
+ *   1. Go to script.google.com signed in with a personal Gmail (NOT
+ *      the Better Homes Workspace account).
+ *   2. New project → paste this entire file over the default Code.gs.
+ *      Save with a project name (e.g. 'CT1 Viewings Logger').
+ *   3. Share the viewings spreadsheet with that personal Gmail as
+ *      Editor (in the sheet: Share → add the email → Editor).
+ *   4. Click Deploy → New deployment → cog → Web app.
+ *      - Execute as: Me  (= the personal Gmail)
+ *      - Who has access: Anyone  (last option, no qualifier)
+ *   5. Copy the Web app URL (looks like https://script.google.com/macros/s/AKfycb.../exec).
+ *   6. In Vercel → Project Settings → Environment Variables, add:
  *      Name:  CT1_BOOKING_URL
  *      Value: <paste the Web app URL>
- *      Scope: Production (and Preview too if you want it on preview deploys)
- *   6. Redeploy the Vercel project so the env var is picked up.
+ *      Scope: Production (and Preview if you want it on preview deploys)
+ *   7. Redeploy the Vercel project so the env var is picked up.
  *
  *   On a subsequent code change: paste new code, save, then
- *   Deploy → Manage deployments → pencil icon → Version: New version
- *   → Deploy. The web app URL stays the same.
+ *   Deploy → New deployment (NOT 'Manage deployments' — Apps Script
+ *   only lets you set the access level on first deploy). Copy the new
+ *   URL into Vercel.
  *
  * Sheet layout assumptions:
  *   - The tab named SHEET_NAME contains the column headers on row
@@ -42,6 +47,11 @@
  *   viewing_time · engage_ref · applicant_name · mobile_last4 · broker
  */
 
+// ID of the viewings spreadsheet — extracted from the sheet URL,
+// the long token between /d/ and /edit. Used by openById() so this
+// script works as a standalone project (no container binding required).
+// The hosting Google account must have Editor access on this sheet.
+const SHEET_ID = '1Z4t8zn467DIuGZlirmUrq6jASU-kCeo1QuK9VzBeZ1I';
 const SHEET_NAME = 'Viewings';
 const HEADER_ROW = 3;
 
@@ -51,7 +61,10 @@ function doPost(e) {
       return jsonOut({ status: 'error', message: 'no body' });
     }
     const data = JSON.parse(e.postData.contents);
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    // openById works whether the script is container-bound or standalone;
+    // getActiveSpreadsheet only works for container-bound scripts, so we
+    // pick openById to support hosting on a personal Gmail.
+    const ss = SpreadsheetApp.openById(SHEET_ID);
     // Prefer a tab named SHEET_NAME; fall back to the first tab so the
     // script works whatever the tab is called. The actual tab used is
     // returned in the response so it's visible from the proxy logs.
