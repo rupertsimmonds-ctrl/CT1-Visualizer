@@ -1316,6 +1316,12 @@
     <div class="bed-strip" id="bed-strip"></div>
 
     <div class="sec">
+      <div class="sec-h">Show flats ready to view</div>
+      <div class="sec-sub">Lobby · Mon–Sun 10:00–19:00 · Pre-booked</div>
+    </div>
+    <div class="show-strip" id="show-strip"></div>
+
+    <div class="sec">
       <div class="sec-h">Walk-through videos</div>
       <div class="sec-sub">Quick tours of the units · tap to play in Drive</div>
     </div>
@@ -1364,11 +1370,6 @@
       <div class="info-doc-arrow" aria-hidden="true">↗</div>
     </a>
 
-    <div class="sec">
-      <div class="sec-h">Show flats ready to view</div>
-      <div class="sec-sub">Lobby · Mon–Sun 10:00–19:00 · Pre-booked</div>
-    </div>
-    <div class="show-strip" id="show-strip"></div>
     <div style="height: 24px;"></div>
   </section>
 
@@ -2377,7 +2378,14 @@ function buildViewChips() {
 
 // Price slider — bounds + visuals refreshable independently of listener
 // binding, so it can be linked to other filters (chips, search, size slider).
+// Per-thumb "pinned" state: a thumb is pinned only when its value is currently
+// off its bound (so a thumb dragged then released back to the bound counts as
+// unpinned again). When unpinned, applyPriceBounds snaps the value to the new
+// bound — that's what makes "shrink size → expand size" round-trip the price
+// thumbs cleanly.
 let priceListenersBound = false;
+let priceMinPinned = false;
+let priceMaxPinned = false;
 function renderPriceLabels() {
   const minEl = document.getElementById('price-min');
   const maxEl = document.getElementById('price-max');
@@ -2395,11 +2403,22 @@ function applyPriceBounds(pool) {
   const lo = Math.floor(Math.min(...prices) / 5000) * 5000;
   const hi = Math.ceil(Math.max(...prices) / 5000) * 5000;
   priceBounds = { min: lo, max: hi };
-  // Clamp the current selection inside the new bounds.
-  if (filter.priceMin == null || filter.priceMin < lo) filter.priceMin = lo;
-  if (filter.priceMax == null || filter.priceMax > hi) filter.priceMax = hi;
+  // Min thumb: keep user's value (clamped) if pinned, else track new lo.
+  if (priceMinPinned && filter.priceMin != null) {
+    filter.priceMin = Math.max(lo, Math.min(filter.priceMin, hi));
+  } else {
+    filter.priceMin = lo;
+  }
+  // Max thumb: same, against hi.
+  if (priceMaxPinned && filter.priceMax != null) {
+    filter.priceMax = Math.min(hi, Math.max(filter.priceMax, lo));
+  } else {
+    filter.priceMax = hi;
+  }
+  // Crossed thumbs (rare — happens when bounds collapse past selection): reset.
   if (filter.priceMin > filter.priceMax - 5000) {
     filter.priceMin = lo; filter.priceMax = hi;
+    priceMinPinned = false; priceMaxPinned = false;
   }
   const minEl = document.getElementById('price-min');
   const maxEl = document.getElementById('price-max');
@@ -2420,6 +2439,9 @@ function setupPriceSlider() {
     }
     minEl.value = a; maxEl.value = b;
     filter.priceMin = a; filter.priceMax = b;
+    // A thumb is pinned only when it's actually moved off its bound.
+    priceMinPinned = a > priceBounds.min;
+    priceMaxPinned = b < priceBounds.max;
     renderPriceLabels();
     renderList();
     rebindSizeSlider();
@@ -2469,9 +2491,12 @@ function buildTypeChips() {
 
 // Size slider — bounds derived from the data, respecting the active unit
 // (sq ft / m²). Bounds are refreshable independently of listener binding so
-// other filters (chips, search, price slider) can rebind it.
+// other filters (chips, search, price slider) can rebind it. Same per-thumb
+// pinning logic as the price slider.
 let sizeBounds = { min: 0, max: 0, step: 50 };
 let sizeListenersBound = false;
+let sizeMinPinned = false;
+let sizeMaxPinned = false;
 function renderSizeLabels() {
   const minEl = document.getElementById('size-min');
   const maxEl = document.getElementById('size-max');
@@ -2491,10 +2516,19 @@ function applySizeBounds(pool) {
   const lo = Math.floor(Math.min(...sizes) / step) * step;
   const hi = Math.ceil(Math.max(...sizes) / step) * step;
   sizeBounds = { min: lo, max: hi, step };
-  if (filter.sizeMin == null || filter.sizeMin < lo) filter.sizeMin = lo;
-  if (filter.sizeMax == null || filter.sizeMax > hi) filter.sizeMax = hi;
+  if (sizeMinPinned && filter.sizeMin != null) {
+    filter.sizeMin = Math.max(lo, Math.min(filter.sizeMin, hi));
+  } else {
+    filter.sizeMin = lo;
+  }
+  if (sizeMaxPinned && filter.sizeMax != null) {
+    filter.sizeMax = Math.min(hi, Math.max(filter.sizeMax, lo));
+  } else {
+    filter.sizeMax = hi;
+  }
   if (filter.sizeMin > filter.sizeMax - step) {
     filter.sizeMin = lo; filter.sizeMax = hi;
+    sizeMinPinned = false; sizeMaxPinned = false;
   }
   const minEl = document.getElementById('size-min');
   const maxEl = document.getElementById('size-max');
@@ -2519,6 +2553,8 @@ function setupSizeSlider() {
     }
     minEl.value = a; maxEl.value = b;
     filter.sizeMin = a; filter.sizeMax = b;
+    sizeMinPinned = a > sizeBounds.min;
+    sizeMaxPinned = b < sizeBounds.max;
     renderSizeLabels();
     renderList();
     rebindPriceSlider();
@@ -2601,6 +2637,9 @@ document.getElementById('filter-clear').addEventListener('click', () => {
   filter.view = 'all';
   filter.extras.clear();
   filter.search = '';
+  // Unpin every thumb so the sliders snap back to full bounds.
+  priceMinPinned = false; priceMaxPinned = false;
+  sizeMinPinned = false; sizeMaxPinned = false;
   filter.priceMin = priceBounds.min;
   filter.priceMax = priceBounds.max;
   filter.sizeMin = sizeBounds.min;
