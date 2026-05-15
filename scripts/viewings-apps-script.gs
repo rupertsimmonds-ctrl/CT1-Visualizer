@@ -51,7 +51,7 @@
 // the long token between /d/ and /edit. Used by openById() so this
 // script works as a standalone project (no container binding required).
 // The hosting Google account must have Editor access on this sheet.
-const SHEET_ID = '1Z4t8zn467DIuGZlirmUrq6jASU-kCeo1QuK9VzBeZ1I';
+const SHEET_ID = '1j03Sg2Bux597b4Ze7mlAf1fYeTEnSNBZDVKzQUeMhvE';
 const SHEET_NAME = 'Viewings';
 const HEADER_ROW = 3;
 
