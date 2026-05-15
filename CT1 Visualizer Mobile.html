@@ -3712,7 +3712,11 @@ async function logBookingToSheet(payload, statusEl) {
     const body = await r.json().catch(() => ({}));
     if (r.ok && body && body.status === 'ok') {
       statusEl.className = 'bk-status ok';
-      statusEl.textContent = '✓ Logged to viewings sheet';
+      // Surface the sheet name + row from the upstream Apps Script so it's
+      // obvious where the row landed when debugging cross-sheet wiring.
+      const up = body.upstream || {};
+      const where = up.sheet ? ` (sheet '${up.sheet}', row ${up.appended_at || up.inserted_at || '?'})` : '';
+      statusEl.textContent = '✓ Logged to viewings sheet' + where;
     } else {
       statusEl.className = 'bk-status fail';
       statusEl.textContent = '⚠ Sheet sync failed (' + (body.message || r.status) + ') — message still sent on WhatsApp';
