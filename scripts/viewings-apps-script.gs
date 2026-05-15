@@ -120,9 +120,17 @@ function doPost(e) {
       const key = headerToKey[h];
       if (!key) return '';
       if (filled[key]) return '';
-      const v = data[key];
       filled[key] = true;
-      return v == null ? '' : String(v);
+      const v = data[key];
+      if (v == null) return '';
+      const s = String(v);
+      // Preserve leading zeros on identifier-style fields ('0008' for the
+      // mobile last 4, an engage ref like '00123456', etc). Without the
+      // leading apostrophe Sheets coerces to a number and drops the zeros
+      // — '0008' becomes 8. The apostrophe is the Sheets-native marker
+      // for 'force this cell to plain text'; it's hidden in display.
+      if (/^0\d+$/.test(s)) return "'" + s;
+      return s;
     });
     // Append at the bottom of the data range. Apps Script's appendRow
     // skips any blank rows above existing data and lands the new row
