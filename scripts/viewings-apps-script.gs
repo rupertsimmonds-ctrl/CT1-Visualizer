@@ -123,12 +123,46 @@ function doPost(e) {
       filled[key] = true;
       const v = data[key];
       if (v == null) return '';
+
+      // Dates → Date objects so the cell's existing date format ('D MMM YYYY')
+      // applies. As strings the ISO form would show verbatim.
+      if (key === 'timestamp') {
+        const d = new Date(v);
+        if (!isNaN(d.getTime())) return d;
+      }
+      if (key === 'viewing_date') {
+        const m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (m) return new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3]));
+      }
+
+      // Time: visualiser sends 24-hour HH:MM. Convert to 12-hour with AM/PM
+      // to match the bulk of existing manual entries ('11:00 AM', '2:00 PM').
+      if (key === 'viewing_time') {
+        const tm = String(v).match(/^(\d{1,2}):(\d{2})$/);
+        if (tm) {
+          let hh = parseInt(tm[1]);
+          const mm = tm[2];
+          const ampm = hh >= 12 ? 'PM' : 'AM';
+          if (hh === 0) hh = 12;
+          else if (hh > 12) hh -= 12;
+          return hh + ':' + mm + ' ' + ampm;
+        }
+      }
+
+      // Bedroom count: visualiser sends '1 Bedroom' / 'Studio'. The column
+      // mostly uses bare numerals ('1', '2', '3') with 'Studio' kept as-is.
+      // Strip the trailing 'Bedroom' suffix when present.
+      if (key === 'bedroom_type') {
+        const bm = String(v).match(/^(\d+)\s*bedroom/i);
+        if (bm) return bm[1];
+      }
+
       const s = String(v);
       // Preserve leading zeros on identifier-style fields ('0008' for the
-      // mobile last 4, an engage ref like '00123456', etc). Without the
-      // leading apostrophe Sheets coerces to a number and drops the zeros
-      // — '0008' becomes 8. The apostrophe is the Sheets-native marker
-      // for 'force this cell to plain text'; it's hidden in display.
+      // mobile last 4, etc). Without the apostrophe Sheets coerces to a
+      // number and drops the zeros — '0008' becomes 8. The apostrophe is
+      // the Sheets-native marker for 'force this cell to plain text';
+      // hidden in display.
       if (/^0\d+$/.test(s)) return "'" + s;
       return s;
     });
