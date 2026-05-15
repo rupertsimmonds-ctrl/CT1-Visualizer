@@ -52,8 +52,11 @@
 // script works as a standalone project (no container binding required).
 // The hosting Google account must have Editor access on this sheet.
 const SHEET_ID = '1j03Sg2Bux597b4Ze7mlAf1fYeTEnSNBZDVKzQUeMhvE';
-const SHEET_NAME = 'Viewings';
-const HEADER_ROW = 3;
+const SHEET_NAME = 'Sheet1';
+// Column headers live on row 4 in this sheet — rows 1-2 are the merged
+// BETTER HOMES / City Tower 1 banner, row 3 is the gold divider strip.
+// If you redesign the sheet so headers move, update this constant.
+const HEADER_ROW = 4;
 
 function doPost(e) {
   try {
@@ -89,7 +92,7 @@ function doPost(e) {
     // Map sheet-header-strings -> payload-key. A payload key can have
     // multiple aliases so brokers don't have to match the raw JSON key.
     const aliases = {
-      timestamp:       ['timestamp', 'created_at', 'logged_at', 'date_logged'],
+      timestamp:       ['timestamp', 'created_at', 'logged_at', 'date_logged', 'date_requested'],
       unit_id:         ['unit_id', 'unit', 'uid'],
       unit_label:      ['unit_label', 'unit_description'],
       bedroom_type:    ['bedroom_type', 'bedroom', 'type', 'number_of_bed', 'number_of_beds', 'beds', 'bedrooms'],
