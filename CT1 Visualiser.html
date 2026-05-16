@@ -544,6 +544,13 @@
     opacity: 0.18;
     filter: grayscale(0.85);
   }
+  /* Show-flat-focus mode — same fade treatment but for show flats. Brokers
+     toggle this on when a tenant asks 'which units can I actually view today?'
+     so the show-flat cells stay vivid and everything else recedes. */
+  .tower-frame.show-flat-focus .unit-cell:not(.is-show) {
+    opacity: 0.18;
+    filter: grayscale(0.85);
+  }
   /* Duplex marker — horizontal gold line through the middle of the tile,
      overlaid on top of the status fill (replaces the previous gold outline). */
   .unit-cell.premium {
@@ -637,14 +644,18 @@
   }
   .chip:hover { border-color: var(--slate); }
   .chip.active { background: var(--slate); color: var(--mist); border-color: var(--slate); }
-  #tower-focus { font-family: inherit; }
-  #tower-focus .focus-dot {
+  #tower-focus, #show-flat-focus { font-family: inherit; }
+  #tower-focus .focus-dot, #show-flat-focus .focus-dot {
     width: 8px; height: 8px; border-radius: 50%;
     background: transparent; border: 1.5px solid var(--ct-gold-dark);
     transition: background 0.18s ease;
     flex-shrink: 0;
   }
   #tower-focus.active .focus-dot { background: var(--ct-gold-dark); border-color: var(--ct-gold-dark); }
+  /* Show-flat dot uses the denim used for show-flat cells, so the legend
+     is visually consistent between this chip and the tower-cell colour. */
+  #show-flat-focus .focus-dot { border-color: var(--denim); }
+  #show-flat-focus.active .focus-dot { background: var(--denim); border-color: var(--denim); }
   .chip .sw { width: 10px; height: 10px; }
   .sw.studio { background: #7BA0B2; }
   .sw.c1br   { background: #3D7AA0; }
@@ -1613,6 +1624,9 @@
           <button class="chip" id="tower-focus" type="button" aria-pressed="false">
             <span class="focus-dot"></span>Available focus
           </button>
+          <button class="chip" id="show-flat-focus" type="button" aria-pressed="false">
+            <span class="focus-dot"></span>Show flats
+          </button>
         </div>
       </section>
 
@@ -2462,14 +2476,34 @@ function setupFilters() {
   });
   // Available focus toggle — fades non-Available units to a near-monochrome
   // low-opacity wash so brokers can spot live stock instantly.
+  // Show-flat focus does the same thing but for show flats.
+  // The two toggles are mutually exclusive — turning one on flips the other off.
   const focusBtn = document.getElementById('tower-focus');
+  const showFlatBtn = document.getElementById('show-flat-focus');
   const towerFrame = document.querySelector('.tower-frame');
+  function setFocus(mode) {
+    if (!towerFrame) return;
+    const isAvail = mode === 'available';
+    const isShow  = mode === 'show';
+    if (focusBtn) {
+      focusBtn.classList.toggle('active', isAvail);
+      focusBtn.setAttribute('aria-pressed', String(isAvail));
+    }
+    if (showFlatBtn) {
+      showFlatBtn.classList.toggle('active', isShow);
+      showFlatBtn.setAttribute('aria-pressed', String(isShow));
+    }
+    towerFrame.classList.toggle('available-focus', isAvail);
+    towerFrame.classList.toggle('show-flat-focus', isShow);
+  }
   if (focusBtn && towerFrame) {
     focusBtn.addEventListener('click', () => {
-      const on = !focusBtn.classList.contains('active');
-      focusBtn.classList.toggle('active', on);
-      focusBtn.setAttribute('aria-pressed', String(on));
-      towerFrame.classList.toggle('available-focus', on);
+      setFocus(focusBtn.classList.contains('active') ? null : 'available');
+    });
+  }
+  if (showFlatBtn && towerFrame) {
+    showFlatBtn.addEventListener('click', () => {
+      setFocus(showFlatBtn.classList.contains('active') ? null : 'show');
     });
   }
   buildTypeChips();
