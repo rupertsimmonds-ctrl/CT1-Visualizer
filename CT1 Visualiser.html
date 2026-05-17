@@ -484,7 +484,11 @@
   }
   .floors { display: flex; flex-direction: column-reverse; gap: 1px; }
   .floor-row { display: flex; align-items: center; gap: 2px; height: 14px; position: relative; }
-  .floor-row.tranche-divider { margin-top: 5px; border-top: 1px dashed var(--rule-strong); padding-top: 3px; height: 17px; }
+  /* Tranche divider — the .floors container is column-reverse, so a border on
+     the *bottom* of the divider row is what visually appears between this
+     band and the band below it. Using border-top here would place the line
+     between the row and the floor *above* it (one row too high). */
+  .floor-row.tranche-divider { margin-bottom: 5px; border-bottom: 1px dashed var(--rule-strong); padding-bottom: 3px; height: 17px; }
   .floor-num {
     position: absolute; right: calc(100% + 8px);
     font-size: 10px; color: var(--denim); opacity: 0;

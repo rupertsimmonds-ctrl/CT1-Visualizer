@@ -1008,7 +1008,10 @@
     -webkit-touch-callout: none;
   }
   .tw-row { display: flex; align-items: center; gap: 2px; height: 12px; position: relative; }
-  .tw-row.tranche-divider { margin-top: 4px; padding-top: 2px; height: 14px; border-top: 1px dashed rgba(31,52,63,0.22); }
+  /* Tranche divider — column-reverse layout means a border on the *bottom*
+     of the divider row is what visually separates this band from the band
+     below it. border-top would land one floor too high. */
+  .tw-row.tranche-divider { margin-bottom: 4px; padding-bottom: 2px; height: 14px; border-bottom: 1px dashed rgba(31,52,63,0.22); }
   .tw-num {
     position: absolute; right: calc(100% + 6px);
     font-size: 9px; color: var(--denim); opacity: 0;
