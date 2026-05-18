@@ -1729,6 +1729,7 @@
         <li><strong>DEWA deposit:</strong> paid by tenant directly to DEWA. Receipt required before check-in.</li>
         <li><strong>District cooling (Tabreed) deposit:</strong> paid by tenant. Receipt required before check-in.</li>
         <li><strong>Move-in / lift use deposit:</strong> AED 3,000 refundable, held but not cashed unless damage on move-in.</li>
+        <li><strong>Optional parking (2-bed only):</strong> an additional unallocated parking space may be available for 2-bed units, payable at AED 10,000 per annum. No guarantee that the parking can be allocated upon renewal.</li>
       </ul>
     </article>
 
@@ -1740,18 +1741,19 @@
             <tr><th>Unit type</th><th class="num">Units</th><th class="num">Bays / unit</th><th class="num">Total bays</th></tr>
           </thead>
           <tbody>
-            <tr><td>Studio</td><td class="num">64</td><td class="num">0.34 avg</td><td class="num">22</td></tr>
+            <tr><td>Studio</td><td class="num">64</td><td class="num">0</td><td class="num">0</td></tr>
             <tr><td>1 Bedroom</td><td class="num">98</td><td class="num">1</td><td class="num">98</td></tr>
             <tr><td>2 Bedroom · net &lt; 180 m²</td><td class="num">183</td><td class="num">1</td><td class="num">183</td></tr>
             <tr><td>2 Bedroom · net ≥ 180 m²</td><td class="num">8</td><td class="num">2</td><td class="num">16</td></tr>
             <tr><td>3 Bedroom</td><td class="num">296</td><td class="num">2</td><td class="num">592</td></tr>
             <tr><td>4 Bedroom</td><td class="num">34</td><td class="num">2</td><td class="num">68</td></tr>
             <tr><td>4 Bedroom · top floor</td><td class="num">12</td><td class="num">3</td><td class="num">36</td></tr>
+            <tr><td>Unallocated pool · 2-bed optional</td><td class="num">—</td><td class="num">—</td><td class="num">22</td></tr>
             <tr class="parking-total"><td>Total</td><td class="num">695</td><td></td><td class="num">1,015</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="info-disclaimer">Net = interior area only, balcony excluded. Studios share a pool of 22 bays — only ~1 in 3 has one allocated, so individual studio listings show <em>"subject to availability"</em>.</p>
+      <p class="info-disclaimer">Net = interior area only, balcony excluded. Studios do not include a parking bay. The 22 unallocated bays previously pooled to studios may be offered to 2-bed tenants at AED 10,000 per annum on a first-come, no-guarantee basis — see Fees &amp; deposits.</p>
     </article>
 
     <article class="info-block">
@@ -2167,7 +2169,8 @@ function sizeView(u) {
 
 /* ============================================================
  * PARKING — derived from the published allocation matrix.
- *   Studio                       limited (~22/64 → 'subject to availability')
+ *   Studio                       not included (freed pool of 22 bays
+ *                                offered to 2-beds at AED 10k/yr optional)
  *   1 Bedroom                    1 bay
  *   2 Bedroom · net_sqm < 180    1 bay   (interior only — balcony excluded)
  *   2 Bedroom · net_sqm ≥ 180    2 bays
@@ -2182,7 +2185,7 @@ function topFloor() {
 }
 function parkingForUnit(u) {
   if (!u || !u.t) return '—';
-  if (u.t === 'studio') return 'Subject to availability — confirm with the team';
+  if (u.t === 'studio') return 'Not included';
   if (u.t === '1br') return '1 bay';
   if (u.t === '2br') {
     const netSqm = u.nsqm || (u.sq ? unitSqft(u) / SQFT_PER_SQM : 0);
