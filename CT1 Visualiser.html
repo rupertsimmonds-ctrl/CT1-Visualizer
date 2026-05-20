@@ -636,6 +636,15 @@
   .avail-tile-lbl { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--denim); margin-bottom: 4px; }
   .avail-tile-val { font-family: Georgia, serif; font-size: 26px; line-height: 1; color: var(--slate); }
   .avail-tile-sub { font-size: 10px; color: var(--denim); margin-top: 6px; opacity: 0.8; }
+  /* Range rows — show how this bedroom type's rent + size span sits within
+     the building-wide range. Track = global min..max, fill = this type's
+     min..max for currently-available units. */
+  .avail-tile-rng { margin-top: 10px; border-top: 1px solid var(--rule); padding-top: 8px; display: flex; flex-direction: column; gap: 7px; }
+  .avail-tile-rng .r-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--denim); }
+  .avail-tile-rng .r-head .r-val { letter-spacing: 0; text-transform: none; color: var(--slate); font-weight: 500; font-size: 11px; }
+  .avail-tile-rng .r-bar { position: relative; height: 3px; background: var(--mist); border-radius: 2px; overflow: hidden; }
+  .avail-tile-rng .r-fill { position: absolute; top: 0; height: 100%; background: var(--ct-gold-dark); border-radius: 2px; min-width: 3px; }
+  .avail-tile-rng .r-empty { font-size: 10px; color: var(--denim); opacity: 0.7; font-style: italic; }
 
   /* Filter chips */
   .filters { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -2377,12 +2386,48 @@ function buildAvailableTiles() {
   UNITS.forEach(u => {
     if (AVAILABLE_STATES.includes(u.s)) counts[u.t] = (counts[u.t]||0) + 1;
   });
+  // Building-wide range across *all* units, so the bar's frame of reference
+  // doesn't jump around as availability changes. Each tile's fill is the
+  // currently-available subset for that bedroom type.
+  const allPrices = UNITS.map(u => u.pr).filter(n => n > 0);
+  const allSizes  = UNITS.map(u => unitSqft(u)).filter(n => n > 0);
+  const gMinP = allPrices.length ? Math.min(...allPrices) : 0;
+  const gMaxP = allPrices.length ? Math.max(...allPrices) : 1;
+  const gMinS = allSizes.length  ? Math.min(...allSizes)  : 0;
+  const gMaxS = allSizes.length  ? Math.max(...allSizes)  : 1;
   host.innerHTML = TYPES_ORDER.map(t => {
     const m = TYPE_META[t];
+    const pool = UNITS.filter(u => u.t === t && AVAILABLE_STATES.includes(u.s));
+    const ps = pool.map(u => u.pr).filter(n => n > 0);
+    const ss = pool.map(u => unitSqft(u)).filter(n => n > 0);
+    let rangeHtml = '';
+    if (ps.length && ss.length) {
+      const minP = Math.min(...ps), maxP = Math.max(...ps);
+      const minS = Math.min(...ss), maxS = Math.max(...ss);
+      const pctP = (v, lo, hi) => hi > lo ? ((v - lo) / (hi - lo)) * 100 : 50;
+      const pL = pctP(minP, gMinP, gMaxP), pW = Math.max(2, pctP(maxP, gMinP, gMaxP) - pL);
+      const sL = pctP(minS, gMinS, gMaxS), sW = Math.max(2, pctP(maxS, gMinS, gMaxS) - sL);
+      const priceStr = minP === maxP ? fmtK(minP) : `${fmtK(minP)} – ${fmtK(maxP)}`;
+      const sizeStr  = minS === maxS ? `${fmtN(minS)} sqft` : `${fmtN(minS)} – ${fmtN(maxS)} sqft`;
+      rangeHtml = `
+        <div class="avail-tile-rng">
+          <div>
+            <div class="r-head"><span>Rent</span><span class="r-val">AED ${priceStr}</span></div>
+            <div class="r-bar"><span class="r-fill" style="left:${pL.toFixed(1)}%;width:${pW.toFixed(1)}%"></span></div>
+          </div>
+          <div>
+            <div class="r-head"><span>Size</span><span class="r-val">${sizeStr}</span></div>
+            <div class="r-bar"><span class="r-fill" style="left:${sL.toFixed(1)}%;width:${sW.toFixed(1)}%"></span></div>
+          </div>
+        </div>`;
+    } else {
+      rangeHtml = `<div class="avail-tile-rng"><div class="r-empty">No live stock</div></div>`;
+    }
     return `<button class="avail-tile" data-bed="${t}">
       <div class="avail-tile-lbl">${m.label}</div>
       <div class="avail-tile-val">${counts[t]}</div>
       <div class="avail-tile-sub">available · click for list</div>
+      ${rangeHtml}
     </button>`;
   }).join('');
   host.querySelectorAll('.avail-tile').forEach(tile => {

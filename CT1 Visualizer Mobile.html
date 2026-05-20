@@ -298,16 +298,25 @@
   }
   .bed-strip::-webkit-scrollbar { display: none; }
   .bed-card {
-    flex: 0 0 auto; min-width: 96px; padding: 14px 16px 12px;
+    flex: 0 0 auto; min-width: 158px; padding: 14px 16px 12px;
     background: white; border: 1px solid var(--rule);
     border-top: 3px solid var(--ct-gold);
     scroll-snap-align: start; cursor: pointer;
     transition: transform 0.1s ease;
+    text-align: left;
   }
   .bed-card:active { transform: scale(0.97); }
   .bed-card .b-lbl { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim); margin-bottom: 4px; }
   .bed-card .b-val { font-family: Georgia, serif; font-size: 26px; color: var(--slate); line-height: 1; }
   .bed-card .b-sub { font-size: 10px; color: var(--denim); margin-top: 4px; }
+  /* Range rows — show rent + size span for available stock of this bedroom
+     type, positioned within the building-wide range so brokers can compare. */
+  .bed-card .b-rng { margin-top: 10px; border-top: 1px solid var(--rule); padding-top: 8px; display: flex; flex-direction: column; gap: 7px; }
+  .bed-card .b-rng .r-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--denim); }
+  .bed-card .b-rng .r-head .r-val { letter-spacing: 0; text-transform: none; color: var(--slate); font-weight: 500; font-size: 10.5px; }
+  .bed-card .b-rng .r-bar { position: relative; height: 3px; background: var(--mist); border-radius: 2px; overflow: hidden; }
+  .bed-card .b-rng .r-fill { position: absolute; top: 0; height: 100%; background: var(--ct-gold-dark); border-radius: 2px; min-width: 3px; }
+  .bed-card .b-rng .r-empty { font-size: 10px; color: var(--denim); opacity: 0.7; font-style: italic; }
 
   /* Show flats — horizontal cards */
   .show-strip {
@@ -2149,14 +2158,49 @@ function renderOverview() {
   // Bedroom strip
   const bedCounts = { studio:0, '1br':0, '2br':0, '3br':0, '4br':0 };
   UNITS.forEach(u => { if (AVAILABLE_STATES.includes(u.s)) bedCounts[u.t]++; });
+  // Building-wide rent + size range gives each card's bar a stable frame
+  // of reference; fill = the available subset for that bedroom type.
+  const allPrices = UNITS.map(u => u.pr).filter(n => n > 0);
+  const allSizes  = UNITS.map(u => unitSqft(u)).filter(n => n > 0);
+  const gMinP = allPrices.length ? Math.min(...allPrices) : 0;
+  const gMaxP = allPrices.length ? Math.max(...allPrices) : 1;
+  const gMinS = allSizes.length  ? Math.min(...allSizes)  : 0;
+  const gMaxS = allSizes.length  ? Math.max(...allSizes)  : 1;
+  const fmtK = n => Math.round(n / 1000).toLocaleString('en-GB') + 'k';
   const strip = document.getElementById('bed-strip');
-  strip.innerHTML = TYPES_ORDER.map(t => `
-    <button class="bed-card" data-bed="${t}">
+  strip.innerHTML = TYPES_ORDER.map(t => {
+    const pool = UNITS.filter(u => u.t === t && AVAILABLE_STATES.includes(u.s));
+    const ps = pool.map(u => u.pr).filter(n => n > 0);
+    const ss = pool.map(u => unitSqft(u)).filter(n => n > 0);
+    let rng = '';
+    if (ps.length && ss.length) {
+      const minP = Math.min(...ps), maxP = Math.max(...ps);
+      const minS = Math.min(...ss), maxS = Math.max(...ss);
+      const pct = (v, lo, hi) => hi > lo ? ((v - lo) / (hi - lo)) * 100 : 50;
+      const pL = pct(minP, gMinP, gMaxP), pW = Math.max(2, pct(maxP, gMinP, gMaxP) - pL);
+      const sL = pct(minS, gMinS, gMaxS), sW = Math.max(2, pct(maxS, gMinS, gMaxS) - sL);
+      const priceStr = minP === maxP ? fmtK(minP) : `${fmtK(minP)} – ${fmtK(maxP)}`;
+      const sizeStr  = minS === maxS ? `${fmtN(minS)} sqft` : `${fmtN(minS)} – ${fmtN(maxS)} sqft`;
+      rng = `<div class="b-rng">
+        <div>
+          <div class="r-head"><span>Rent</span><span class="r-val">AED ${priceStr}</span></div>
+          <div class="r-bar"><span class="r-fill" style="left:${pL.toFixed(1)}%;width:${pW.toFixed(1)}%"></span></div>
+        </div>
+        <div>
+          <div class="r-head"><span>Size</span><span class="r-val">${sizeStr}</span></div>
+          <div class="r-bar"><span class="r-fill" style="left:${sL.toFixed(1)}%;width:${sW.toFixed(1)}%"></span></div>
+        </div>
+      </div>`;
+    } else {
+      rng = `<div class="b-rng"><div class="r-empty">No live stock</div></div>`;
+    }
+    return `<button class="bed-card" data-bed="${t}">
       <div class="b-lbl">${TYPE_META[t].label}</div>
       <div class="b-val">${bedCounts[t]}</div>
       <div class="b-sub">available</div>
-    </button>
-  `).join('');
+      ${rng}
+    </button>`;
+  }).join('');
   strip.querySelectorAll('.bed-card').forEach(c => {
     c.addEventListener('click', () => {
       // Deep-link into Browse with the bedroom filter pre-applied
