@@ -2816,8 +2816,11 @@ function renderTower() {
 
   let matchedCount = 0;
   frame.innerHTML = floors.map((f, idx) => {
-    const prev = floors[idx - 1];
-    const isTranche = prev && ((prev <= 25 && f > 25) || (prev <= 69 && f > 69) || (prev <= 89 && f > 89));
+    // column-reverse flex layout: a row's `border-top` draws the divider
+    // ABOVE itself in screen space (between it and the next-higher floor),
+    // so the class needs to land on the lower row of each band boundary.
+    const next = floors[idx + 1];
+    const isTranche = next && ((f <= 25 && next > 25) || (f <= 69 && next > 69) || (f <= 89 && next > 89));
     const showLabel = (f % 10 === 0) || f === 5 || f === 93;
     const cells = byFloor[f].sort((a,b) => a.p - b.p).map(u => {
       const cls = ['tw-cell', 's-' + (u.s || 'marketing'), 't-' + u.t];
