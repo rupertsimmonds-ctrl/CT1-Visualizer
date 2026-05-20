@@ -328,6 +328,31 @@
   .show-card .show-meta { font-size: 11px; color: var(--slate); line-height: 1.35; }
   .show-card .show-rent { font-size: 12px; color: var(--ct-gold-dark); margin-top: 5px; font-weight: 600; font-variant-numeric: tabular-nums; }
 
+  /* Walkthrough videos — 2-col grid mirroring the show flats look but darker
+     so they read as media tiles rather than units. Tap opens fp-modal. */
+  .wt-strip {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 10px; padding: 4px 16px 16px;
+  }
+  .wt-card {
+    padding: 14px 14px 12px;
+    background: var(--ct-afterlight); color: var(--ct-haze);
+    border: 1px solid rgba(215,168,111,0.25);
+    border-left: 3px solid var(--ct-gold);
+    cursor: pointer; transition: transform 0.1s ease;
+    min-width: 0; text-align: left; font-family: inherit;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .wt-card:active { transform: scale(0.98); }
+  .wt-card .wt-eyebrow { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ct-gold); }
+  .wt-card .wt-title { font-family: Georgia, serif; font-size: 15px; color: var(--ct-haze); line-height: 1.2; }
+  .wt-card .wt-cta {
+    margin-top: 4px; font-size: 9px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--sand);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .wt-card .wt-cta::before { content: '▶'; font-size: 10px; color: var(--ct-gold); }
+
   /* Connection-help banner — when gviz hasn't connected */
   .conn-help {
     margin: 14px 16px; padding: 12px 14px;
@@ -1419,6 +1444,33 @@
       <div class="sec-sub">Lobby · Mon–Sun 10:00–19:00 · Pre-booked</div>
     </div>
     <div class="show-strip" id="show-strip"></div>
+
+    <div class="sec">
+      <div class="sec-h">Walkthrough videos</div>
+      <div class="sec-sub">Drive · tap to play</div>
+    </div>
+    <div class="wt-strip" id="wt-strip">
+      <button class="wt-card" type="button" data-video="1zxvTWmufjk-3eSFezvYSEviy5fxl5nvE" data-title="Full Walkthrough">
+        <span class="wt-eyebrow">Full tour</span>
+        <span class="wt-title">Full Walkthrough</span>
+        <span class="wt-cta">Play</span>
+      </button>
+      <button class="wt-card" type="button" data-video="1OcCgCeJ4bkyCSMMDOt4BLP02I48oVEHs" data-title="2 Bedroom Walkaround">
+        <span class="wt-eyebrow">2 Bedroom</span>
+        <span class="wt-title">2 Bedroom Walkaround</span>
+        <span class="wt-cta">Play</span>
+      </button>
+      <button class="wt-card" type="button" data-video="1er9JVaaUnMTth35nQseVQu5W3LK36VxG" data-title="3 Bedroom Walkaround">
+        <span class="wt-eyebrow">3 Bedroom</span>
+        <span class="wt-title">3 Bedroom Walkaround</span>
+        <span class="wt-cta">Play</span>
+      </button>
+      <button class="wt-card" type="button" data-video="1Mc-tijr9EiQNvPX9kRsWq1yjOUOU-Tw8" data-title="4 Bedroom Walkaround">
+        <span class="wt-eyebrow">4 Bedroom</span>
+        <span class="wt-title">4 Bedroom Walkaround</span>
+        <span class="wt-cta">Play</span>
+      </button>
+    </div>
     <div style="height: 24px;"></div>
   </section>
 
@@ -3973,6 +4025,21 @@ setTimeout(refresh, 200);
 setInterval(refresh, REFRESH_MS);
 setTimeout(fetchFloorplans, 250);
 document.getElementById('fp-close').addEventListener('click', closeFloorplanModal);
+
+// Walkthrough videos — reuse the fp-modal to play Drive-hosted MP4s.
+document.querySelectorAll('.wt-card').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const fileId = btn.dataset.video;
+    const title  = btn.dataset.title || 'Walkthrough';
+    const modal  = document.getElementById('fp-modal');
+    const body   = document.getElementById('fp-body');
+    document.getElementById('fp-title').textContent = title;
+    body.innerHTML = `<iframe class="fp-iframe" src="https://drive.google.com/file/d/${fileId}/preview" allow="autoplay" loading="lazy"></iframe>`;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  });
+});
 </script>
 
 </body>

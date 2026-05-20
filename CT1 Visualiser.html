@@ -418,6 +418,35 @@
   .showflat-card .sf-cta { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--rule); }
   .showflats-empty { padding: 24px; background: var(--mist); text-align: center; color: var(--denim); font-style: italic; }
 
+  /* WALKTHROUGH VIDEOS — Drive-hosted bedroom tours, click opens fp-modal */
+  .walkthroughs-row {
+    background: var(--ct-afterlight); color: var(--ct-haze);
+    padding: 24px 28px; margin-bottom: 36px;
+    border: 1px solid var(--ct-afterlight); border-top: 3px solid var(--ct-gold);
+  }
+  .walkthroughs-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; gap: 16px; flex-wrap: wrap; }
+  .walkthroughs-head h2 { font-size: 22px; color: var(--ct-haze); font-family: Georgia, serif; }
+  .walkthroughs-head .tag { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--sand); }
+  .walkthroughs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .walkthrough-card {
+    background: rgba(244,242,238,0.04); color: var(--ct-haze);
+    border: 1px solid rgba(215,168,111,0.25); border-left: 3px solid var(--ct-gold);
+    padding: 16px 18px; cursor: pointer; transition: all 0.15s ease;
+    text-align: left; width: 100%; min-height: 110px;
+    display: flex; flex-direction: column; gap: 8px; font-family: inherit;
+  }
+  .walkthrough-card:hover { transform: translateY(-2px); background: rgba(244,242,238,0.07); border-left-color: var(--ct-gold-dark); }
+  .walkthrough-card .wt-eyebrow { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ct-gold); }
+  .walkthrough-card .wt-title { font-family: Georgia, serif; font-size: 19px; color: var(--ct-haze); line-height: 1.15; }
+  .walkthrough-card .wt-cta {
+    margin-top: auto; font-size: 10px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--sand);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .walkthrough-card .wt-cta::before {
+    content: '▶'; font-size: 11px; color: var(--ct-gold);
+  }
+
   /* STAGE */
   .stage { display: grid; grid-template-columns: 480px 1fr; gap: 44px; align-items: start; }
 
@@ -1522,6 +1551,35 @@
       <div class="tag" id="showflats-tag">Lobby · Mon–Sun · 10:00–19:00 · Pre-booked</div>
     </div>
     <div class="showflats-grid" id="showflats-grid"></div>
+  </section>
+
+  <section class="walkthroughs-row" id="walkthroughs-row">
+    <div class="walkthroughs-head">
+      <h2>Walkthrough videos</h2>
+      <div class="tag">Drive · tap to play</div>
+    </div>
+    <div class="walkthroughs-grid">
+      <button class="walkthrough-card" type="button" data-video="1zxvTWmufjk-3eSFezvYSEviy5fxl5nvE" data-title="Full Walkthrough">
+        <span class="wt-eyebrow">Full tour</span>
+        <span class="wt-title">Full Walkthrough</span>
+        <span class="wt-cta">Play</span>
+      </button>
+      <button class="walkthrough-card" type="button" data-video="1OcCgCeJ4bkyCSMMDOt4BLP02I48oVEHs" data-title="2 Bedroom Walkaround">
+        <span class="wt-eyebrow">2 Bedroom</span>
+        <span class="wt-title">2 Bedroom Walkaround</span>
+        <span class="wt-cta">Play</span>
+      </button>
+      <button class="walkthrough-card" type="button" data-video="1er9JVaaUnMTth35nQseVQu5W3LK36VxG" data-title="3 Bedroom Walkaround">
+        <span class="wt-eyebrow">3 Bedroom</span>
+        <span class="wt-title">3 Bedroom Walkaround</span>
+        <span class="wt-cta">Play</span>
+      </button>
+      <button class="walkthrough-card" type="button" data-video="1Mc-tijr9EiQNvPX9kRsWq1yjOUOU-Tw8" data-title="4 Bedroom Walkaround">
+        <span class="wt-eyebrow">4 Bedroom</span>
+        <span class="wt-title">4 Bedroom Walkaround</span>
+        <span class="wt-cta">Play</span>
+      </button>
+    </div>
   </section>
 
   <section class="league-row" id="league-row">
@@ -3831,6 +3889,21 @@ document.getElementById('fp-close').addEventListener('click', closeFloorplanModa
 // Tap outside the iframe (the dark fp-body backdrop) to close.
 document.getElementById('fp-modal').addEventListener('click', (e) => {
   if (e.target.id === 'fp-modal') closeFloorplanModal();
+});
+
+// Walkthrough videos — reuse the fp-modal to play Drive-hosted MP4s.
+document.querySelectorAll('.walkthrough-card').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const fileId = btn.dataset.video;
+    const title  = btn.dataset.title || 'Walkthrough';
+    const modal  = document.getElementById('fp-modal');
+    const body   = document.getElementById('fp-body');
+    document.getElementById('fp-title').textContent = title;
+    body.innerHTML = `<iframe class="fp-iframe" src="https://drive.google.com/file/d/${fileId}/preview" allow="autoplay" loading="lazy"></iframe>`;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  });
 });
 // Escape key closes it.
 document.addEventListener('keydown', (e) => {
