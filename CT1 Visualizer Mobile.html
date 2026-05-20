@@ -281,50 +281,52 @@
     color: var(--ct-sun); opacity: 0.72; margin-top: 2px;
   }
 
-  /* Available by bedroom — chip cards horizontal scroll */
+  /* Available by bedroom — 5-column grid so all bands fit on screen
+     without horizontal scrolling. Tiles are tight; the cheapest-rent
+     line uses 'k' shorthand to stay on one line. */
   .bed-strip {
-    display: flex; gap: 10px; overflow-x: auto; padding: 4px 16px 16px;
-    -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory;
-    scrollbar-width: none;
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 6px; padding: 4px 16px 16px;
   }
-  .bed-strip::-webkit-scrollbar { display: none; }
   .bed-card {
-    flex: 0 0 auto; min-width: 96px; padding: 14px 16px 12px;
+    padding: 12px 4px 10px;
     background: white; border: 1px solid var(--rule);
     border-top: 3px solid var(--ct-gold);
-    scroll-snap-align: start; cursor: pointer;
+    cursor: pointer;
     transition: transform 0.1s ease;
+    min-width: 0; text-align: center;
   }
   .bed-card:active { transform: scale(0.97); }
-  .bed-card .b-lbl { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim); margin-bottom: 4px; }
-  .bed-card .b-val { font-family: Georgia, serif; font-size: 26px; color: var(--slate); line-height: 1; }
-  .bed-card .b-sub { font-size: 10px; color: var(--denim); margin-top: 4px; }
-
-  /* Show flats — horizontal cards */
-  .show-strip {
-    display: flex; gap: 12px; overflow-x: auto; padding: 4px 16px 16px;
-    -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory;
-    scrollbar-width: none;
+  .bed-card .b-lbl { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--denim); margin-bottom: 4px; }
+  .bed-card .b-val { font-family: Georgia, serif; font-size: 24px; color: var(--slate); line-height: 1; }
+  .bed-card .b-sub {
+    font-size: 9.5px; color: var(--denim); margin-top: 4px; letter-spacing: 0.02em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .show-strip::-webkit-scrollbar { display: none; }
+
+  /* Show flats — 2-column grid, tighter cards, no horizontal scroll.
+     All show flats visible at a glance. */
+  .show-strip {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 10px; padding: 4px 16px 16px;
+  }
   .show-card {
-    flex: 0 0 270px; padding: 20px 22px;
+    padding: 12px 12px 10px;
     background: var(--paper); border: 1px solid var(--rule);
-    border-left: 4px solid var(--ct-gold);
-    scroll-snap-align: start; cursor: pointer; position: relative;
+    border-left: 3px solid var(--ct-gold);
+    cursor: pointer; position: relative;
     transition: transform 0.1s ease;
+    min-width: 0;
   }
   .show-card:active { transform: scale(0.98); }
-  .show-card .show-uid { font-size: 26px !important; }
-  .show-card .show-rent { font-size: 15px !important; }
   .show-card .show-pin {
-    position: absolute; top: 14px; right: 14px;
-    width: 9px; height: 9px; background: var(--ct-gold); border: 1.5px solid var(--ct-gold-dark); border-radius: 50%;
+    position: absolute; top: 10px; right: 10px;
+    width: 7px; height: 7px; background: var(--ct-gold); border: 1.5px solid var(--ct-gold-dark); border-radius: 50%;
   }
-  .show-card .show-type { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim); margin-bottom: 4px; }
-  .show-card .show-uid { font-family: Georgia, serif; font-size: 22px; color: var(--slate); line-height: 1; margin-bottom: 6px; }
-  .show-card .show-meta { font-size: 12px; color: var(--slate); }
-  .show-card .show-rent { font-size: 13px; color: var(--ct-gold-dark); margin-top: 6px; font-weight: 600; }
+  .show-card .show-type { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--denim); margin-bottom: 3px; }
+  .show-card .show-uid { font-family: Georgia, serif; font-size: 18px; color: var(--slate); line-height: 1; margin-bottom: 5px; }
+  .show-card .show-meta { font-size: 11px; color: var(--slate); line-height: 1.35; }
+  .show-card .show-rent { font-size: 12px; color: var(--ct-gold-dark); margin-top: 5px; font-weight: 600; font-variant-numeric: tabular-nums; }
 
   /* Connection-help banner — when gviz hasn't connected */
   .conn-help {
@@ -1380,7 +1382,7 @@
             <span class="lbl">Let</span>
             <span class="val" id="kpi-bh">0</span>
           </div>
-          <div class="kpi-half-sub" id="kpi-bh-sub">Signed + Occupied</div>
+          <div class="kpi-half-sub" id="kpi-bh-sub">Let · share of stock</div>
         </button>
         <button class="kpi-half hh" id="card-hh" type="button">
           <div class="kpi-agency">H&amp;H</div>
@@ -1392,7 +1394,7 @@
             <span class="lbl">Let</span>
             <span class="val" id="kpi-hh">0</span>
           </div>
-          <div class="kpi-half-sub" id="kpi-hh-sub">Signed + Occupied</div>
+          <div class="kpi-half-sub" id="kpi-hh-sub">Let · share of stock</div>
         </button>
       </div>
      </div>
@@ -1404,13 +1406,11 @@
 
     <div class="sec">
       <div class="sec-h">Available by bedroom</div>
-      <div class="sec-sub">Tap to filter the list</div>
     </div>
     <div class="bed-strip" id="bed-strip"></div>
 
     <div class="sec" id="overview-recent-sec" hidden>
       <div class="sec-h">Recently viewed</div>
-      <div class="sec-sub">Pick up where you left off</div>
     </div>
     <div class="recent-strip" id="overview-recent" style="display:none;padding:0 16px 8px;"></div>
 
@@ -2169,12 +2169,12 @@ function renderOverview() {
   const showFlatCount = UNITS.filter(u => u.showFlat || u.s === 'show_flat').length;
   if (showFlatCount) availParts.push(`${showFlatCount} show flat${showFlatCount === 1 ? '' : 's'}`);
   document.getElementById('kpi-avail-sub').textContent = availParts.join(' · ') + ' · Tap to browse';
-  // bh / H&H sub line — left side stays "Signed + Occupied" (set in markup);
-  // pct of stock added inline so brokers can see share at a glance.
+  // bh / H&H sub line — "Let · 12.4% of stock" reads naturally; the
+  // "Signed + Occupied" pipeline language was internal jargon.
   const pctBh = total ? `${(bhLet/total*100).toFixed(1)}%` : '—';
   const pctHh = total ? `${(hhLet/total*100).toFixed(1)}%` : '—';
-  document.getElementById('kpi-bh-sub').textContent = `Signed + Occupied · ${pctBh}`;
-  document.getElementById('kpi-hh-sub').textContent = `Signed + Occupied · ${pctHh}`;
+  document.getElementById('kpi-bh-sub').textContent = `${pctBh} of stock`;
+  document.getElementById('kpi-hh-sub').textContent = `${pctHh} of stock`;
 
   // Bedroom strip
   const bedCounts = { studio:0, '1br':0, '2br':0, '3br':0, '4br':0 };
@@ -2187,15 +2187,24 @@ function renderOverview() {
     if (!u.pr || u.pr <= 0) return;
     if (!cheapestByBed[u.t] || u.pr < cheapestByBed[u.t]) cheapestByBed[u.t] = u.pr;
   });
+  // 5-col grid means narrow tiles — short rent format keeps it on one line.
+  // "from 90k" instead of "from AED 90,000". AED implied by context.
+  const fmtRentShort = n => {
+    if (!n) return '—';
+    if (n >= 1000000) return 'from ' + (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+    return 'from ' + Math.round(n / 1000) + 'k';
+  };
+  // Short labels — TYPE_META.label is "1 Bedroom" which doesn't fit a
+  // tight 5-col tile. Use the same shorthand as the bedroom filter chips.
+  const bedShort = { studio: 'Studio', '1br': '1 Bed', '2br': '2 Bed', '3br': '3 Bed', '4br': '4 Bed' };
   const strip = document.getElementById('bed-strip');
   strip.innerHTML = TYPES_ORDER.map(t => {
     const from = cheapestByBed[t];
-    const fromLine = from ? `from ${fmtAED(from)}` : '—';
     return `
     <button class="bed-card" data-bed="${t}">
-      <div class="b-lbl">${TYPE_META[t].label}</div>
+      <div class="b-lbl">${bedShort[t]}</div>
       <div class="b-val">${bedCounts[t]}</div>
-      <div class="b-sub">${bedCounts[t] ? fromLine : 'none available'}</div>
+      <div class="b-sub">${bedCounts[t] ? fmtRentShort(from) : 'none'}</div>
     </button>
   `;
   }).join('');
