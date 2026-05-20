@@ -2207,6 +2207,10 @@ function buildTower() {
   host.innerHTML = '';
   const byFloor = {};
   UNITS.forEach(u => { if (!byFloor[u.f]) byFloor[u.f] = []; byFloor[u.f].push(u); });
+  // Penthouse band always covers the top 4 floors (90–93). If the live
+  // sheet temporarily has no rows on one of those floors, inject an empty
+  // row so the band still reads as four storeys, matching the marker.
+  [90, 91, 92, 93].forEach(f => { if (!byFloor[f]) byFloor[f] = []; });
   const floors = Object.keys(byFloor).map(Number).sort((a,b)=>a-b);
   floors.forEach((f, idx) => {
     const row = document.createElement('div');
