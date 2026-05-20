@@ -65,15 +65,24 @@
   .topbar-name { font-family: Georgia, serif; font-size: 17px; line-height: 1.1; color: var(--ct-haze); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .live-pill {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 5px 9px; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+    min-height: 32px; padding: 8px 10px;
+    font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
     background: rgba(244,242,238,0.08); border: 1px solid rgba(215,168,111,0.3);
     color: var(--ct-sun); flex-shrink: 0; cursor: pointer; user-select: none;
   }
+  /* Expand the pill's tap target without changing its visual footprint —
+     8px of invisible padding around it so a thumb reliably hits it. */
+  .live-pill::after {
+    content: ''; position: absolute; inset: -8px;
+  }
+  .live-pill { position: relative; }
   .live-pill:active { opacity: 0.7; }
   .live-pill .live-dot { width: 6px; height: 6px; background: var(--ct-gold-dark); }
   .live-pill.live { background: rgba(123,228,149,0.12); border-color: #7BE495; color: #7BE495; }
   .live-pill.live .live-dot { background: #7BE495; animation: pulse 1.6s ease-in-out infinite; }
   .live-pill.offline { background: rgba(255,120,122,0.1); border-color: var(--salmon); color: var(--salmon); }
+  .live-retry { display: none; font-size: 12px; line-height: 1; margin-left: 2px; }
+  .live-pill.offline .live-retry { display: inline; }
   @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
   /* Size-unit toggle — two-button segmented control. Both states always
      visible so brokers see the toggle at a glance. */
@@ -213,19 +222,6 @@
   .stat-card .stat-val { font-family: Georgia, serif; font-size: 56px; line-height: 0.95; color: var(--ct-gold); }
   .stat-card.dim .stat-val { color: var(--ct-haze); font-size: 36px; }
   .stat-card .stat-sub { font-size: 11px; color: var(--ct-sun); margin-top: 8px; opacity: 0.85; line-height: 1.4; }
-  .stat-card .stat-pill {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 2px 7px;
-    background: rgba(215, 168, 111, 0.18);
-    color: var(--ct-gold);
-    font-size: 9px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    opacity: 1;
-    white-space: nowrap;
-  }
-  .stat-card.hh .stat-pill { background: rgba(160, 103, 103, 0.22); color: #E8C8C2; }
   .stat-card .stat-sync {
     margin-top: 12px; padding-top: 10px;
     border-top: 1px solid rgba(215,168,111,0.18);
@@ -285,50 +281,77 @@
     color: var(--ct-sun); opacity: 0.72; margin-top: 2px;
   }
 
-  /* Available by bedroom — chip cards horizontal scroll */
+  /* Available by bedroom — 5-column grid so all bands fit on screen
+     without horizontal scrolling. Tiles are tight; the cheapest-rent
+     line uses 'k' shorthand to stay on one line. */
   .bed-strip {
-    display: flex; gap: 10px; overflow-x: auto; padding: 4px 16px 16px;
-    -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory;
-    scrollbar-width: none;
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 6px; padding: 4px 16px 16px;
   }
-  .bed-strip::-webkit-scrollbar { display: none; }
   .bed-card {
-    flex: 0 0 auto; min-width: 96px; padding: 14px 16px 12px;
+    padding: 12px 4px 10px;
     background: white; border: 1px solid var(--rule);
     border-top: 3px solid var(--ct-gold);
-    scroll-snap-align: start; cursor: pointer;
+    cursor: pointer;
     transition: transform 0.1s ease;
+    min-width: 0; text-align: center;
   }
   .bed-card:active { transform: scale(0.97); }
-  .bed-card .b-lbl { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim); margin-bottom: 4px; }
-  .bed-card .b-val { font-family: Georgia, serif; font-size: 26px; color: var(--slate); line-height: 1; }
-  .bed-card .b-sub { font-size: 10px; color: var(--denim); margin-top: 4px; }
-
-  /* Show flats — horizontal cards */
-  .show-strip {
-    display: flex; gap: 12px; overflow-x: auto; padding: 4px 16px 16px;
-    -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory;
-    scrollbar-width: none;
+  .bed-card .b-lbl { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--denim); margin-bottom: 4px; }
+  .bed-card .b-val { font-family: Georgia, serif; font-size: 24px; color: var(--slate); line-height: 1; }
+  .bed-card .b-sub {
+    font-size: 9.5px; color: var(--denim); margin-top: 4px; letter-spacing: 0.02em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .show-strip::-webkit-scrollbar { display: none; }
+
+  /* Show flats — 2-column grid, tighter cards, no horizontal scroll.
+     All show flats visible at a glance. */
+  .show-strip {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 10px; padding: 4px 16px 16px;
+  }
   .show-card {
-    flex: 0 0 270px; padding: 20px 22px;
+    padding: 12px 12px 10px;
     background: var(--paper); border: 1px solid var(--rule);
-    border-left: 4px solid var(--ct-gold);
-    scroll-snap-align: start; cursor: pointer; position: relative;
+    border-left: 3px solid var(--ct-gold);
+    cursor: pointer; position: relative;
     transition: transform 0.1s ease;
+    min-width: 0;
   }
   .show-card:active { transform: scale(0.98); }
-  .show-card .show-uid { font-size: 26px !important; }
-  .show-card .show-rent { font-size: 15px !important; }
   .show-card .show-pin {
-    position: absolute; top: 14px; right: 14px;
-    width: 9px; height: 9px; background: var(--ct-gold); border: 1.5px solid var(--ct-gold-dark); border-radius: 50%;
+    position: absolute; top: 10px; right: 10px;
+    width: 7px; height: 7px; background: var(--ct-gold); border: 1.5px solid var(--ct-gold-dark); border-radius: 50%;
   }
-  .show-card .show-type { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim); margin-bottom: 4px; }
-  .show-card .show-uid { font-family: Georgia, serif; font-size: 22px; color: var(--slate); line-height: 1; margin-bottom: 6px; }
-  .show-card .show-meta { font-size: 12px; color: var(--slate); }
-  .show-card .show-rent { font-size: 13px; color: var(--ct-gold-dark); margin-top: 6px; font-weight: 600; }
+  .show-card .show-type { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--denim); margin-bottom: 3px; }
+  .show-card .show-uid { font-family: Georgia, serif; font-size: 18px; color: var(--slate); line-height: 1; margin-bottom: 5px; }
+  .show-card .show-meta { font-size: 11px; color: var(--slate); line-height: 1.35; }
+  .show-card .show-rent { font-size: 12px; color: var(--ct-gold-dark); margin-top: 5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* Walkthrough videos — 2-col grid mirroring the show flats look but darker
+     so they read as media tiles rather than units. Tap opens fp-modal. */
+  .wt-strip {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 10px; padding: 4px 16px 16px;
+  }
+  .wt-card {
+    padding: 14px 14px 12px;
+    background: var(--ct-afterlight); color: var(--ct-haze);
+    border: 1px solid rgba(215,168,111,0.25);
+    border-left: 3px solid var(--ct-gold);
+    cursor: pointer; transition: transform 0.1s ease;
+    min-width: 0; text-align: left; font-family: inherit;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .wt-card:active { transform: scale(0.98); }
+  .wt-card .wt-eyebrow { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ct-gold); }
+  .wt-card .wt-title { font-family: Georgia, serif; font-size: 15px; color: var(--ct-haze); line-height: 1.2; }
+  .wt-card .wt-cta {
+    margin-top: 4px; font-size: 9px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--sand);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .wt-card .wt-cta::before { content: '▶'; font-size: 10px; color: var(--ct-gold); }
 
   /* Connection-help banner — when gviz hasn't connected */
   .conn-help {
@@ -369,6 +392,38 @@
   }
   .filter-meta b { font-family: Georgia, serif; font-size: 14px; color: var(--slate); letter-spacing: 0; text-transform: none; }
   .filter-clear { color: var(--ct-gold-dark); cursor: pointer; text-decoration: underline; font-size: 11px; }
+
+  /* More-filters disclosure — type / view / extras / price / size / sort
+     hide behind this so the broker sees their unit cards on first load. */
+  .filter-more-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: transparent; border: 0; padding: 6px 0;
+    font: 600 11px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--denim);
+    cursor: pointer;
+  }
+  .filter-more-toggle .fmt-count {
+    color: var(--ct-gold-dark); font-weight: 600;
+  }
+  .filter-more-toggle .fmt-chev { font-size: 10px; transition: transform 0.18s ease; }
+  .filter-more-toggle[aria-expanded="true"] .fmt-chev { transform: rotate(180deg); }
+  .filter-more[hidden] { display: none; }
+
+  /* Floor range — compact two-input row that lives in the more-filters
+     area. Numeric inputs so iOS shows the number keypad. */
+  .floor-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--denim);
+  }
+  .floor-row label { flex-shrink: 0; }
+  .floor-row input[type="number"] {
+    width: 70px; padding: 8px 10px;
+    border: 1px solid var(--rule); background: white;
+    color: var(--slate); font-size: 13px; letter-spacing: 0;
+    text-align: center; font-variant-numeric: tabular-nums;
+  }
+  .floor-row input[type="number"]:focus { outline: none; border-color: var(--ct-gold-dark); }
+  .floor-row .floor-sep { color: var(--rule-strong); }
 
   .unit-list { padding: 8px 16px 24px; }
   .unit-card {
@@ -677,11 +732,81 @@
     border-bottom: 1px solid var(--ct-gold-dark);
   }
   .um-close {
-    width: 36px; height: 36px;
+    width: 44px; height: 44px;
     display: flex; align-items: center; justify-content: center;
-    color: var(--ct-gold); font-size: 22px;
+    color: var(--ct-gold); font-size: 24px;
   }
   .um-title { flex: 1; font-family: Georgia, serif; font-size: 18px; color: var(--ct-haze); }
+  .um-pin {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 32px; padding: 0 12px;
+    background: transparent; color: var(--ct-gold);
+    border: 1px solid var(--ct-gold);
+    font: 600 10px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer;
+    flex-shrink: 0;
+  }
+  .um-pin.pinned { background: var(--ct-gold); color: var(--ct-afterlight); }
+  .um-pin:active { opacity: 0.85; }
+  .um-pin-dot { width: 6px; height: 6px; background: currentColor; border-radius: 50%; }
+
+  /* Compare strip — appears at the top of the unit modal when a unit is
+     pinned and a DIFFERENT unit is open. Two-column hero comparison. */
+  .um-compare {
+    background: var(--paper); border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 14px 16px 12px;
+  }
+  .um-compare-head {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 9.5px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--ct-gold-dark); margin-bottom: 10px;
+  }
+  .um-compare-clear {
+    background: transparent; border: 0; padding: 4px;
+    font: 600 10px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--denim);
+    cursor: pointer; text-decoration: underline;
+  }
+  .um-compare-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .um-compare-col {
+    background: white; padding: 12px 12px;
+    border: 1px solid var(--rule);
+  }
+  .um-compare-col.current { border-color: var(--ct-gold-dark); border-width: 1.5px; }
+  .um-compare-uid {
+    font-family: Georgia, serif; font-size: 22px; color: var(--slate); line-height: 1;
+    margin-bottom: 4px;
+  }
+  .um-compare-meta {
+    font-size: 11px; color: var(--denim); margin-bottom: 8px; line-height: 1.35;
+  }
+  .um-compare-rent {
+    font-family: Georgia, serif; font-size: 17px; color: var(--ct-afterlight);
+    margin-bottom: 6px;
+  }
+  .um-compare-row {
+    display: flex; justify-content: space-between; gap: 6px;
+    padding: 3px 0; font-size: 11px;
+  }
+  .um-compare-row .l { color: var(--denim); letter-spacing: 0.04em; text-transform: uppercase; font-size: 9.5px; }
+  .um-compare-row .v { color: var(--slate); font-variant-numeric: tabular-nums; }
+  .um-compare-tag {
+    display: inline-block; padding: 1px 6px; margin-bottom: 6px;
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .um-compare-tag.pinned { background: var(--ct-gold); color: var(--ct-afterlight); font-weight: 700; }
+  .um-compare-tag.current { background: var(--ct-afterlight); color: var(--ct-gold); }
+  /* Swipe-down handle — small horizontal bar above the topbar that
+     telegraphs "you can pull this down to close". */
+  .um-handle {
+    position: absolute; top: calc(var(--safe-top) + 6px); left: 50%;
+    transform: translateX(-50%);
+    width: 36px; height: 4px; border-radius: 2px;
+    background: rgba(244, 242, 238, 0.28); pointer-events: none; z-index: 10;
+  }
 
   .um-hero {
     background: var(--ct-afterlight); color: var(--ct-haze);
@@ -1116,9 +1241,13 @@
   .search-input::placeholder { color: var(--denim); opacity: 0.55; }
   .search-input:focus { outline: none; }
   .search-clear {
-    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-    width: 24px; height: 24px; border: 0; border-radius: 50%; background: rgba(31,52,63,0.10);
-    color: var(--slate); font-size: 16px; line-height: 1; cursor: pointer; display: none;
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    width: 32px; height: 32px; border: 0; border-radius: 50%; background: rgba(31,52,63,0.10);
+    color: var(--slate); font-size: 18px; line-height: 1; cursor: pointer; display: none;
+  }
+  /* Larger invisible hit area so the thumb finds it without precision. */
+  .search-clear::after {
+    content: ''; position: absolute; inset: -6px;
   }
   .search-clear.visible { display: block; }
   .price-wrap {
@@ -1231,9 +1360,9 @@
     <button class="unit-toggle-btn" data-unit="sqft" type="button">ft</button>
     <button class="unit-toggle-btn" data-unit="sqm"  type="button">m²</button>
   </div>
-  <div class="live-pill" id="live-pill">
-    <span class="live-dot"></span><span id="live-status">Connecting</span>
-  </div>
+  <button class="live-pill" id="live-pill" type="button" aria-label="Live status">
+    <span class="live-dot"></span><span id="live-status">Connecting</span><span id="live-retry" class="live-retry" aria-hidden="true">↻</span>
+  </button>
 </header>
 
 <main class="content" id="content">
@@ -1265,7 +1394,7 @@
         <div class="stat-lbl">Available</div>
         <div class="stat-val" id="kpi-avail">0</div>
         <div class="stat-sub" id="kpi-avail-sub">Tap to browse</div>
-        <div class="stat-sync" id="kpi-sync">Connecting…</div>
+        <div class="stat-sync" id="kpi-sync" hidden></div>
       </button>
       <div class="kpi-banner">
         <button class="kpi-half" id="card-bh" type="button">
@@ -1278,7 +1407,7 @@
             <span class="lbl">Let</span>
             <span class="val" id="kpi-bh">0</span>
           </div>
-          <div class="kpi-half-sub" id="kpi-bh-sub">Signed + Occupied</div>
+          <div class="kpi-half-sub" id="kpi-bh-sub">Let · share of stock</div>
         </button>
         <button class="kpi-half hh" id="card-hh" type="button">
           <div class="kpi-agency">H&amp;H</div>
@@ -1290,7 +1419,7 @@
             <span class="lbl">Let</span>
             <span class="val" id="kpi-hh">0</span>
           </div>
-          <div class="kpi-half-sub" id="kpi-hh-sub">Signed + Occupied</div>
+          <div class="kpi-half-sub" id="kpi-hh-sub">Let · share of stock</div>
         </button>
       </div>
      </div>
@@ -1302,15 +1431,46 @@
 
     <div class="sec">
       <div class="sec-h">Available by bedroom</div>
-      <div class="sec-sub">Tap to filter the list</div>
     </div>
     <div class="bed-strip" id="bed-strip"></div>
+
+    <div class="sec" id="overview-recent-sec" hidden>
+      <div class="sec-h">Recently viewed</div>
+    </div>
+    <div class="recent-strip" id="overview-recent" style="display:none;padding:0 16px 8px;"></div>
 
     <div class="sec">
       <div class="sec-h">Show flats ready to view</div>
       <div class="sec-sub">Lobby · Mon–Sun 10:00–19:00 · Pre-booked</div>
     </div>
     <div class="show-strip" id="show-strip"></div>
+
+    <div class="sec">
+      <div class="sec-h">Walkthrough videos</div>
+      <div class="sec-sub">Drive · tap to play</div>
+    </div>
+    <div class="wt-strip" id="wt-strip">
+      <button class="wt-card" type="button" data-video="1zxvTWmufjk-3eSFezvYSEviy5fxl5nvE" data-title="Full Walkthrough">
+        <span class="wt-eyebrow">Full tour</span>
+        <span class="wt-title">Full Walkthrough</span>
+        <span class="wt-cta">Play</span>
+      </button>
+      <button class="wt-card" type="button" data-video="1OcCgCeJ4bkyCSMMDOt4BLP02I48oVEHs" data-title="2 Bedroom Walkaround">
+        <span class="wt-eyebrow">2 Bedroom</span>
+        <span class="wt-title">2 Bedroom Walkaround</span>
+        <span class="wt-cta">Play</span>
+      </button>
+      <button class="wt-card" type="button" data-video="1er9JVaaUnMTth35nQseVQu5W3LK36VxG" data-title="3 Bedroom Walkaround">
+        <span class="wt-eyebrow">3 Bedroom</span>
+        <span class="wt-title">3 Bedroom Walkaround</span>
+        <span class="wt-cta">Play</span>
+      </button>
+      <button class="wt-card" type="button" data-video="1Mc-tijr9EiQNvPX9kRsWq1yjOUOU-Tw8" data-title="4 Bedroom Walkaround">
+        <span class="wt-eyebrow">4 Bedroom</span>
+        <span class="wt-title">4 Bedroom Walkaround</span>
+        <span class="wt-cta">Play</span>
+      </button>
+    </div>
     <div style="height: 24px;"></div>
   </section>
 
@@ -1367,55 +1527,66 @@
         <button class="chip" data-bed="3br">3 Bed</button>
         <button class="chip" data-bed="4br">4 Bed</button>
       </div>
-      <div class="filter-row" id="filter-type"></div>
-      <div class="filter-row" id="filter-view"></div>
-      <div class="filter-row" id="filter-extra">
-        <button class="chip gold" data-extra="balcony">Balcony</button>
-        <button class="chip gold" data-extra="duplex">Duplex</button>
-        <button class="chip" data-extra="show">Show flats</button>
-      </div>
-      <div class="price-wrap">
-        <div class="price-head">
-          <span class="price-label">Rent</span>
-          <span class="price-vals"><b id="price-min-val">—</b> · <b id="price-max-val">—</b></span>
-        </div>
-        <div class="price-track">
-          <input type="range" id="price-min" min="0" max="100" value="0" step="1">
-          <input type="range" id="price-max" min="0" max="100" value="100" step="1">
-          <div class="price-rail"></div>
-          <div class="price-fill" id="price-fill"></div>
-        </div>
-      </div>
-      <div class="price-wrap" id="size-wrap">
-        <div class="price-head">
-          <span class="price-label">Size <span id="size-unit-tag" style="opacity:0.6;font-size:9px;">sq ft</span></span>
-          <span class="price-vals"><b id="size-min-val">—</b> · <b id="size-max-val">—</b></span>
-        </div>
-        <div class="price-track">
-          <input type="range" id="size-min" min="0" max="100" value="0" step="1">
-          <input type="range" id="size-max" min="0" max="100" value="100" step="1">
-          <div class="price-rail"></div>
-          <div class="price-fill" id="size-fill"></div>
-        </div>
-      </div>
-      <div class="sort-wrap">
-        <span class="sort-label">Sort</span>
-        <button class="sort-trigger" id="sort-trigger" type="button" aria-haspopup="true" aria-expanded="false">
-          <span id="sort-trigger-label">Floor · low → high</span>
-          <span class="sort-chev">▾</span>
-        </button>
-        <div class="sort-menu" id="sort-menu" role="menu" aria-hidden="true">
-          <button role="menuitem" data-sort="floor-asc"  class="sort-item active">Floor <span>low → high</span></button>
-          <button role="menuitem" data-sort="floor-desc" class="sort-item">Floor <span>high → low</span></button>
-          <button role="menuitem" data-sort="price-asc"  class="sort-item">Rent <span>low → high</span></button>
-          <button role="menuitem" data-sort="price-desc" class="sort-item">Rent <span>high → low</span></button>
-          <button role="menuitem" data-sort="size-asc"   class="sort-item">Size <span>small → large</span></button>
-          <button role="menuitem" data-sort="size-desc"  class="sort-item">Size <span>large → small</span></button>
-        </div>
-      </div>
       <div class="filter-meta">
         <span><b id="list-count">0</b> units shown</span>
-        <span class="filter-clear" id="filter-clear">Clear filters</span>
+        <button class="filter-more-toggle" id="filter-more-toggle" type="button" aria-expanded="false" aria-controls="filter-more">
+          <span>More filters</span><span class="fmt-count" id="filter-more-count" hidden></span><span class="fmt-chev">▾</span>
+        </button>
+        <span class="filter-clear" id="filter-clear">Clear</span>
+      </div>
+      <div class="filter-more" id="filter-more" hidden>
+        <div class="filter-row" id="filter-type"></div>
+        <div class="filter-row" id="filter-view"></div>
+        <div class="filter-row" id="filter-extra">
+          <button class="chip gold" data-extra="balcony">Balcony</button>
+          <button class="chip gold" data-extra="duplex">Duplex</button>
+          <button class="chip" data-extra="show">Show flats</button>
+        </div>
+        <div class="floor-row">
+          <label for="floor-min">Floor</label>
+          <input type="number" id="floor-min" inputmode="numeric" min="5" max="93" step="1" placeholder="5">
+          <span class="floor-sep">–</span>
+          <input type="number" id="floor-max" inputmode="numeric" min="5" max="93" step="1" placeholder="93">
+        </div>
+        <div class="price-wrap">
+          <div class="price-head">
+            <span class="price-label">Rent</span>
+            <span class="price-vals"><b id="price-min-val">—</b> · <b id="price-max-val">—</b></span>
+          </div>
+          <div class="price-track">
+            <input type="range" id="price-min" min="0" max="100" value="0" step="1">
+            <input type="range" id="price-max" min="0" max="100" value="100" step="1">
+            <div class="price-rail"></div>
+            <div class="price-fill" id="price-fill"></div>
+          </div>
+        </div>
+        <div class="price-wrap" id="size-wrap">
+          <div class="price-head">
+            <span class="price-label">Size <span id="size-unit-tag" style="opacity:0.6;font-size:9px;">sq ft</span></span>
+            <span class="price-vals"><b id="size-min-val">—</b> · <b id="size-max-val">—</b></span>
+          </div>
+          <div class="price-track">
+            <input type="range" id="size-min" min="0" max="100" value="0" step="1">
+            <input type="range" id="size-max" min="0" max="100" value="100" step="1">
+            <div class="price-rail"></div>
+            <div class="price-fill" id="size-fill"></div>
+          </div>
+        </div>
+        <div class="sort-wrap">
+          <span class="sort-label">Sort</span>
+          <button class="sort-trigger" id="sort-trigger" type="button" aria-haspopup="true" aria-expanded="false">
+            <span id="sort-trigger-label">Floor · low → high</span>
+            <span class="sort-chev">▾</span>
+          </button>
+          <div class="sort-menu" id="sort-menu" role="menu" aria-hidden="true">
+            <button role="menuitem" data-sort="floor-asc"  class="sort-item active">Floor <span>low → high</span></button>
+            <button role="menuitem" data-sort="floor-desc" class="sort-item">Floor <span>high → low</span></button>
+            <button role="menuitem" data-sort="price-asc"  class="sort-item">Rent <span>low → high</span></button>
+            <button role="menuitem" data-sort="price-desc" class="sort-item">Rent <span>high → low</span></button>
+            <button role="menuitem" data-sort="size-asc"   class="sort-item">Size <span>small → large</span></button>
+            <button role="menuitem" data-sort="size-desc"  class="sort-item">Size <span>large → small</span></button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="recent-strip" id="recent-strip" style="display:none;"></div>
@@ -1461,7 +1632,7 @@
         <li><strong>Security deposit:</strong> 5% of annual rent, or AED 10,000, whichever is higher</li>
         <li><strong>Ejari fee:</strong> AED 315 (AED 300 + VAT) — payable to H&amp;H Development LLC</li>
         <li><strong>DEWA deposit:</strong> paid by tenant directly to DEWA. Receipt required before check-in.</li>
-        <li><strong>District cooling (Tabreed) deposit:</strong> paid by tenant. Receipt required before check-in.</li>
+        <li><strong>District cooling (Tasleem) deposit:</strong> paid by tenant. Receipt required before check-in.</li>
         <li><strong>Move-in / lift use deposit:</strong> AED 3,000 refundable. Held but not cashed unless damage on move-in.</li>
         <li><strong>Optional parking:</strong> an additional unallocated parking space may be available, payable at AED 10,000 per annum. No guarantee that the parking can be allocated upon renewal.</li>
       </ul>
@@ -1647,15 +1818,20 @@
 
 <!-- Unit detail — slide-up full-screen modal -->
 <div class="unit-modal" id="unit-modal" aria-hidden="true">
+  <span class="um-handle" aria-hidden="true"></span>
   <div class="um-topbar">
     <button class="um-close" id="um-close" aria-label="Close">×</button>
     <div class="um-title" id="um-title">Unit</div>
+    <button class="um-pin" id="um-pin" type="button" aria-pressed="false">
+      <span class="um-pin-dot"></span><span id="um-pin-label">Pin</span>
+    </button>
   </div>
   <div id="um-body"></div>
 </div>
 
 <!-- Floorplan — slide-up full-screen modal sitting above the unit modal -->
 <div class="fp-modal" id="fp-modal" aria-hidden="true">
+  <span class="um-handle" aria-hidden="true"></span>
   <div class="um-topbar">
     <button class="um-close" id="fp-close" aria-label="Close">×</button>
     <div class="um-title" id="fp-title">Floorplan</div>
@@ -1665,6 +1841,7 @@
 
 <!-- Booking — slide-up modal for sending a viewing request to the WhatsApp group -->
 <div class="bk-modal" id="bk-modal" aria-hidden="true">
+  <span class="um-handle" aria-hidden="true"></span>
   <div class="um-topbar">
     <button class="um-close" id="bk-close" aria-label="Close">×</button>
     <div class="um-title" id="bk-title">Book viewing</div>
@@ -1851,6 +2028,8 @@ const filter = {
   priceMax: null,
   sizeMin: null, // in the active sizeUnit
   sizeMax: null,
+  floorMin: null,
+  floorMax: null,
 };
 const towerView = { mode: 'status', value: null }; // mode: status|bedroom|view|features
 let priceBounds = { min: 0, max: 1000000 };
@@ -1905,7 +2084,7 @@ function showOfflineHelp(reason) {
 }
 function fallToSnapshot(reason) {
   clearTimeout(offlineTimer);
-  setLive('offline', 'Snapshot');
+  setLive('offline', 'Tap to retry');
   showOfflineHelp(reason);
 }
 // Tap the pill to retry
@@ -2042,38 +2221,66 @@ function renderOverview() {
   const showFlatCount = UNITS.filter(u => u.showFlat || u.s === 'show_flat').length;
   if (showFlatCount) availParts.push(`${showFlatCount} show flat${showFlatCount === 1 ? '' : 's'}`);
   document.getElementById('kpi-avail-sub').textContent = availParts.join(' · ') + ' · Tap to browse';
-  // bh / H&H sub line — left side stays "Signed + Occupied" (set in markup);
-  // pct of stock added inline so brokers can see share at a glance.
+  // bh / H&H sub line — "Let · 12.4% of stock" reads naturally; the
+  // "Signed + Occupied" pipeline language was internal jargon.
   const pctBh = total ? `${(bhLet/total*100).toFixed(1)}%` : '—';
   const pctHh = total ? `${(hhLet/total*100).toFixed(1)}%` : '—';
-  document.getElementById('kpi-bh-sub').textContent = `Signed + Occupied · ${pctBh}`;
-  document.getElementById('kpi-hh-sub').textContent = `Signed + Occupied · ${pctHh}`;
+  document.getElementById('kpi-bh-sub').textContent = `${pctBh} of stock`;
+  document.getElementById('kpi-hh-sub').textContent = `${pctHh} of stock`;
 
   // Bedroom strip
   const bedCounts = { studio:0, '1br':0, '2br':0, '3br':0, '4br':0 };
   UNITS.forEach(u => { if (AVAILABLE_STATES.includes(u.s)) bedCounts[u.t]++; });
+  // Cheapest available rent per bedroom band — surfaces the most common
+  // tenant question ("what's the cheapest 2BR?") on the landing screen.
+  const cheapestByBed = {};
+  UNITS.forEach(u => {
+    if (!AVAILABLE_STATES.includes(u.s)) return;
+    if (!u.pr || u.pr <= 0) return;
+    if (!cheapestByBed[u.t] || u.pr < cheapestByBed[u.t]) cheapestByBed[u.t] = u.pr;
+  });
+  // 5-col grid means narrow tiles — short rent format keeps it on one line.
+  // "from 90k" instead of "from AED 90,000". AED implied by context.
+  const fmtRentShort = n => {
+    if (!n) return '—';
+    if (n >= 1000000) return 'from ' + (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+    return 'from ' + Math.round(n / 1000) + 'k';
+  };
+  // Short labels — TYPE_META.label is "1 Bedroom" which doesn't fit a
+  // tight 5-col tile. Use the same shorthand as the bedroom filter chips.
+  const bedShort = { studio: 'Studio', '1br': '1 Bed', '2br': '2 Bed', '3br': '3 Bed', '4br': '4 Bed' };
   const strip = document.getElementById('bed-strip');
-  strip.innerHTML = TYPES_ORDER.map(t => `
+  strip.innerHTML = TYPES_ORDER.map(t => {
+    const from = cheapestByBed[t];
+    return `
     <button class="bed-card" data-bed="${t}">
-      <div class="b-lbl">${TYPE_META[t].label}</div>
+      <div class="b-lbl">${bedShort[t]}</div>
       <div class="b-val">${bedCounts[t]}</div>
-      <div class="b-sub">available</div>
+      <div class="b-sub">${bedCounts[t] ? fmtRentShort(from) : 'none'}</div>
     </button>
-  `).join('');
+  `;
+  }).join('');
   strip.querySelectorAll('.bed-card').forEach(c => {
     c.addEventListener('click', () => {
-      // Deep-link into Browse with the bedroom filter pre-applied
+      // Deep-link into Browse with the bedroom filter pre-applied. Cheapest
+      // first, since the broker tapped a "from AED…" card.
       filter.bed = c.dataset.bed;
       filter.extras.clear();
       filter.search = '';
+      filter.sort = 'price-asc';
       const si = document.getElementById('search-input');
       if (si) si.value = '';
       const sc = document.getElementById('search-clear');
       if (sc) sc.classList.remove('visible');
-      // Reflect the bedroom selection on the Browse chips
       document.querySelectorAll('#filter-bedroom .chip').forEach(chip =>
         chip.classList.toggle('active', chip.dataset.bed === filter.bed));
       document.querySelectorAll('#filter-extra .chip').forEach(chip => chip.classList.remove('active'));
+      // Reflect the sort change on the sort menu + trigger label
+      document.querySelectorAll('.sort-item').forEach(b =>
+        b.classList.toggle('active', b.dataset.sort === filter.sort));
+      const sortLabel = document.querySelector('.sort-item[data-sort="price-asc"]');
+      const sortTrigger = document.getElementById('sort-trigger-label');
+      if (sortLabel && sortTrigger) sortTrigger.textContent = sortLabel.textContent.replace(/\s+/g, ' ').trim();
       switchTab('list');
       renderList();
     });
@@ -2181,6 +2388,8 @@ function unitMatches(u) {
   if (filter.view !== 'all' && u.v !== filter.view) return false;
   if (filter.extras.has('balcony') && !u.b) return false;
   if (filter.extras.has('duplex') && !u.d) return false;
+  if (filter.floorMin != null && u.f < filter.floorMin) return false;
+  if (filter.floorMax != null && u.f > filter.floorMax) return false;
   if (filter.priceMin != null && u.pr < filter.priceMin) return false;
   if (filter.priceMax != null && u.pr > filter.priceMax) return false;
   // Skip the size filter for units with no size data — don't hide them by accident.
@@ -2215,14 +2424,87 @@ function sortUnits(list) {
   return list.slice().sort((a, b) => sign * (get(a) - get(b)) || a.f - b.f || a.p - b.p);
 }
 
+// Live per-bedroom count, respecting every active filter EXCEPT bedroom
+// itself — so the broker sees "what flipping to 2 Bed would yield."
+function updateBedroomChipCounts() {
+  const host = document.getElementById('filter-bedroom');
+  if (!host) return;
+  const savedBed = filter.bed;
+  const counts = { all: 0, studio: 0, '1br': 0, '2br': 0, '3br': 0, '4br': 0 };
+  for (const u of UNITS) {
+    filter.bed = 'all';
+    if (!unitMatches(u)) continue;
+    counts.all++;
+    if (counts[u.t] != null) counts[u.t]++;
+  }
+  filter.bed = savedBed;
+  const labels = {
+    all: 'All', studio: 'Studio', '1br': '1 Bed', '2br': '2 Bed',
+    '3br': '3 Bed', '4br': '4 Bed',
+  };
+  host.querySelectorAll('.chip').forEach(chip => {
+    const k = chip.dataset.bed;
+    const base = labels[k] || k;
+    chip.textContent = counts[k] != null ? `${base} · ${counts[k]}` : base;
+  });
+}
+
+// Empty-state hint: tell the broker which filter is most likely the
+// culprit, so the suggested fix is "loosen X" not just "clear everything".
+function emptyStateHint() {
+  const reasons = [];
+  if (filter.floorMin != null || filter.floorMax != null) {
+    reasons.push(`Floor (now ${filter.floorMin || 5} – ${filter.floorMax || 93})`);
+  }
+  if (filter.priceMin != null && filter.priceMax != null
+      && (filter.priceMin > priceBounds.min || filter.priceMax < priceBounds.max)) {
+    reasons.push(`Rent (now ${fmtAED(filter.priceMin)} – ${fmtAED(filter.priceMax)})`);
+  }
+  if (filter.sizeMin != null && filter.sizeMax != null
+      && (filter.sizeMin > sizeBounds.min || filter.sizeMax < sizeBounds.max)) {
+    reasons.push(`Size`);
+  }
+  if (filter.view !== 'all') reasons.push(`View (${VIEW_NAMES[filter.view] || filter.view})`);
+  if (filter.type !== 'all') reasons.push(`Type ${filter.type}`);
+  if (filter.extras.size) reasons.push([...filter.extras].map(e => e === 'show' ? 'Show flats' : e[0].toUpperCase() + e.slice(1)).join(' + '));
+  if (filter.search) reasons.push(`Search "${filter.search}"`);
+  if (!reasons.length) return 'Try widening the bedroom band.';
+  return `Try widening: ${reasons.join(' · ')}`;
+}
+
+// Active-filter count for the "More filters · 3" chip on the meta row.
+function countActiveAdvancedFilters() {
+  let n = 0;
+  if (filter.type !== 'all') n++;
+  if (filter.view !== 'all') n++;
+  n += filter.extras.size;
+  if (filter.floorMin != null || filter.floorMax != null) n++;
+  if (filter.priceMin != null && filter.priceMax != null
+      && (filter.priceMin > priceBounds.min || filter.priceMax < priceBounds.max)) n++;
+  if (filter.sizeMin != null && filter.sizeMax != null
+      && (filter.sizeMin > sizeBounds.min || filter.sizeMax < sizeBounds.max)) n++;
+  if (filter.sort !== 'floor-asc') n++;
+  return n;
+}
+function refreshMoreFiltersCount() {
+  const el = document.getElementById('filter-more-count');
+  if (!el) return;
+  const n = countActiveAdvancedFilters();
+  if (n > 0) { el.hidden = false; el.textContent = `· ${n}`; }
+  else       { el.hidden = true;  el.textContent = ''; }
+}
+
 function renderList() {
   const filtered = UNITS.filter(unitMatches);
   const list = sortUnits(filtered);
   document.getElementById('list-count').textContent = list.length;
+  updateBedroomChipCounts();
+  refreshMoreFiltersCount();
   const host = document.getElementById('unit-list');
   if (!list.length) {
     host.innerHTML = `<div class="empty-state">
       <div style="font-size:13px;color:var(--slate);margin-bottom:14px;">No units match these filters.</div>
+      <div style="font-size:11.5px;color:var(--denim);margin-bottom:14px;line-height:1.5;">${emptyStateHint()}</div>
       <button id="empty-clear" class="btn-clear-empty">Clear all filters</button>
     </div>`;
     const clearBtn = host.querySelector('#empty-clear');
@@ -2413,6 +2695,34 @@ document.getElementById('search-input').addEventListener('input', e => {
   document.getElementById('search-clear').classList.toggle('visible', v.length > 0);
   renderList();
 });
+
+// Floor range inputs — empty string = unbounded
+(function setupFloorInputs() {
+  const minEl = document.getElementById('floor-min');
+  const maxEl = document.getElementById('floor-max');
+  if (!minEl || !maxEl) return;
+  const onChange = () => {
+    const a = minEl.value === '' ? null : parseInt(minEl.value, 10);
+    const b = maxEl.value === '' ? null : parseInt(maxEl.value, 10);
+    filter.floorMin = (Number.isFinite(a) && a > 0) ? a : null;
+    filter.floorMax = (Number.isFinite(b) && b > 0) ? b : null;
+    renderList();
+  };
+  minEl.addEventListener('input', onChange);
+  maxEl.addEventListener('input', onChange);
+})();
+
+// More-filters disclosure
+(function setupMoreFiltersToggle() {
+  const btn = document.getElementById('filter-more-toggle');
+  const body = document.getElementById('filter-more');
+  if (!btn || !body) return;
+  btn.addEventListener('click', () => {
+    const open = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!open));
+    body.hidden = open;
+  });
+})();
 document.getElementById('search-clear').addEventListener('click', () => {
   document.getElementById('search-input').value = '';
   document.getElementById('search-clear').classList.remove('visible');
@@ -2455,10 +2765,15 @@ document.getElementById('filter-clear').addEventListener('click', () => {
   filter.priceMax = priceBounds.max;
   filter.sizeMin = sizeBounds.min;
   filter.sizeMax = sizeBounds.max;
+  filter.floorMin = null;
+  filter.floorMax = null;
   filter.sort = 'floor-asc';
   document.getElementById('search-input').value = '';
   document.getElementById('search-clear').classList.remove('visible');
-  // Reset the custom sort menu to the default item
+  const fmin = document.getElementById('floor-min');
+  const fmax = document.getElementById('floor-max');
+  if (fmin) fmin.value = '';
+  if (fmax) fmax.value = '';
   document.querySelectorAll('.sort-item').forEach(b => b.classList.toggle('active', b.dataset.sort === 'floor-asc'));
   const defaultLabel = document.querySelector('.sort-item[data-sort="floor-asc"]');
   if (defaultLabel) document.getElementById('sort-trigger-label').textContent = defaultLabel.textContent.replace(/\s+/g, ' ').trim();
@@ -2770,6 +3085,52 @@ document.querySelectorAll('#tower-mode .seg-btn').forEach(b => {
 // UNIT DETAIL — slide-up modal
 // ============================================================
 const modal = document.getElementById('unit-modal');
+
+// Pinned-for-comparison unit. Persists across opens; cleared explicitly.
+let pinnedUid = null;
+function setPinned(uid) {
+  pinnedUid = uid;
+  try { uid ? localStorage.setItem('ct1.pinned', uid) : localStorage.removeItem('ct1.pinned'); } catch (e) {}
+  refreshOpenUnitModal();
+}
+try {
+  const stored = localStorage.getItem('ct1.pinned');
+  if (stored) pinnedUid = stored;
+} catch (e) {}
+
+function renderCompareStrip(currentUid) {
+  if (!pinnedUid || pinnedUid === currentUid) return '';
+  const a = UNITS.find(x => x.uid === pinnedUid);
+  const b = UNITS.find(x => x.uid === currentUid);
+  if (!a || !b) return '';
+  const col = (u, role) => {
+    const m = TYPE_META[u.t];
+    const view = VIEW_NAMES[u.v] || u.v;
+    const sv = sizeView(u);
+    return `
+      <div class="um-compare-col ${role === 'current' ? 'current' : ''}">
+        <span class="um-compare-tag ${role}">${role === 'pinned' ? 'Pinned' : 'Open'}</span>
+        <div class="um-compare-uid">${u.uid}</div>
+        <div class="um-compare-meta">${m.label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''}<br>Floor ${u.f} · ${view}</div>
+        <div class="um-compare-rent">${fmtAED(u.pr)}</div>
+        <div class="um-compare-row"><span class="l">Size</span><span class="v">${sv.unitStr}</span></div>
+        <div class="um-compare-row"><span class="l">PSF</span><span class="v">${u.psf ? 'AED ' + Math.round(u.psf) : '—'}</span></div>
+        <div class="um-compare-row"><span class="l">Balcony</span><span class="v">${u.b ? sv.balcStr : 'No'}</span></div>
+      </div>`;
+  };
+  return `
+    <div class="um-compare">
+      <div class="um-compare-head">
+        <span>Comparing</span>
+        <button class="um-compare-clear" id="um-compare-clear" type="button">Unpin ${a.uid}</button>
+      </div>
+      <div class="um-compare-grid">
+        ${col(a, 'pinned')}
+        ${col(b, 'current')}
+      </div>
+    </div>`;
+}
+
 function openUnit(uid, opts) {
   const u = UNITS.find(x => x.uid === uid);
   if (!u) return;
@@ -2784,6 +3145,7 @@ function openUnit(uid, opts) {
   const fpReady = floorplanFor(u);
 
   document.getElementById('um-body').innerHTML = `
+    ${renderCompareStrip(u.uid)}
     <div class="um-hero">
       <div class="um-eyebrow">${m.label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''} · Floor ${u.f} · ${view}</div>
       <div class="um-uid">${u.uid}</div>
@@ -2893,12 +3255,29 @@ function openUnit(uid, opts) {
   if (fpBtn) fpBtn.addEventListener('click', () => openFloorplanModal(u));
   const bkBtn = document.getElementById('um-book-btn');
   if (bkBtn) bkBtn.addEventListener('click', () => openBookingModal(u));
+  const clearBtn = document.getElementById('um-compare-clear');
+  if (clearBtn) clearBtn.addEventListener('click', () => setPinned(null));
+
+  // Refresh the pin button — only "Pin this unit" when nothing pinned;
+  // "Pinned" when THIS unit is pinned; "Pin" otherwise.
+  const pinBtn = document.getElementById('um-pin');
+  const pinLbl = document.getElementById('um-pin-label');
+  if (pinBtn && pinLbl) {
+    const isThis = pinnedUid === u.uid;
+    pinBtn.classList.toggle('pinned', isThis);
+    pinBtn.setAttribute('aria-pressed', String(isThis));
+    pinLbl.textContent = isThis ? 'Pinned' : 'Pin';
+  }
 
   modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
 }
 
+document.getElementById('um-pin').addEventListener('click', () => {
+  if (!lastOpenUnitUid) return;
+  setPinned(pinnedUid === lastOpenUnitUid ? null : lastOpenUnitUid);
+});
 document.getElementById('um-close').addEventListener('click', closeUnit);
 function closeUnit() {
   modal.classList.remove('open');
@@ -2976,7 +3355,7 @@ function processGvizResponse(resp) {
     buildTypeChips();
     setupPriceSlider();
     setupSizeSlider();
-    renderOverview(); renderList();
+    renderOverview(); renderList(); renderRecent();
     if (document.getElementById('tab-tower-viz').classList.contains('active')) renderTower();
     if (document.getElementById('tab-league').classList.contains('active')) renderLeague();
     const now = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
@@ -3493,6 +3872,83 @@ function refreshOpenUnitModal() {
 }
 
 // ============================================================
+// MODAL DISMISS GESTURES — swipe-down on the topbar, history-back
+// hook so Android's hardware back button closes the modal instead
+// of leaving the page.
+// ============================================================
+(function setupModalDismiss() {
+  const modals = [
+    { id: 'unit-modal',  close: () => closeUnit() },
+    { id: 'fp-modal',    close: () => closeFloorplanModal() },
+    { id: 'bk-modal',    close: () => closeBookingModal() },
+  ];
+  const openStack = [];
+  // True while we're already in the middle of handling a popstate, so the
+  // observer doesn't try to pop a second time when the modal closes.
+  let inPopState = false;
+  modals.forEach(({ id, close }) => {
+    const m = document.getElementById(id);
+    if (!m) return;
+    const observer = new MutationObserver(() => {
+      const isOpen = m.classList.contains('open');
+      const idx = openStack.indexOf(id);
+      if (isOpen && idx < 0) {
+        openStack.push(id);
+        try { history.pushState({ ct1Modal: id }, ''); } catch (e) {}
+      } else if (!isOpen && idx >= 0) {
+        openStack.splice(idx, 1);
+        // Consume the matching history entry so the back button doesn't
+        // need an extra press to leave the page after a × close.
+        if (!inPopState && history.state && history.state.ct1Modal === id) {
+          try { history.back(); } catch (e) {}
+        }
+      }
+    });
+    observer.observe(m, { attributes: true, attributeFilter: ['class'] });
+    // Swipe-down on the topbar (avoids fighting body scroll)
+    const topbar = m.querySelector('.um-topbar');
+    if (topbar) {
+      let startY = null, lastY = null;
+      const onStart = e => {
+        const t = e.touches ? e.touches[0] : e;
+        startY = t.clientY; lastY = startY;
+        m.style.transition = 'none';
+      };
+      const onMove = e => {
+        if (startY == null) return;
+        const t = e.touches ? e.touches[0] : e;
+        lastY = t.clientY;
+        const dy = Math.max(0, lastY - startY);
+        m.style.transform = `translateY(${dy}px)`;
+      };
+      const onEnd = () => {
+        if (startY == null) return;
+        const dy = (lastY || startY) - startY;
+        m.style.transition = '';
+        m.style.transform = '';
+        if (dy > 80) close();
+        startY = null; lastY = null;
+      };
+      topbar.addEventListener('touchstart', onStart, { passive: true });
+      topbar.addEventListener('touchmove',  onMove,  { passive: true });
+      topbar.addEventListener('touchend',   onEnd);
+      topbar.addEventListener('touchcancel', onEnd);
+    }
+  });
+  // Android hardware back / browser back: pop the topmost open modal
+  // instead of leaving the page entirely.
+  window.addEventListener('popstate', () => {
+    const top = openStack[openStack.length - 1];
+    if (!top) return;
+    const entry = modals.find(x => x.id === top);
+    if (!entry) return;
+    inPopState = true;
+    entry.close();
+    inPopState = false;
+  });
+})();
+
+// ============================================================
 // RECENTLY VIEWED — last 5 units the broker tapped, persisted in localStorage
 // ============================================================
 const RECENT_KEY = 'ct1.recent';
@@ -3506,31 +3962,52 @@ function pushRecent(uid) {
   renderRecent();
 }
 function renderRecent() {
-  const host = document.getElementById('recent-strip');
-  if (!host) return;
   const ids = getRecent();
   const units = ids.map(uid => UNITS.find(u => u.uid === uid)).filter(Boolean);
-  if (!units.length) { host.style.display = 'none'; return; }
-  host.style.display = 'block';
-  host.innerHTML = `
-    <div class="recent-head">
-      <span>Recently viewed</span>
-      <button class="recent-clear" id="recent-clear" type="button">Clear</button>
-    </div>
-    <div class="recent-row">
-      ${units.map(u => `
-        <button class="recent-card" data-uid="${u.uid}">
-          <div class="r-uid">${u.uid}</div>
-          <div class="r-meta">${TYPE_META[u.t].label} · Floor ${u.f}</div>
-          <div class="r-rent">${fmtAED(u.pr)}</div>
-        </button>`).join('')}
-    </div>`;
-  host.querySelectorAll('.recent-card').forEach(c => c.addEventListener('click', () => openUnit(c.dataset.uid)));
-  const cb = host.querySelector('#recent-clear');
-  if (cb) cb.addEventListener('click', () => {
-    try { localStorage.removeItem(RECENT_KEY); } catch (e) {}
-    renderRecent();
-  });
+  // Browse tab strip — keeps the existing markup with head + clear button.
+  const host = document.getElementById('recent-strip');
+  if (host) {
+    if (!units.length) { host.style.display = 'none'; }
+    else {
+      host.style.display = 'block';
+      host.innerHTML = `
+        <div class="recent-head">
+          <span>Recently viewed</span>
+          <button class="recent-clear" id="recent-clear" type="button">Clear</button>
+        </div>
+        <div class="recent-row">
+          ${units.map(u => renderRecentCard(u)).join('')}
+        </div>`;
+      host.querySelectorAll('.recent-card').forEach(c => c.addEventListener('click', () => openUnit(c.dataset.uid)));
+      const cb = host.querySelector('#recent-clear');
+      if (cb) cb.addEventListener('click', () => {
+        try { localStorage.removeItem(RECENT_KEY); } catch (e) {}
+        renderRecent();
+      });
+    }
+  }
+  // Overview tab — same cards, no head/clear (kept clean; Browse owns the clear).
+  const ovr = document.getElementById('overview-recent');
+  const ovrSec = document.getElementById('overview-recent-sec');
+  if (ovr && ovrSec) {
+    if (!units.length) {
+      ovr.style.display = 'none';
+      ovrSec.hidden = true;
+    } else {
+      ovrSec.hidden = false;
+      ovr.style.display = 'block';
+      ovr.innerHTML = `<div class="recent-row">${units.map(u => renderRecentCard(u)).join('')}</div>`;
+      ovr.querySelectorAll('.recent-card').forEach(c => c.addEventListener('click', () => openUnit(c.dataset.uid)));
+    }
+  }
+}
+function renderRecentCard(u) {
+  return `
+    <button class="recent-card" data-uid="${u.uid}">
+      <div class="r-uid">${u.uid}</div>
+      <div class="r-meta">${TYPE_META[u.t].label} · Floor ${u.f}</div>
+      <div class="r-rent">${fmtAED(u.pr)}</div>
+    </button>`;
 }
 
 // ============================================================
@@ -3548,6 +4025,21 @@ setTimeout(refresh, 200);
 setInterval(refresh, REFRESH_MS);
 setTimeout(fetchFloorplans, 250);
 document.getElementById('fp-close').addEventListener('click', closeFloorplanModal);
+
+// Walkthrough videos — reuse the fp-modal to play Drive-hosted MP4s.
+document.querySelectorAll('.wt-card').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const fileId = btn.dataset.video;
+    const title  = btn.dataset.title || 'Walkthrough';
+    const modal  = document.getElementById('fp-modal');
+    const body   = document.getElementById('fp-body');
+    document.getElementById('fp-title').textContent = title;
+    body.innerHTML = `<iframe class="fp-iframe" src="https://drive.google.com/file/d/${fileId}/preview" allow="autoplay" loading="lazy"></iframe>`;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  });
+});
 </script>
 
 </body>
