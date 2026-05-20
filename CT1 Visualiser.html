@@ -34,7 +34,7 @@
   .wrap { max-width: 1420px; margin: 0 auto; padding: 36px 48px 72px; }
   button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; padding: 0; }
 
-  /* MASTHEAD — BH left, CT1 right, gold rule divider */
+  /* MASTHEAD — bh left, CT1 right, gold rule divider */
   .masthead {
     display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px;
     padding-bottom: 22px; border-bottom: 1px solid var(--rule-gold); margin-bottom: 0;
@@ -1610,7 +1610,7 @@
             <div class="item"><span class="swatch show"></span>Show flat</div>
           </div>
           <div class="legend-row">
-            <span class="legend-arrow">BH won</span>
+            <span class="legend-arrow">bh won</span>
             <div class="item"><span class="swatch reserved-bh"></span>Reserved</div>
             <div class="item"><span class="swatch signed-bh"></span>Signed</div>
             <div class="item"><span class="swatch occupied-bh"></span>Occupied</div>
@@ -1960,7 +1960,7 @@ const BEDROOM_CODE = {
   'Studio': 'studio', '1 Bedroom': '1br', '2 Bedroom': '2br', '3 Bedroom': '3br', '4 Bedroom': '4br',
 };
 // Granular lifecycle display states. 'Available' drawers pool the first four;
-// 'BH let' / 'H&H let' drawers pool the three agency-won states each.
+// 'bh let' / 'H&H let' drawers pool the three agency-won states each.
 const AVAILABLE_STATES = ['available','marketing'];
 // Let = locked in (Signed + Occupied). Reserved is split out so brokers can
 // see floating-vs-committed at a glance.
@@ -3053,7 +3053,7 @@ function renderDetail(uid) {
 function renderDetailOwnership(u) {
   if (!AVAILABLE_STATES.includes(u.s) && u.s !== 'show_flat' && !u.showFlat) return '';
   const lines = [];
-  if (u.br) lines.push(`<div class="label-row"><span>BH Broker owner</span><span>${u.br}</span></div>`);
+  if (u.br) lines.push(`<div class="label-row"><span>bh broker owner</span><span>${u.br}</span></div>`);
   if (u.dom != null && u.dom > 0) lines.push(`<div class="label-row"><span>Days on market</span><span>${Math.round(u.dom)}</span></div>`);
   if (!lines.length) return '';
   return `<div class="detail-section"><h3>Current ownership</h3>${lines.join('')}</div>`;
