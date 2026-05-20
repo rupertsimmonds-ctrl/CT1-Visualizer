@@ -2215,8 +2215,13 @@ function buildTower() {
   floors.forEach((f, idx) => {
     const row = document.createElement('div');
     row.className = 'floor-row';
-    const prev = floors[idx-1];
-    if (prev && ((prev<=25&&f>25)||(prev<=69&&f>69)||(prev<=89&&f>89))) row.classList.add('tranche-divider');
+    // The `.floors` flex column is column-reverse, so `border-top` on a row
+    // appears as a line BETWEEN that row and the next-higher floor visually.
+    // To make the gap sit between, e.g., floor 89 (top of Upper) and floor 90
+    // (bottom of Penthouse), the divider class goes on the lower row of each
+    // boundary — i.e., the one whose next floor crosses into the band above.
+    const next = floors[idx+1];
+    if (next && ((f<=25&&next>25)||(f<=69&&next>69)||(f<=89&&next>89))) row.classList.add('tranche-divider');
     row.dataset.floor = f;
     const num = document.createElement('span');
     num.className = 'floor-num';
