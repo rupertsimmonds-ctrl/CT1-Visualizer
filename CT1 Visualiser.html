@@ -4043,7 +4043,10 @@ function readBookingForm() {
     `Broker: ${broker}`,
   ].join('\n');
   const payload = {
-    unit_id: uid,
+    // Overview-level launches have no in-memory unit so dataset.uid is empty.
+    // The broker types the unit number into bk-unit directly — use that as
+    // the unit_id (which the /api/booking proxy treats as required).
+    unit_id: uid || unit,
     unit_label: unit,
     bedroom_type: u ? (u.bedRaw || '') : '',
     viewing_date: date,
