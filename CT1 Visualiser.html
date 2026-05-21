@@ -418,6 +418,23 @@
   .showflat-card .sf-cta { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--rule); }
   .showflats-empty { padding: 24px; background: var(--mist); text-align: center; color: var(--denim); font-style: italic; }
 
+  /* Overview-level Book viewing CTA — sits between KPI hero and Show flats */
+  .book-cta-row {
+    margin: 0 0 28px;
+    display: flex; justify-content: flex-end;
+  }
+  .book-cta-btn {
+    appearance: none; cursor: pointer; font-family: inherit;
+    background: var(--ct-gold); color: var(--ct-afterlight);
+    border: 1.5px solid var(--ct-gold); border-radius: 0;
+    padding: 12px 22px; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 10px;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .book-cta-btn:hover { background: var(--ct-gold-dark); border-color: var(--ct-gold-dark); }
+  .book-cta-btn::before { content: '◷'; font-size: 14px; }
+
   /* WALKTHROUGH VIDEOS — Drive-hosted bedroom tours, click opens fp-modal */
   .walkthroughs-row {
     background: var(--ct-afterlight); color: var(--ct-haze);
@@ -1541,6 +1558,10 @@
     </div>
   </section>
 
+  <div class="book-cta-row">
+    <button class="book-cta-btn" id="overview-book-btn" type="button">Book viewing</button>
+  </div>
+
   <!-- Recently viewed — last five units the broker tapped (localStorage) -->
   <section class="recent-strip-d" id="recent-strip-d" style="display:none;"></section>
 
@@ -1753,7 +1774,7 @@
         <li><strong>DEWA deposit:</strong> paid by tenant directly to DEWA. Receipt required before check-in.</li>
         <li><strong>District cooling (Tasleem) deposit:</strong> paid by tenant. Receipt required before check-in.</li>
         <li><strong>Move-in / lift use deposit:</strong> AED 3,000 refundable, held but not cashed unless damage on move-in.</li>
-        <li><strong>Optional parking:</strong> an additional unallocated parking space may be available, payable at AED 10,000 per annum. No guarantee that the parking can be allocated upon renewal.</li>
+        <li><strong>Optional parking:</strong> an additional unallocated parking space may be available for 2 Bedroom units, payable at AED 10,000 per annum. No guarantee that the parking can be allocated upon renewal.</li>
       </ul>
     </article>
 
@@ -1765,18 +1786,18 @@
             <tr><th>Unit type</th><th class="num">Units</th><th class="num">Bays / unit</th><th class="num">Total bays</th></tr>
           </thead>
           <tbody>
-            <tr><td>Studio</td><td class="num">64</td><td class="num">0.34 avg</td><td class="num">22</td></tr>
+            <tr><td>Studio</td><td class="num">64</td><td class="num">0</td><td class="num">0</td></tr>
             <tr><td>1 Bedroom</td><td class="num">98</td><td class="num">1</td><td class="num">98</td></tr>
             <tr><td>2 Bedroom · net &lt; 180 m²</td><td class="num">183</td><td class="num">1</td><td class="num">183</td></tr>
             <tr><td>2 Bedroom · net ≥ 180 m²</td><td class="num">8</td><td class="num">2</td><td class="num">16</td></tr>
             <tr><td>3 Bedroom</td><td class="num">296</td><td class="num">2</td><td class="num">592</td></tr>
             <tr><td>4 Bedroom</td><td class="num">34</td><td class="num">2</td><td class="num">68</td></tr>
             <tr><td>4 Bedroom · top floor</td><td class="num">12</td><td class="num">3</td><td class="num">36</td></tr>
-            <tr class="parking-total"><td>Total</td><td class="num">695</td><td></td><td class="num">1,015</td></tr>
+            <tr class="parking-total"><td>Total allocated</td><td class="num">695</td><td></td><td class="num">993</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="info-disclaimer">Net = interior area only, balcony excluded. Studios share a pool of 22 bays — only ~1 in 3 has one allocated, so individual studio listings show <em>"subject to availability"</em>.</p>
+      <p class="info-disclaimer">Net = interior area only, balcony excluded. <strong>Studios are not allocated a parking bay</strong> — the 22 freed bays form an optional unallocated pool offered to 2 Bedroom tenants at AED 10,000 per annum (see Fees &amp; deposits).</p>
     </article>
 
     <article class="info-block">
@@ -1858,7 +1879,7 @@
       </div>
       <div class="cq-payee">
         <div class="cq-payee-head">Cheques payable to</div>
-        <div class="cq-payee-name">THE GALLERIA INVESTMENTS LLC</div>
+        <div class="cq-payee-name">THE GALLERIA INVESTMENTS LLC - CITY TOWER</div>
         <div class="cq-payee-foot">Tenant writes this exact name on each cheque. Bank transfer details for the first instalment are on the reservation form.</div>
         <button class="cq-copy" type="button" id="cq-copy">Copy payee + schedule</button>
       </div>
@@ -1929,7 +1950,7 @@
     <div class="bk-modal-body">
       <p class="bk-intro">Send a viewing request to the bh brokers group. We'll format the message — you tap to send.</p>
       <form id="bk-form" class="bk-form" autocomplete="off">
-        <label class="bk-row"><span>Unit</span><input type="text" id="bk-unit" readonly></label>
+        <label class="bk-row"><span>Unit</span><input type="text" id="bk-unit" placeholder="e.g. 07-01" required></label>
         <label class="bk-row"><span>Day</span><input type="date" id="bk-date" required></label>
         <label class="bk-row"><span>Time</span><input type="time" id="bk-time" required></label>
         <label class="bk-row"><span>Engage ref no.</span><input type="text" id="bk-ref" required placeholder="e.g. 123456"></label>
@@ -3215,16 +3236,20 @@ const palette = {
     if (q) {
       // numeric price hint: "230k", "230", "230,000"
       const numHint = q.replace(/[k,]/g, m => m === 'k' ? '000' : '').match(/\d+/);
+      // Normalised query lets brokers type unit IDs without the dash —
+      // searching '0701' still matches uid '07-01'.
+      const qNoDash = q.replace(/-/g, '');
       pool = UNITS.filter(u => {
+        const uidNoDash = String(u.uid || '').replace(/-/g, '');
         const hay = [
-          u.uid, String(u.f), String(u.p), u.t, TYPE_META[u.t]?.label || '',
+          u.uid, uidNoDash, String(u.f), String(u.p), u.t, TYPE_META[u.t]?.label || '',
           u.v, VIEW_NAMES[u.v] || '',
           STATUS_LABEL[u.s] || u.s,
           u.b ? 'balcony' : '',
           u.d ? 'duplex' : '',
           (u.showFlat || u.s === 'show_flat') ? 'show flat' : '',
         ].join(' ').toLowerCase();
-        if (hay.includes(q)) return true;
+        if (hay.includes(q) || hay.includes(qNoDash)) return true;
         if (numHint) {
           const n = parseInt(numHint[0], 10);
           if (Math.abs(u.pr - n) < 30000) return true;
@@ -3742,10 +3767,15 @@ async function copyWithFeedback(btn, text) {
   function chequeDate(start, n, monthOffsetExact) {
     if (n === 1) return new Date(start.getTime());
     const rounded = Math.round(monthOffsetExact);
-    const d = new Date(start.getTime());
-    d.setDate(1);
-    d.setMonth(d.getMonth() + rounded);
-    return d;
+    // Subsequent cheques fall on the same day-of-month as the first. Build
+    // via Y/M/D so JS doesn't roll forward when the source day overflows the
+    // target month (e.g. start = Jan 31 → Feb has no 31, clamp to Feb 28/29).
+    const day = start.getDate();
+    const newMonth = start.getMonth() + rounded;
+    const probe = new Date(start.getFullYear(), newMonth, 1);
+    const daysInMonth = new Date(probe.getFullYear(), probe.getMonth() + 1, 0).getDate();
+    probe.setDate(Math.min(day, daysInMonth));
+    return probe;
   }
   function fmtDate(d) {
     return `${String(d.getDate()).padStart(2, '0')} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
@@ -3812,7 +3842,7 @@ async function copyWithFeedback(btn, text) {
       const lines = [
         '*Cheque schedule — City Tower 1*',
         '',
-        'Cheques payable to: THE GALLERIA INVESTMENTS LLC',
+        'Cheques payable to: THE GALLERIA INVESTMENTS LLC - CITY TOWER',
         '',
       ];
       const trs = $('cq-table').querySelectorAll('tbody tr');
@@ -3900,6 +3930,10 @@ document.getElementById('fp-modal').addEventListener('click', (e) => {
   if (e.target.id === 'fp-modal') closeFloorplanModal();
 });
 
+// Overview-level Book viewing — opens the bk-modal with no unit prefilled.
+const overviewBookBtn = document.getElementById('overview-book-btn');
+if (overviewBookBtn) overviewBookBtn.addEventListener('click', () => openBookingModal(null));
+
 // Walkthrough videos — reuse the fp-modal to play Drive-hosted MP4s.
 document.querySelectorAll('.walkthrough-card').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -3928,7 +3962,15 @@ document.addEventListener('keydown', (e) => {
  * ========================================================== */
 function openBookingModal(u) {
   const modal = document.getElementById('bk-modal');
-  document.getElementById('bk-unit').value = `${u.uid} · ${TYPE_META[u.t].label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''}`;
+  const unitInput = document.getElementById('bk-unit');
+  if (u) {
+    unitInput.value = `${u.uid} · ${TYPE_META[u.t].label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''}`;
+    modal.dataset.uid = u.uid;
+  } else {
+    // Overview-level launch — broker hasn't picked a unit yet.
+    unitInput.value = '';
+    delete modal.dataset.uid;
+  }
   const tomorrow = new Date(Date.now() + 86400000);
   const yyyy = tomorrow.getFullYear();
   const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
@@ -3940,7 +3982,7 @@ function openBookingModal(u) {
   modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
-  modal.dataset.uid = u.uid;
+  if (!u) setTimeout(() => unitInput.focus(), 60);
 }
 function closeBookingModal() {
   const modal = document.getElementById('bk-modal');
@@ -3958,11 +4000,13 @@ function buildBookingMessage() {
   const mob  = $('bk-mob').value.trim();
   const errEl = $('bk-error');
   errEl.hidden = true;
-  if (!date || !time || !ref || !name || !/^\d{4}$/.test(mob)) {
+  if (!unit || !date || !time || !ref || !name || !/^\d{4}$/.test(mob)) {
     errEl.hidden = false;
-    errEl.textContent = !/^\d{4}$/.test(mob)
-      ? 'Mobile last 4 digits must be exactly 4 numbers.'
-      : 'Please fill all fields.';
+    errEl.textContent = !unit
+      ? 'Please enter the unit (e.g. 07-01).'
+      : !/^\d{4}$/.test(mob)
+        ? 'Mobile last 4 digits must be exactly 4 numbers.'
+        : 'Please fill all fields.';
     return null;
   }
   const d = new Date(date + 'T00:00:00');
