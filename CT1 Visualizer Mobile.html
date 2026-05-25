@@ -1591,6 +1591,7 @@
         <div class="filter-row" id="filter-extra">
           <button class="chip gold" data-extra="balcony">Balcony</button>
           <button class="chip gold" data-extra="duplex">Duplex</button>
+          <button class="chip" data-extra="floorplan">Floorplan</button>
           <button class="chip" data-extra="show">Show flats</button>
         </div>
         <div class="floor-row">
@@ -2458,6 +2459,7 @@ function unitMatches(u) {
   if (filter.view !== 'all' && u.v !== filter.view) return false;
   if (filter.extras.has('balcony') && !u.b) return false;
   if (filter.extras.has('duplex') && !u.d) return false;
+  if (filter.extras.has('floorplan') && !floorplanFor(u)) return false;
   if (filter.floorMin != null && u.f < filter.floorMin) return false;
   if (filter.floorMax != null && u.f > filter.floorMax) return false;
   if (filter.priceMin != null && u.pr < filter.priceMin) return false;

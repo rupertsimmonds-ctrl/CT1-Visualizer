@@ -2224,7 +2224,7 @@ const state = {
   statusFilter: null,           // tower highlight by status: 'bh_let'|'hh_let'|'available'|'lost'|'show_flat'|null
   drawer: null,                 // { kind:'list', view:'available'|'bh_let'|'hh_let'|'lost', bedroom:null|'1br'... } or { kind:'detail', uid:'05-03' }
   listSort: { col: 'f', dir: 'asc' },
-  listFilters: { view:null, band:null, rentMin:null, rentMax:null, bedroom:null, type:null, duplex:false, balcony:null, balcMin:null, balcMax:null },
+  listFilters: { view:null, band:null, rentMin:null, rentMax:null, bedroom:null, type:null, duplex:false, floorplan:false, balcony:null, balcMin:null, balcMax:null },
 };
 
 /* ============================================================
@@ -2698,6 +2698,7 @@ function unitMatchesListFilters(u) {
   if (lf.rentMin != null && u.pr < lf.rentMin) return false;
   if (lf.rentMax != null && u.pr > lf.rentMax) return false;
   if (lf.duplex && !u.d) return false;
+  if (lf.floorplan && !floorplanFor(u)) return false;
   if (lf.balcony === 'yes' && !u.b) return false;
   if (lf.balcony === 'no'  && u.b)  return false;
   if (lf.balcMin != null && (!u.b || u.bsq < lf.balcMin)) return false;
@@ -2731,7 +2732,7 @@ function openList(view, bedroom) {
   state.statusFilter = view;
   state.listFilters = {
     view:null, band:null, rentMin:null, rentMax:null,
-    bedroom: bedroom || null, type:null, duplex:false,
+    bedroom: bedroom || null, type:null, duplex:false, floorplan:false,
     balcony: null, balcMin: null, balcMax: null,
   };
   state.listSort = { col:'f', dir:'asc' };
@@ -2909,6 +2910,7 @@ function renderListFilters(view) {
     </div>
     <div class="mini-group">
       <button class="mini-chip ${lf.duplex?'active':''}" data-fkind="duplex" data-v="1">Duplex only</button>
+      <button class="mini-chip ${lf.floorplan?'active':''}" data-fkind="floorplan" data-v="1">Floorplan only</button>
     </div>
     <span class="clear-all" id="drawer-clear">Clear</span>
     <span class="kb-hint" tabindex="0">⌨︎ Shortcuts
@@ -2929,7 +2931,8 @@ function wireListFilters() {
     chip.addEventListener('click', () => {
       const kind = chip.dataset.fkind;
       const v = chip.dataset.v;
-      if (kind === 'duplex') state.listFilters.duplex = !state.listFilters.duplex;
+      const isBool = (kind === 'duplex' || kind === 'floorplan');
+      if (isBool) state.listFilters[kind] = !state.listFilters[kind];
       else state.listFilters[kind] = state.listFilters[kind] === v ? null : v;
       // Bedroom changes: types are scoped to bedroom band, so reset the type
       // filter and rebuild the entire filter row (the Type chips depend on
@@ -2938,12 +2941,12 @@ function wireListFilters() {
         state.listFilters.type = null;
         host.innerHTML = renderListFilters(state.drawer.view);
         wireListFilters();
-      } else if (kind !== 'duplex') {
+      } else if (!isBool) {
         host.querySelectorAll(`.mini-chip[data-fkind="${kind}"]`).forEach(c => {
           c.classList.toggle('active', state.listFilters[kind] === c.dataset.v);
         });
       } else {
-        chip.classList.toggle('active', state.listFilters.duplex);
+        chip.classList.toggle('active', state.listFilters[kind]);
       }
       // Re-render ONLY the table body — leaves input focus alone
       renderListBody(state.drawer.view);
@@ -2972,7 +2975,7 @@ function wireListFilters() {
   host.querySelector('#drawer-clear').addEventListener('click', () => {
     state.listFilters = {
       view:null, band:null, rentMin:null, rentMax:null,
-      bedroom:null, type:null, duplex:false,
+      bedroom:null, type:null, duplex:false, floorplan:false,
       balcony:null, balcMin:null, balcMax:null,
     };
     renderList(state.drawer.view);  // full re-render to reset chrome
