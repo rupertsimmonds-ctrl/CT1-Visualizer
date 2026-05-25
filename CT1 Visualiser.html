@@ -1112,6 +1112,8 @@
   .drawer-toolbar .btn.btn-floorplan:hover { background: var(--ct-gold-dark); border-color: var(--ct-gold-dark); }
   .drawer-toolbar .btn.btn-floorplan.disabled { background: var(--paper); color: var(--denim); border-color: var(--rule); cursor: not-allowed; opacity: 0.7; }
   .drawer-toolbar .btn.btn-floorplan.disabled:hover { background: var(--paper); color: var(--denim); }
+  .drawer-toolbar .btn.btn-video { background: var(--ct-afterlight); color: var(--ct-haze); border-color: var(--ct-afterlight); }
+  .drawer-toolbar .btn.btn-video:hover { background: var(--slate); border-color: var(--slate); color: var(--mist); }
 
   /* Floorplan modal — full-screen overlay above the drawer. */
   .fp-modal {
@@ -1629,6 +1631,12 @@
         <span class="wt-cta">Play</span>
       </button>
     </div>
+
+    <div class="walkthroughs-head" style="margin-top:26px;">
+      <h2>Unit walkarounds</h2>
+      <div class="tag">Filmed units · tap to play</div>
+    </div>
+    <div class="walkthroughs-grid" id="unit-walkarounds-grid"></div>
   </section>
 
   <section class="league-row" id="league-row">
@@ -3072,10 +3080,12 @@ function renderDetail(uid) {
   const toolbar = document.getElementById('drawer-toolbar');
   // Replace toolbar contents with unit-specific actions
   const fpReady = floorplanFor(u);
+  const vid = videoForUnit(u.uid);
   toolbar.innerHTML = `
     <span class="count">Unit ${u.uid}</span>
     <div class="actions">
       <button class="btn btn-floorplan ${fpReady ? '' : 'disabled'}" id="btn-floorplan">${fpReady ? 'View floorplan' : 'Floorplan not available'}</button>
+      ${vid ? '<button class="btn btn-video" id="btn-video">▶ Watch walkaround</button>' : ''}
       <button class="btn btn-book" id="btn-book">Book viewing</button>
       <button class="btn" id="btn-copy-unit">Copy for WhatsApp</button>
     </div>
@@ -3084,6 +3094,10 @@ function renderDetail(uid) {
   const fpBtn = document.getElementById('btn-floorplan');
   if (fpBtn && fpReady) {
     fpBtn.addEventListener('click', () => openFloorplanModal(u));
+  }
+  const vidBtn = document.getElementById('btn-video');
+  if (vidBtn && vid) {
+    vidBtn.addEventListener('click', () => openVideoInModal('Walkaround · Unit ' + u.uid, vid.id));
   }
   document.getElementById('btn-book').addEventListener('click', () => openBookingModal(u));
 
@@ -4045,19 +4059,52 @@ document.getElementById('fp-modal').addEventListener('click', (e) => {
 const overviewBookBtn = document.getElementById('overview-book-btn');
 if (overviewBookBtn) overviewBookBtn.addEventListener('click', () => openBookingModal(null));
 
-// Walkthrough videos — reuse the fp-modal to play Drive-hosted MP4s.
+// Per-unit walkaround videos — keyed by uid (floor-padded · position). Each
+// entry plays in the same fp-modal iframe the floorplans use. Source: the
+// shared Drive 'Videos' folder, one filmed unit per bedroom type / variant.
+const UNIT_VIDEOS = [
+  { uid: '07-01', label: 'Studio',         id: '1LHW_fKyX2d_NsrGUL9IEPA-cBEmT8I_S' },
+  { uid: '48-04', label: 'Studio',         id: '1DQ7V9RKIaIj1Hbla0Wd2uKC7gAAhunTl' },
+  { uid: '07-04', label: '1 Bed',          id: '1IDGAkL33o-bNW1PYhF--dJjOSaWFeXrZ' },
+  { uid: '73-03', label: '1 Bed',          id: '1wcoM8RSxks5k-mZQzgwN8APSDXR2eGJo' },
+  { uid: '86-07', label: '1 Bed',          id: '1dGFqHo4Tgzx1r-AIftCdN_6KwClhVNb3' },
+  { uid: '70-01', label: '1 Bed · Duplex', id: '1dLEqq9vLDw9LlpZW1ZYlXjDBpNz1Dpf7' },
+  { uid: '70-04', label: '1 Bed · Duplex', id: '1a3kwmxBpcGTG44Rka9sYMh1Wn4cUILiT' },
+  { uid: '07-02', label: '2 Bed',          id: '19e3hunXDHgCBmse8lz42LN6X90ZrJC56' },
+  { uid: '62-09', label: '2 Bed',          id: '1Yb1KQFwar_sfNsZzwGJDlErVIsH0LvSg' },
+  { uid: '48-06', label: '3 Bed',          id: '1uzG9oNfvwblPuUw1zR-oVftqjt8o01m8' },
+  { uid: '22-02', label: '3 Bed · Duplex', id: '1zMIogpvMTjbXkSSQC9KmJwUp6-r1TIAr' },
+  { uid: '93-03', label: '4 Bed',          id: '1SK4VMPF3YmUkUZQZ0krtl7qg3JREVEeC' },
+  { uid: '89-06', label: '4 Bed · Duplex', id: '1-IfVlZjngFDBSiJ2CTYyhvQ1K1KO3TnF' },
+];
+function videoForUnit(uid) { return UNIT_VIDEOS.find(v => v.uid === uid); }
+
+// Reusable: play a Drive-hosted video in the fp-modal iframe.
+function openVideoInModal(title, fileId) {
+  const modal = document.getElementById('fp-modal');
+  const body  = document.getElementById('fp-body');
+  document.getElementById('fp-title').textContent = title;
+  body.innerHTML = `<iframe class="fp-iframe" src="https://drive.google.com/file/d/${fileId}/preview" allow="autoplay" loading="lazy"></iframe>`;
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+
+// Build the per-unit walkaround cards under the generic walkthroughs.
+(function renderUnitWalkarounds() {
+  const grid = document.getElementById('unit-walkarounds-grid');
+  if (!grid) return;
+  grid.innerHTML = UNIT_VIDEOS.map(v => `
+      <button class="walkthrough-card" type="button" data-video="${v.id}" data-title="Walkaround · Unit ${v.uid} · ${v.label}">
+        <span class="wt-eyebrow">${v.label}</span>
+        <span class="wt-title">Unit ${v.uid}</span>
+        <span class="wt-cta">Play</span>
+      </button>`).join('');
+})();
+
+// Walkthrough + unit-walkaround cards — play in the fp-modal on click.
 document.querySelectorAll('.walkthrough-card').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const fileId = btn.dataset.video;
-    const title  = btn.dataset.title || 'Walkthrough';
-    const modal  = document.getElementById('fp-modal');
-    const body   = document.getElementById('fp-body');
-    document.getElementById('fp-title').textContent = title;
-    body.innerHTML = `<iframe class="fp-iframe" src="https://drive.google.com/file/d/${fileId}/preview" allow="autoplay" loading="lazy"></iframe>`;
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-  });
+  btn.addEventListener('click', () => openVideoInModal(btn.dataset.title || 'Walkthrough', btn.dataset.video));
 });
 // Escape key closes it.
 document.addEventListener('keydown', (e) => {
