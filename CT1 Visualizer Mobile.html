@@ -3820,9 +3820,11 @@ function archKey(s) {
 }
 function floorplanFor(u) {
   if (!u) return null;
+  // architectural_type is authoritative when present: resolve strictly by it,
+  // with NO bedroom/product fallback, so an uncatalogued type shows
+  // "floorplan not available" instead of a wrong plan shared across the combo.
   if (u.archType) {
-    const fromArch = FLOORPLAN_BY_ARCH[archKey(u.archType)];
-    if (fromArch) return fromArch;
+    return FLOORPLAN_BY_ARCH[archKey(u.archType)] || null;
   }
   if (!u.bedRaw || !u.pt) return null;
   const dupTag = u.d ? 'Y' : 'N';
