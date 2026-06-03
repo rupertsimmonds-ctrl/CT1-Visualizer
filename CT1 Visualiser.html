@@ -2297,7 +2297,7 @@ function buildTower() {
       if (u.d) cell.classList.add('premium');
       cell.dataset.uid = u.uid;
       cell.dataset.type = u.t;
-      cell.dataset.pt = u.pt || '';
+      cell.dataset.pt = u.archType || '';
       cell.dataset.floor = u.f;
       cell.dataset.pos = u.p;
       cell.dataset.price = u.pr;
@@ -2338,7 +2338,7 @@ function attachUnitInteractions() {
         : `<div class="tt-row"><span>Size</span><span>${fmtSqft(parseFloat(c.dataset.sq))}</span></div>`;
       tip.innerHTML = `
         <div class="tt-title">Unit ${c.dataset.uid}${premiumBadge}</div>
-        <div class="tt-type">${m.label}${u && u.pt ? ' · Type ' + u.pt : ''}</div>
+        <div class="tt-type">${m.label}${u && u.archType ? ' · Type ' + u.archType : ''}</div>
         <div class="tt-status s-${status}">${STATUS_LABEL[status]||status}</div>
         <div class="tt-row"><span>View</span><span>${VIEW_NAMES[c.dataset.view] || c.dataset.view}</span></div>
         ${sizeRows}
@@ -2521,7 +2521,7 @@ function buildShowFlats() {
     const viewLabel = VIEW_NAMES[u.v] || u.v;
     return `<button class="showflat-card" data-uid="${u.uid}">
       <span class="sf-pin"></span>
-      <div class="sf-type">${m.label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''}</div>
+      <div class="sf-type">${m.label}${u.archType ? ' · Type ' + u.archType : ''}${u.d ? ' · Duplex' : ''}</div>
       <div class="sf-unit">Unit ${u.uid}</div>
       <div class="sf-meta">Floor <strong>${u.f}</strong> · ${viewLabel}<br>${sizeView(u).oneLine} · ${fmtAED(u.pr)} p.a.</div>
       <div class="sf-cta">Click for details →</div>
@@ -2598,9 +2598,7 @@ function buildTypeChips() {
   const pool = state.bedroomFilter === 'all'
     ? UNITS
     : UNITS.filter(u => u.t === state.bedroomFilter);
-  const types = [...new Set(
-    pool.map(u => (u.pt || '').trim().toUpperCase()).filter(Boolean),
-  )].sort();
+  const types = [];  // product type filter removed
   if (types.length <= 1) {
     host.style.display = 'none';
     host.innerHTML = '';
@@ -2701,7 +2699,7 @@ function positionTrancheMarkers() {
 function unitMatchesListFilters(u) {
   const lf = state.listFilters;
   if (lf.bedroom && u.t !== lf.bedroom) return false;
-  if (lf.type && (u.pt || '').toUpperCase() !== lf.type) return false;
+  // product type filter removed
   if (lf.view && u.v !== lf.view) return false;
   if (lf.band) {
     const band = FLOOR_BANDS.find(x => x.code === lf.band);
@@ -2849,7 +2847,7 @@ function titleForList(view) {
 function columnsForView(view) {
   const base = [
     { key:'uid',  label:'Unit',   num:false, render:u => `<span class="uid">${u.uid}</span>${u.d?'<span class="dup">Duplex</span>':''}` },
-    { key:'t',    label:'Type',   num:false, render:u => `<span class="type-dot ${TYPE_META[u.t].cls}"></span>${TYPE_META[u.t].label}${u.pt ? `<span class="pt-tag">Type ${u.pt}</span>` : ''}` },
+    { key:'t',    label:'Type',   num:false, render:u => `<span class="type-dot ${TYPE_META[u.t].cls}"></span>${TYPE_META[u.t].label}${u.archType ? `<span class="pt-tag">Type ${u.archType}</span>` : ''}` },
     { key:'f',    label:'Floor',  num:true,  render:u => u.f },
     { key:'v',    label:'View',   num:false, render:u => VIEW_NAMES[u.v] || u.v },
     { key:'sq',   label:'sq ft',  num:true,  render:u => fmtN(u.sq) },
@@ -2891,18 +2889,7 @@ function renderListFilters(view) {
   // Type chips — dynamically built from product_type values that exist in
   // the data (scoped to the active bedroom band if one is selected). Hidden
   // entirely when only 0–1 types are available for the current selection.
-  const typePool = lf.bedroom
-    ? UNITS.filter(u => u.t === lf.bedroom)
-    : UNITS;
-  const typeLetters = [...new Set(
-    typePool.map(u => (u.pt || '').trim().toUpperCase()).filter(Boolean),
-  )].sort();
-  const typeRow = typeLetters.length > 1
-    ? `<div class="mini-group"><span class="mini-label">Type</span>` +
-      typeLetters.map(t =>
-        `<button class="mini-chip ${lf.type===t?'active':''}" data-fkind="type" data-v="${t}">Type ${t}</button>`,
-      ).join('') + `</div>`
-    : '';
+  const typeRow = '';  // product type filter removed
   return `
     <div class="mini-group"><span class="mini-label">Bed</span>${bedChips}</div>
     ${typeRow}
@@ -3003,7 +2990,7 @@ function copyListToClipboard(units, view) {
   units.slice(0, 40).forEach(u => {
     const viewLabel = VIEW_NAMES[u.v] || u.v;
     const rent = view === 'bh_let' || view === 'hh_let' ? (u.sgnR ? fmtAED(u.sgnR) : fmtAED(u.pr)) : fmtAED(u.pr);
-    lines.push(`• *${u.uid}* · ${TYPE_META[u.t].label}${u.pt?' '+u.pt:''}${u.d?' Duplex':''} · Fl ${u.f} · ${viewLabel} · ${sizeView(u).oneLine} · ${rent} p.a.`);
+    lines.push(`• *${u.uid}* · ${TYPE_META[u.t].label}${u.archType?' '+u.archType:''}${u.d?' Duplex':''} · Fl ${u.f} · ${viewLabel} · ${sizeView(u).oneLine} · ${rent} p.a.`);
   });
   if (units.length > 40) lines.push(`\n…and ${units.length - 40} more`);
   const text = lines.join('\n');
@@ -3124,11 +3111,11 @@ function renderDetail(uid) {
     <div class="detail">
       <div class="detail-hero">
         <h1>Unit ${u.uid}</h1>
-        <div class="d-sub">${m.label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''} · Floor ${u.f} · Tranche ${u.tr}</div>
+        <div class="d-sub">${m.label}${u.archType ? ' · Type ' + u.archType : ''}${u.d ? ' · Duplex' : ''} · Floor ${u.f} · Tranche ${u.tr}</div>
         <div class="d-status-row">
           <span class="pill s-${u.s}">${STATUS_LABEL[u.s]||u.s}</span>
           ${(u.showFlat && u.s !== 'show_flat') ? '<span class="pill s-show_flat">Show flat</span>' : ''}
-          ${u.pt ? `<span class="pill" style="background:var(--paper);color:var(--denim);border:1px solid var(--rule);">Type ${u.pt}</span>` : ''}
+          ${u.archType ? `<span class="pill" style="background:var(--paper);color:var(--denim);border:1px solid var(--rule);">Type ${u.archType}</span>` : ''}
           ${u.d ? '<span class="pill" style="background:var(--ct-gold);color:var(--slate);font-weight:600;">Duplex</span>' : ''}
           ${u.b ? `<span class="pill" style="background:var(--ct-sun);color:var(--slate);">Balcony · ${sizeView(u).balcStr}</span>` : '<span class="pill" style="background:var(--mist);color:var(--denim);">No balcony</span>'}
           <span class="pill" style="background:var(--paper);color:var(--denim);border:1px solid var(--rule);">Unfurnished</span>
@@ -3169,7 +3156,7 @@ function renderDetail(uid) {
         </div>
         <div class="detail-fact">
           <div class="lbl">Bedroom type</div>
-          <div class="val small">${m.label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' Duplex' : ''}</div>
+          <div class="val small">${m.label}${u.archType ? ' · Type ' + u.archType : ''}${u.d ? ' Duplex' : ''}</div>
         </div>
         <div class="detail-fact">
           <div class="lbl">Status</div>
@@ -3293,7 +3280,7 @@ function copyUnitToClipboard(u) {
   const sv = sizeView(u);
   const lines = [
     `🏢 *City Tower 1 — Unit ${u.uid}*`,
-    `${m.label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''} · Floor ${u.f} · ${viewLabel} facing`,
+    `${m.label}${u.archType ? ' · Type ' + u.archType : ''}${u.d ? ' · Duplex' : ''} · Floor ${u.f} · ${viewLabel} facing`,
     `Size: ${sv.oneLine}`,
     `Parking: ${parkingForUnit(u)}`,
     `Rent: ${fmtAED(u.pr)} p.a.${priceCut ? ` (reduced from ${fmtAED(u.orig)})` : ''}`,
@@ -4008,11 +3995,7 @@ function floorplanFor(u) {
   if (u.archType) {
     return FLOORPLAN_BY_ARCH[archKey(u.archType)] || null;
   }
-  if (!u.bedRaw || !u.pt) return null;
-  const dupTag = u.d ? 'Y' : 'N';
-  return FLOORPLAN_INDEX[fpKey(u.bedRaw, u.pt, dupTag)]
-      || FLOORPLAN_INDEX[fpKey(u.bedRaw, u.pt, '')]
-      || null;
+  return null;  // floorplans keyed only by architectural type
 }
 async function fetchFloorplans() {
   try {
@@ -4045,13 +4028,13 @@ function openFloorplanModal(u) {
   const modal = document.getElementById('fp-modal');
   const body  = document.getElementById('fp-body');
   const title = document.getElementById('fp-title');
-  title.textContent = `Floorplan · ${u.bedRaw}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''}`;
+  title.textContent = `Floorplan · ${u.bedRaw}${u.archType ? ' · Type ' + u.archType : ''}${u.d ? ' · Duplex' : ''}`;
   if (fileId) {
     body.innerHTML = `<iframe class="fp-iframe" src="https://drive.google.com/file/d/${fileId}/preview" allow="autoplay" loading="lazy"></iframe>`;
   } else {
     body.innerHTML = `<div class="fp-empty">
       <h4>Floorplan not available</h4>
-      <p>No floorplan registered for <b>${u.bedRaw}${u.pt ? ' · Type ' + u.pt : ''}</b>.</p>
+      <p>No floorplan registered for <b>${u.bedRaw}${u.archType ? ' · Type ' + u.archType : ''}</b>.</p>
       <p class="fp-hint">Add a row to <code>08_Floorplans</code> on the master sheet to enable this.</p>
     </div>`;
   }
@@ -4139,7 +4122,7 @@ function openBookingModal(u) {
   const modal = document.getElementById('bk-modal');
   const unitInput = document.getElementById('bk-unit');
   if (u) {
-    unitInput.value = `${u.uid} · ${TYPE_META[u.t].label}${u.pt ? ' · Type ' + u.pt : ''}${u.d ? ' · Duplex' : ''}`;
+    unitInput.value = `${u.uid} · ${TYPE_META[u.t].label}${u.archType ? ' · Type ' + u.archType : ''}${u.d ? ' · Duplex' : ''}`;
     modal.dataset.uid = u.uid;
   } else {
     // Overview-level launch — broker hasn't picked a unit yet.
