@@ -1140,6 +1140,21 @@
     font-family: Georgia, serif; font-size: 17px;
     color: var(--ct-haze); flex: 1;
   }
+  .fp-modal .fp-share {
+    background: transparent; border: 1px solid rgba(244,242,238,0.18);
+    color: var(--ct-haze); padding: 8px 14px;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    cursor: pointer; font-family: inherit; flex-shrink: 0;
+  }
+  .fp-modal .fp-share:hover { background: rgba(244,242,238,0.06); }
+  .fp-modal .fp-share.copied { background: var(--ct-gold); color: var(--ct-afterlight); border-color: var(--ct-gold); }
+  .fp-modal .fp-open {
+    background: transparent; border: 1px solid rgba(244,242,238,0.18);
+    color: var(--ct-haze); padding: 8px 14px; text-decoration: none;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    cursor: pointer; font-family: inherit; flex-shrink: 0;
+  }
+  .fp-modal .fp-open:hover { background: rgba(244,242,238,0.06); }
   .fp-modal .fp-body {
     flex: 1; min-height: 0;
     display: flex; flex-direction: column;
@@ -1936,7 +1951,7 @@
       </div>
     </a>
 
-    <a class="info-block info-doc-block" href="https://drive.google.com/file/d/1A-lILjW5XMPCDPjgb18IOSrUBEEEd4KU/view?usp=sharing" target="_blank" rel="noopener noreferrer">
+    <a class="info-block info-doc-block" href="https://drive.google.com/file/d/16o0xyrbID4hAlls_gKtSu5rk1RxgjJ8k/view?usp=sharing" target="_blank" rel="noopener noreferrer">
       <div class="info-doc-row">
         <span class="info-doc-icon" aria-hidden="true">▤</span>
         <div class="info-doc-text">
@@ -1986,6 +2001,8 @@
   <div class="fp-modal-head">
     <button class="fp-close" id="fp-close" type="button" aria-label="Close">×</button>
     <div class="fp-title" id="fp-title">Floorplan</div>
+    <a class="fp-open" id="fp-open" target="_blank" rel="noopener noreferrer" hidden>Open ↗</a>
+    <button class="fp-share" id="fp-share" type="button" hidden>Share</button>
   </div>
   <div class="fp-body" id="fp-body"></div>
 </div>
@@ -4029,6 +4046,7 @@ function openFloorplanModal(u) {
   const body  = document.getElementById('fp-body');
   const title = document.getElementById('fp-title');
   title.textContent = `Floorplan · ${u.bedRaw}${u.archType ? ' · Type ' + u.archType : ''}${u.d ? ' · Duplex' : ''}`;
+  setModalShareId(fileId);
   if (fileId) {
     body.innerHTML = `<iframe class="fp-iframe" src="https://drive.google.com/file/d/${fileId}/preview" allow="autoplay" loading="lazy"></iframe>`;
   } else {
@@ -4048,6 +4066,7 @@ function closeFloorplanModal() {
   modal.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
   document.getElementById('fp-body').innerHTML = '';
+  setModalShareId(null);
 }
 document.getElementById('fp-close').addEventListener('click', closeFloorplanModal);
 // Tap outside the iframe (the dark fp-body backdrop) to close.
@@ -4084,11 +4103,58 @@ function openVideoInModal(title, fileId) {
   const modal = document.getElementById('fp-modal');
   const body  = document.getElementById('fp-body');
   document.getElementById('fp-title').textContent = title;
+  setModalShareId(fileId);
   body.innerHTML = `<iframe class="fp-iframe" src="https://drive.google.com/file/d/${fileId}/preview" allow="autoplay" loading="lazy"></iframe>`;
   modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
 }
+
+// Track the Drive file ID of whatever's playing so the Share + Open
+// buttons can build a public link. Hide both when there's no file.
+function setModalShareId(fileId) {
+  const modal = document.getElementById('fp-modal');
+  const share = document.getElementById('fp-share');
+  const open  = document.getElementById('fp-open');
+  if (fileId) {
+    modal.dataset.shareId = fileId;
+    share.hidden = false;
+    share.classList.remove('copied');
+    share.textContent = 'Share';
+    open.href = `https://drive.google.com/file/d/${fileId}/view?usp=sharing`;
+    open.hidden = false;
+  } else {
+    delete modal.dataset.shareId;
+    share.hidden = true;
+    open.hidden = true;
+    open.removeAttribute('href');
+  }
+}
+
+// Share the currently-open Drive file. Tries the native share sheet first
+// (gets WhatsApp/Mail/Messages on mobile) and falls back to clipboard.
+async function shareCurrentDriveFile() {
+  const modal = document.getElementById('fp-modal');
+  const share = document.getElementById('fp-share');
+  const id = modal.dataset.shareId;
+  if (!id) return;
+  const url = `https://drive.google.com/file/d/${id}/view?usp=sharing`;
+  const text = (document.getElementById('fp-title').textContent || '').trim();
+  if (navigator.share) {
+    try { await navigator.share({ title: text, text, url }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; /* fall through to clipboard */ }
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    share.classList.add('copied');
+    share.textContent = 'Link copied';
+    setTimeout(() => { share.classList.remove('copied'); share.textContent = 'Share'; }, 1800);
+  } catch (e) {
+    share.textContent = 'Copy failed';
+    setTimeout(() => { share.textContent = 'Share'; }, 1800);
+  }
+}
+document.getElementById('fp-share').addEventListener('click', shareCurrentDriveFile);
 
 // Build the per-unit walkaround cards under the generic walkthroughs.
 (function renderUnitWalkarounds() {
