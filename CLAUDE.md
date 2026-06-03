@@ -1,5 +1,14 @@
 # CT1-Visualizer — project memory
 
+## Related repo / data source
+The floorplan + unit-type data this app reads is produced by a separate back-office
+pipeline: **github.com/rupertsimmonds-ctrl/CT1-floorplan-mapping**. That repo audits
+the architect drawings and WRITES the `01_Unit_Master`, `07_HTML_Export`, and
+`08_Floorplans` tabs of the CT1 Leasing Control Centre sheet; this app only READS
+that sheet. Floorplans are keyed by `architectural_type` (per unit) -> `08_Floorplans`
+arch_type -> Drive file id. Product type A/B/C/D is not used here. For any
+floorplan/unit-data question, start in the mapping repo (its README + OUTSTANDING_STATUS).
+
 ## Brand naming conventions
 
 **Always lowercase**: `betterhomes` and `bh`. Never `Betterhomes`, `BetterHomes`, `BH`, or `B.H.` — even at the start of a sentence, even in headings, even in tile labels. The brand is consistently lowercase.
