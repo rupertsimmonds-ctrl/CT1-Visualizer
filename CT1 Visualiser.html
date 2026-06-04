@@ -399,23 +399,23 @@
   .showflats-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; gap: 16px; flex-wrap: wrap; }
   .showflats-head h2 { font-size: 22px; color: var(--slate); }
   .showflats-head .tag { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim); }
-  .showflats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .showflats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
   .showflat-card {
-    background: var(--paper); border: 1px solid var(--rule); padding: 16px 18px;
+    background: var(--paper); border: 1px solid var(--rule); padding: 10px 14px;
     cursor: pointer; transition: all 0.15s ease; text-align: left; width: 100%;
     border-left: 3px solid var(--ct-gold); position: relative;
   }
   .showflat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(31,52,63,0.1); border-color: var(--ct-gold-dark); }
   .showflat-card .sf-pin {
-    position: absolute; top: 14px; right: 16px;
-    width: 10px; height: 10px; border: 2px solid var(--ct-gold-dark);
+    position: absolute; top: 10px; right: 12px;
+    width: 8px; height: 8px; border: 2px solid var(--ct-gold-dark);
     border-radius: 50%; background: var(--ct-gold);
   }
-  .showflat-card .sf-type { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim); margin-bottom: 6px; }
-  .showflat-card .sf-unit { font-family: Georgia, serif; font-size: 24px; color: var(--slate); line-height: 1; margin-bottom: 8px; }
-  .showflat-card .sf-meta { font-size: 12px; color: var(--slate); line-height: 1.5; }
+  .showflat-card .sf-type { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim); margin-bottom: 4px; }
+  .showflat-card .sf-unit { font-family: Georgia, serif; font-size: 22px; color: var(--slate); line-height: 1; margin-bottom: 5px; }
+  .showflat-card .sf-meta { font-size: 11px; color: var(--slate); line-height: 1.4; }
   .showflat-card .sf-meta strong { color: var(--slate); }
-  .showflat-card .sf-cta { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--rule); }
+  .showflat-card .sf-cta { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--denim); margin-top: 6px; }
   .showflats-empty { padding: 24px; background: var(--mist); text-align: center; color: var(--denim); font-style: italic; }
 
   /* Overview-level Book viewing CTA — sits between KPI hero and Show flats */
@@ -787,15 +787,15 @@
   .recent-row-d { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
   .recent-row-d::-webkit-scrollbar { display: none; }
   .recent-card-d {
-    flex: 0 0 auto; min-width: 150px;
+    flex: 0 0 auto; min-width: 130px;
     background: var(--paper); border: 1px solid var(--rule);
-    padding: 10px 14px; cursor: pointer; text-align: left;
+    padding: 8px 12px; cursor: pointer; text-align: left;
     transition: transform 0.1s ease, border-color 0.15s ease;
   }
   .recent-card-d:hover { border-color: var(--slate); }
-  .recent-card-d .r-uid { font-family: Georgia, serif; font-size: 22px; color: var(--slate); line-height: 1; }
-  .recent-card-d .r-meta { font-size: 11px; color: var(--denim); margin-top: 4px; }
-  .recent-card-d .r-rent { font-size: 13px; color: var(--ct-gold-dark); margin-top: 4px; font-weight: 600; }
+  .recent-card-d .r-uid { font-family: Georgia, serif; font-size: 20px; color: var(--slate); line-height: 1; }
+  .recent-card-d .r-meta { font-size: 10px; color: var(--denim); margin-top: 3px; }
+  .recent-card-d .r-rent { font-size: 12px; color: var(--ct-gold-dark); margin-top: 3px; font-weight: 600; }
 
   /* Operational info grid: lobby protocol, views note, fees, tenant requirements */
   .info-grid {
