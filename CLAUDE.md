@@ -5,9 +5,12 @@ The floorplan + unit-type data this app reads is produced by a separate back-off
 pipeline: **github.com/rupertsimmonds-ctrl/CT1-floorplan-mapping**. That repo audits
 the architect drawings and WRITES the `01_Unit_Master`, `07_HTML_Export`, and
 `08_Floorplans` tabs of the CT1 Leasing Control Centre sheet; this app only READS
-that sheet. Floorplans are keyed by `architectural_type` (per unit) -> `08_Floorplans`
-arch_type -> Drive file id. Product type A/B/C/D is not used here. For any
-floorplan/unit-data question, start in the mapping repo (its README + OUTSTANDING_STATUS).
+that sheet. The read-path is migrating to a single per-unit `floorplan_url` column on
+`07_HTML_Export`: when set it is authoritative (`floorplanFor()` reads it directly), and
+a blank cell falls back to the legacy `architectural_type` (per unit) -> `08_Floorplans`
+arch_type -> Drive file id lookup. The two coexist until `08_Floorplans`/the bridge are
+retired. Product type A/B/C/D is not used here. For any floorplan/unit-data question,
+start in the mapping repo (its README + OUTSTANDING_STATUS).
 
 ## Brand naming conventions
 
@@ -38,7 +41,7 @@ This applies to:
 Reads only the `07_HTML_Export` tab. Required columns:
 `unit_id`, `floor`, `unit_no`, `bedroom_type`, `is_duplex`, `view_code`, `total_sqft`, `asking_rent_aed`, `current_asking_aed`, `asking_psf`, `status`, `agency_won`, `tranche`
 
-Optional: `balcony`, `balcony_sqft`, `show_flat`
+Optional: `balcony`, `balcony_sqft`, `show_flat`, `floorplan_url`
 
 Status column values map to internal codes via `classifyJS` (mobile + desktop both use the same logic).
 
