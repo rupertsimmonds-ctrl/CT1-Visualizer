@@ -351,6 +351,7 @@
     cursor: pointer; transition: transform 0.1s ease;
     min-width: 0; text-align: left; font-family: inherit;
     display: flex; flex-direction: column; gap: 6px;
+    text-decoration: none;
   }
   .wt-card:active { transform: scale(0.98); }
   .wt-card .wt-eyebrow { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ct-gold); }
@@ -361,6 +362,7 @@
     display: flex; align-items: center; gap: 5px;
   }
   .wt-card .wt-cta::before { content: '▶'; font-size: 10px; color: var(--ct-gold); }
+  .wt-card.wt-photo .wt-cta::before { content: '▦'; }
 
   /* Overview-level Book viewing CTA — sits between stat-hero and bed-strip */
   .book-cta-wrap { padding: 4px 16px 18px; }
@@ -1535,6 +1537,33 @@
       <div class="sec-sub">Filmed units · tap to play</div>
     </div>
     <div class="wt-strip" id="unit-wt-strip"></div>
+
+    <div class="sec">
+      <div class="sec-h">Photo galleries</div>
+      <div class="sec-sub">Drive folder · opens in a new tab</div>
+    </div>
+    <div class="wt-strip">
+      <a class="wt-card wt-photo" href="https://drive.google.com/drive/folders/1_qNRukVdx2lyEjLk-AY08UPmQUhUfjbk?usp=sharing" target="_blank" rel="noopener noreferrer">
+        <span class="wt-eyebrow">Furnished</span>
+        <span class="wt-title">Furnished · 2–4 Bed</span>
+        <span class="wt-cta">Open</span>
+      </a>
+      <a class="wt-card wt-photo" href="https://drive.google.com/drive/folders/16zTaSa_GKlqlwaG9j-8075uBGoPkngwE?usp=sharing" target="_blank" rel="noopener noreferrer">
+        <span class="wt-eyebrow">Unfurnished</span>
+        <span class="wt-title">Unfurnished · Studio – 4 Bed</span>
+        <span class="wt-cta">Open</span>
+      </a>
+      <a class="wt-card wt-photo" href="https://drive.google.com/drive/folders/1kCyZLWv9BN22VXJAIp6Q1wCHL-GH8joZ?usp=sharing" target="_blank" rel="noopener noreferrer">
+        <span class="wt-eyebrow">AI furnished</span>
+        <span class="wt-title">AI furnished renders</span>
+        <span class="wt-cta">Open</span>
+      </a>
+      <a class="wt-card wt-photo" href="https://drive.google.com/drive/folders/1GEekLPVfZVsdhRoriATQomnJtrijAXvH?usp=sharing" target="_blank" rel="noopener noreferrer">
+        <span class="wt-eyebrow">Exterior</span>
+        <span class="wt-title">Exterior shots</span>
+        <span class="wt-cta">Open</span>
+      </a>
+    </div>
     <div style="height: 24px;"></div>
   </section>
 
@@ -4320,7 +4349,9 @@ if (overviewBookBtn) overviewBookBtn.addEventListener('click', () => openBooking
 })();
 
 // Walkthrough + unit-walkaround cards — play in the fp-modal on click.
-document.querySelectorAll('.wt-card').forEach(btn => {
+// Photo-gallery tiles share the same class but are <a> links to Drive
+// folders; the [data-video] selector skips them so they just navigate.
+document.querySelectorAll('.wt-card[data-video]').forEach(btn => {
   btn.addEventListener('click', () => openVideoInModal(btn.dataset.title || 'Walkthrough', btn.dataset.video));
 });
 </script>
