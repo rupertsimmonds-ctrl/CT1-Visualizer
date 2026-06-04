@@ -272,6 +272,115 @@
     font-size: 11px; letter-spacing: 0.04em;
     color: var(--ct-sun); opacity: 0.7; margin-top: 4px;
   }
+
+  /* Agency league — two-column stack. Each column = the old bh / H&H KPI
+     half (kept the class hooks so the existing mirrorKpis writes still
+     hit the same IDs) followed by that agency's ranked broker board. */
+  .agency-league {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 14px; margin-bottom: 28px;
+  }
+  .agency-col {
+    background: var(--ct-afterlight2);
+    border: 1px solid rgba(215, 168, 111, 0.32);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  /* Column head — visually identical to the old .kpi-half so the bh / H&H
+     summary keeps the same weight. Inherits .kpi-tally / .kpi-agency /
+     .kpi-half-sub child styles for free via the existing rules. */
+  .agency-col-head {
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 22px 28px;
+    background: transparent; border: 0; cursor: pointer; text-align: left;
+    color: var(--ct-haze); font-family: inherit;
+    transition: background 0.18s ease;
+    position: relative;
+    border-left: 4px solid var(--ct-sun);
+    border-bottom: 1px solid rgba(215, 168, 111, 0.18);
+  }
+  .agency-col-head:hover { background: rgba(244, 242, 238, 0.04); }
+  .agency-col.hh .agency-col-head { border-left-color: var(--powder); }
+  .agency-col-head .click-hint { position: absolute; top: 14px; right: 18px; font-size: 9px; letter-spacing: 0.2em; color: var(--ct-gold); opacity: 0.55; text-transform: uppercase; }
+  .agency-col-head:hover .click-hint { opacity: 1; }
+  .agency-col-head .kpi-agency {
+    font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--ct-gold); font-weight: 600;
+  }
+  .agency-col-head .kpi-tally {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 16px;
+  }
+  .agency-col-head .kpi-tally .lbl {
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ct-sun); opacity: 0.85;
+  }
+  .agency-col-head .kpi-tally .val {
+    font-family: Georgia, 'Times New Roman', serif; font-size: 32px; line-height: 1;
+    color: var(--ct-haze); font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+  }
+  .agency-col-head .kpi-half-sub {
+    font-size: 11px; letter-spacing: 0.04em;
+    color: var(--ct-sun); opacity: 0.7; margin-top: 4px;
+  }
+
+  /* Per-agency ranked broker board */
+  .agency-col-board {
+    padding: 10px 14px 14px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .agency-row {
+    display: grid; grid-template-columns: 24px 1fr auto auto;
+    gap: 12px; align-items: center;
+    padding: 8px 10px;
+    background: rgba(244, 242, 238, 0.04);
+    border-left: 3px solid transparent;
+    transition: background 0.15s ease;
+  }
+  .agency-row.rank-1 { border-left-color: var(--ct-gold); }
+  .agency-row.rank-2 { border-left-color: var(--ct-sun); }
+  .agency-row.rank-3 { border-left-color: var(--terra); }
+  .agency-rank {
+    font-family: Georgia, serif; font-size: 16px; line-height: 1;
+    color: var(--ct-gold-dark); text-align: center;
+  }
+  .agency-row.rank-1 .agency-rank { color: var(--ct-gold); }
+  .agency-name {
+    font-size: 13px; color: var(--ct-haze); font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .agency-deals {
+    font-family: Georgia, serif; font-size: 16px; color: var(--ct-haze);
+    font-variant-numeric: tabular-nums;
+  }
+  .agency-revenue {
+    font-size: 10px; color: var(--ct-sun); opacity: 0.85;
+    font-variant-numeric: tabular-nums; text-align: right; min-width: 70px;
+  }
+  .agency-col-empty {
+    padding: 18px 12px; text-align: center;
+    color: var(--ct-sun); opacity: 0.7; font-style: italic; font-size: 12px;
+  }
+  .agency-league-diag {
+    grid-column: 1 / -1;
+    padding: 10px 14px;
+    background: rgba(255, 120, 122, 0.12);
+    border-left: 3px solid var(--salmon);
+    color: var(--ct-haze); font-size: 11px; line-height: 1.5;
+  }
+  .agency-league-diag strong { color: var(--salmon); }
+  .agency-league-diag code {
+    background: rgba(244, 242, 238, 0.08); padding: 1px 5px; font-size: 10.5px;
+    word-break: break-word;
+  }
+  .agency-league-foot {
+    grid-column: 1 / -1;
+    margin-top: 2px; padding: 6px 4px 0; font-size: 11px; line-height: 1.5;
+    color: var(--denim);
+  }
+  .agency-league-foot code {
+    background: rgba(31, 52, 63, 0.08); padding: 1px 5px; font-size: 11px;
+  }
   .headline {
     background: rgba(244,242,238,0.04);
     border: 1px solid rgba(215,168,111,0.22);
@@ -1600,33 +1709,48 @@
         <div class="headline-sub" id="kpi-avail-sub">—</div>
       </button>
     </div>
-    <div class="kpi-banner">
-      <button class="kpi-half" id="card-bh" type="button" data-view="bh_let">
-        <span class="click-hint">Click for list</span>
-        <div class="kpi-agency">bh</div>
-        <div class="kpi-tally">
-          <span class="lbl">Reserved</span>
-          <span class="val" id="kpi-bh-reserved">0</span>
-        </div>
-        <div class="kpi-tally">
-          <span class="lbl">Let</span>
-          <span class="val" id="kpi-bh">0</span>
-        </div>
-        <div class="kpi-half-sub" id="kpi-bh-sub">Signed + Occupied</div>
-      </button>
-      <button class="kpi-half hh" id="card-hh" type="button" data-view="hh_let">
-        <span class="click-hint">Click for list</span>
-        <div class="kpi-agency">H&amp;H</div>
-        <div class="kpi-tally">
-          <span class="lbl">Reserved</span>
-          <span class="val" id="kpi-hh-reserved">0</span>
-        </div>
-        <div class="kpi-tally">
-          <span class="lbl">Let</span>
-          <span class="val" id="kpi-hh">0</span>
-        </div>
-        <div class="kpi-half-sub" id="kpi-hh-sub">Signed + Occupied</div>
-      </button>
+    <!-- Agency stack: each column header = the old bh / H&H KPI half,
+         with that agency's ranked broker list directly underneath. The
+         standalone broker league section is folded into this layout. -->
+    <div class="agency-league" id="agency-league">
+      <div class="agency-col">
+        <button class="agency-col-head" id="card-bh" type="button" data-view="bh_let">
+          <span class="click-hint">Click for list</span>
+          <div class="kpi-agency">bh</div>
+          <div class="kpi-tally">
+            <span class="lbl">Reserved</span>
+            <span class="val" id="kpi-bh-reserved">0</span>
+          </div>
+          <div class="kpi-tally">
+            <span class="lbl">Let</span>
+            <span class="val" id="kpi-bh">0</span>
+          </div>
+          <div class="kpi-half-sub" id="kpi-bh-sub">— of stock</div>
+        </button>
+        <div class="agency-col-board" id="agency-board-bh"></div>
+      </div>
+      <div class="agency-col hh">
+        <button class="agency-col-head" id="card-hh" type="button" data-view="hh_let">
+          <span class="click-hint">Click for list</span>
+          <div class="kpi-agency">H&amp;H</div>
+          <div class="kpi-tally">
+            <span class="lbl">Reserved</span>
+            <span class="val" id="kpi-hh-reserved">0</span>
+          </div>
+          <div class="kpi-tally">
+            <span class="lbl">Let</span>
+            <span class="val" id="kpi-hh">0</span>
+          </div>
+          <div class="kpi-half-sub" id="kpi-hh-sub">— of stock</div>
+        </button>
+        <div class="agency-col-board" id="agency-board-hh"></div>
+      </div>
+      <div class="agency-league-diag" id="league-diag" hidden></div>
+      <div class="agency-league-foot">
+        A broker only appears if they're recorded on at least one Reserved or
+        signed/occupied row. If a name's missing, check the <code>broker</code>
+        column on the master sheet.
+      </div>
     </div>
   </section>
 
@@ -1718,19 +1842,7 @@
     </div>
   </section>
 
-  <section class="league-row" id="league-row">
-    <div class="league-head">
-      <h2>Broker league · CT1</h2>
-      <div class="tag" id="league-sub">Reserved + Let, this calendar month · — deals</div>
-    </div>
-    <div class="league-board" id="league-board"></div>
-    <div class="league-diag" id="league-diag" hidden></div>
-    <div class="league-foot">
-      A broker only appears if they're recorded on at least one Reserved or
-      signed/occupied row. If a name's missing, check the <code>broker</code>
-      column on the master sheet.
-    </div>
-  </section>
+
 
   <section class="stage">
 
@@ -2479,8 +2591,8 @@ function buildHeadlines() {
 
   const pctBh = total ? `${(bhLet/total*100).toFixed(1)}%` : '—';
   const pctHh = total ? `${(hhLet/total*100).toFixed(1)}%` : '—';
-  document.getElementById('kpi-bh-sub').textContent = `Signed + Occupied · ${pctBh}`;
-  document.getElementById('kpi-hh-sub').textContent = `Signed + Occupied · ${pctHh}`;
+  document.getElementById('kpi-bh-sub').textContent = `${pctBh} of stock`;
+  document.getElementById('kpi-hh-sub').textContent = `${pctHh} of stock`;
 
   const avParts = [];
   if (onPortals)           avParts.push(`${onPortals} listed on portals`);
@@ -2633,7 +2745,7 @@ function setupFilters() {
   });
   // KPI buttons — both the Available headline and the bh / H&H halves
   // open the filtered list view via data-view.
-  document.querySelectorAll('.headline[data-view], .kpi-half[data-view]').forEach(b => {
+  document.querySelectorAll('.headline[data-view], .agency-col-head[data-view]').forEach(b => {
     b.addEventListener('click', () => openList(b.dataset.view));
   });
   // Available focus toggle — fades non-Available units to a near-monochrome
@@ -2740,7 +2852,7 @@ function applyTowerFilter() {
   document.querySelectorAll('#mix-body tr').forEach(r => {
     r.style.opacity = (bed === 'all' || r.dataset.type === bed) ? '1' : '0.35';
   });
-  document.querySelectorAll('.headline[data-view], .kpi-half[data-view]').forEach(b => {
+  document.querySelectorAll('.headline[data-view], .agency-col-head[data-view]').forEach(b => {
     b.classList.toggle('active', st && b.dataset.view === st);
   });
   document.querySelectorAll('.avail-tile').forEach(t => {
@@ -3590,57 +3702,57 @@ function rebuildAll() {
  * ========================================================== */
 // All-time only for now — month-mode toggle removed by request.
 function renderLeague() {
-  const board = document.getElementById('league-board');
-  const sub = document.getElementById('league-sub');
-  if (!board) return;
-  const byBroker = new Map();
+  // Renders the two per-agency broker boards inside .agency-league. Each
+  // broker's deals are attributed to the agency implied by the unit's
+  // status code (*_bh vs *_hh); the rare 'same name on both' edge case
+  // appears once per agency rather than being merged.
+  const boardBh = document.getElementById('agency-board-bh');
+  const boardHh = document.getElementById('agency-board-hh');
+  if (!boardBh || !boardHh) return;
+  const agencyForStatus = s =>
+    (s === 'reserved_bh' || s === 'signed_bh' || s === 'occupied_bh') ? 'bh'
+    : (s === 'reserved_hh' || s === 'signed_hh' || s === 'occupied_hh') ? 'hh'
+    : null;
+  const byKey = new Map();
   for (const u of UNITS) {
     if (!u.br) continue;
     const key = u.br.trim();
     if (!key) continue;
+    const agency = agencyForStatus(u.s);
+    if (!agency) continue;
     const isReserved = u.s === 'reserved_bh' || u.s === 'reserved_hh';
-    const isLet      = u.s === 'signed_bh' || u.s === 'signed_hh' ||
-                       u.s === 'occupied_bh' || u.s === 'occupied_hh';
-    if (!isReserved && !isLet) continue;
-    const row = byBroker.get(key)
-      || { name: key, deals: 0, reserved: 0, let: 0, revenue: 0 };
+    const k = `${key}::${agency}`;
+    const row = byKey.get(k)
+      || { name: key, agency, deals: 0, reserved: 0, let: 0, revenue: 0 };
     row.deals += 1;
     if (isReserved) row.reserved += 1; else row.let += 1;
     row.revenue += (u.sgnR || u.pr || 0);
-    byBroker.set(key, row);
+    byKey.set(k, row);
   }
-  const ranked = [...byBroker.values()].sort((a, b) =>
-    b.deals - a.deals || b.let - a.let || b.revenue - a.revenue,
-  );
-  const totalReserved = ranked.reduce((s, r) => s + r.reserved, 0);
-  const totalLet      = ranked.reduce((s, r) => s + r.let, 0);
-  if (sub) {
-    sub.textContent =
-      `${totalLet} let · ${totalReserved} reserved · across ${ranked.length} broker${ranked.length === 1 ? '' : 's'}`;
-  }
+  const sortFn = (a, b) => b.deals - a.deals || b.let - a.let || b.revenue - a.revenue;
+  const bh = [...byKey.values()].filter(r => r.agency === 'bh').sort(sortFn);
+  const hh = [...byKey.values()].filter(r => r.agency === 'hh').sort(sortFn);
 
-  if (!ranked.length) {
-    board.innerHTML = `
-      <div class="league-empty">
-        No reservations or signed deals on record yet.<br>
-        The leaderboard refreshes every 5 minutes with the live sheet.
-      </div>`;
-    return;
-  }
-  board.innerHTML = ranked.map((r, i) => {
-    const rankClass = i < 3 ? `rank-${i + 1}` : '';
-    return `
-      <div class="league-row-item ${rankClass}">
-        <div class="league-rank">${i + 1}</div>
-        <div class="league-name">${r.name}</div>
-        <div class="league-stats">
-          <div class="league-stat"><span class="lbl">Let</span><span class="val">${r.let}</span></div>
-          <div class="league-stat"><span class="lbl">Reserved</span><span class="val">${r.reserved}</span></div>
-        </div>
-        <div class="league-revenue"><strong>${fmtAED(r.revenue)}</strong> p.a.</div>
-      </div>
-    `;
-  }).join('');
+  const renderCol = (board, ranked) => {
+    if (!ranked.length) {
+      board.innerHTML = `<div class="agency-col-empty">No reservations or signed deals yet.</div>`;
+      return;
+    }
+    board.innerHTML = ranked.map((r, i) => {
+      const rankClass = i < 3 ? `rank-${i + 1}` : '';
+      const title = `${r.let} let · ${r.reserved} reserved`;
+      return `
+        <div class="agency-row ${rankClass}" title="${title}">
+          <div class="agency-rank">${i + 1}</div>
+          <div class="agency-name">${r.name}</div>
+          <div class="agency-deals">${r.deals}</div>
+          <div class="agency-revenue">${fmtAED(r.revenue)}</div>
+        </div>`;
+    }).join('');
+  };
+  renderCol(boardBh, bh);
+  renderCol(boardHh, hh);
+
   // Diagnostic banner — surfaces a column mismatch on the sheet without
   // needing DevTools. Only shows when the broker column couldn't be found.
   const diag = document.getElementById('league-diag');
