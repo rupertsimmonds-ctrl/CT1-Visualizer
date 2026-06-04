@@ -3419,6 +3419,10 @@ function processGvizResponse(resp) {
     // Optional 'architectural_type' (or 'arch_type') column — when 07_HTML_Export
     // carries it, the client uses it as the primary floorplan key.
     const iArch = ix('architectural_type') >= 0 ? ix('architectural_type') : ix('arch_type');
+    // NEW single-column read-path: a per-unit Drive floorplan URL on
+    // 07_HTML_Export. When present it is authoritative; blank falls back to the
+    // architectural_type -> 08_Floorplans lookup (see floorplanFor).
+    const iFpUrl = ix('floorplan_url');
     const iNsqm = ix('net_sqm'), iTsqm = ix('total_sqm');
     const iSgnD = ix('signed_date'), iLast = ix('last_activity_date');
     const iBroker = ix('broker'), iSgnR = ix('signed_rent_aed');
@@ -3452,6 +3456,7 @@ function processGvizResponse(resp) {
         bedRaw: bed, // raw bedroom_type string ("Studio", "1 Bedroom", "3 Bedroom") for floorplan lookup
         pt: String(get(row, iPt)||'').trim().toUpperCase() || null,
         archType: String(get(row, iArch)||'').trim() || null,
+        fpUrl: String(get(row, iFpUrl)||'').trim() || null, // per-unit floorplan_url (new read-path)
         d: String(get(row, ix('is_duplex'))||'').toUpperCase() === 'Y',
         v: String(get(row, ix('view_code'))||'').trim(),
         sq: parseFloat(get(row, ix('total_sqft'))) || 0,
@@ -3832,8 +3837,27 @@ function fpKey(bed, type, dup) {
 function archKey(s) {
   return (s || '').trim().toUpperCase().replace(/\s+/g, '_');
 }
+// Extract a Drive file id from a floorplan_url cell. Mirrors the server-side
+// extractFileId in /api/floorplans so a bare id, a /file/d/<id>/ URL, or an
+// ?id=<id> URL all resolve. Returns null when nothing usable is present.
+const FP_FILE_ID_RE = /(?:\/file\/d\/|[?&]id=)([a-zA-Z0-9_-]{20,})/;
+function fileIdFromUrl(raw) {
+  const s = (raw == null ? '' : String(raw)).trim();
+  if (!s) return null;
+  const m = s.match(FP_FILE_ID_RE);
+  if (m) return m[1];
+  return /^[a-zA-Z0-9_-]{20,}$/.test(s) ? s : null;
+}
 function floorplanFor(u) {
   if (!u) return null;
+  // Primary source: the per-unit floorplan_url column on 07_HTML_Export — the
+  // single authoritative column the read-path is migrating to. When it holds a
+  // usable Drive id it wins; a blank (or unparseable) value falls through to the
+  // legacy lookup below, so nothing moves until the sheet column is populated.
+  if (u.fpUrl) {
+    const fid = fileIdFromUrl(u.fpUrl);
+    if (fid) return fid;
+  }
   // architectural_type is authoritative when present: resolve strictly by it,
   // with NO bedroom/product fallback, so an uncatalogued type shows
   // "floorplan not available" instead of a wrong plan shared across the combo.
