@@ -5,11 +5,12 @@ The floorplan + unit-type data this app reads is produced by a separate back-off
 pipeline: **github.com/rupertsimmonds-ctrl/CT1-floorplan-mapping**. That repo audits
 the architect drawings and WRITES the `01_Unit_Master`, `07_HTML_Export`, and
 `08_Floorplans` tabs of the CT1 Leasing Control Centre sheet; this app only READS
-that sheet. The read-path is migrating to a single per-unit `floorplan_url` column on
-`07_HTML_Export`: when set it is authoritative (`floorplanFor()` reads it directly), and
-a blank cell falls back to the legacy `architectural_type` (per unit) -> `08_Floorplans`
-arch_type -> Drive file id lookup. The two coexist until `08_Floorplans`/the bridge are
-retired. Product type A/B/C/D is not used here. For any floorplan/unit-data question,
+that sheet. The read-path now resolves a unit's plan SOLELY from a single per-unit `floorplan_url`
+column (authored on `01_Unit_Master`, mirrored to `07_HTML_Export` via VLOOKUP, which the
+app reads). `floorplanFor()` reads it directly; a blank cell means "floorplan not available"
+with NO fallback. The legacy `architectural_type` -> `08_Floorplans` path is retired: the tab
+is relabeled `08_Floorplans_OLD`, and the `/api/floorplans` route is kept but dormant in case
+we ever rewire it. Product type A/B/C/D is not used here. For any floorplan/unit-data question,
 start in the mapping repo (its README + OUTSTANDING_STATUS).
 
 ## Brand naming conventions
