@@ -389,6 +389,20 @@
   .league-row .league-foot code {
     background: rgba(244, 242, 238, 0.08); padding: 1px 5px; font-size: 11px;
   }
+  /* On-page diagnostic banner — visible when the broker column isn't found
+     on 07_HTML_Export. Surfaces what the live sheet headers look like so
+     the dev can extend the alias list without needing DevTools. */
+  .league-row .league-diag {
+    margin-top: 12px; padding: 10px 12px;
+    background: rgba(255, 120, 122, 0.10);
+    border-left: 3px solid var(--salmon);
+    color: var(--ct-haze); font-size: 11px; line-height: 1.5;
+  }
+  .league-row .league-diag strong { color: var(--salmon); }
+  .league-row .league-diag code {
+    background: rgba(244, 242, 238, 0.08); padding: 1px 5px; font-size: 10.5px;
+    word-break: break-word;
+  }
 
   /* SHOW FLATS ROW (promoted) */
   .showflats-row {
@@ -1696,6 +1710,7 @@
       <div class="tag" id="league-sub">Reserved + Let, this calendar month · — deals</div>
     </div>
     <div class="league-board" id="league-board"></div>
+    <div class="league-diag" id="league-diag" hidden></div>
     <div class="league-foot">
       A broker only appears if they're recorded on at least one Reserved or
       signed/occupied row. If a name's missing, check the <code>broker</code>
@@ -3612,6 +3627,21 @@ function renderLeague() {
       </div>
     `;
   }).join('');
+  // Diagnostic banner — surfaces a column mismatch on the sheet without
+  // needing DevTools. Only shows when the broker column couldn't be found.
+  const diag = document.getElementById('league-diag');
+  const missing = window.__CT1_MISSING_OPTIONAL || [];
+  const headers = window.__CT1_SHEET_HEADERS || [];
+  if (diag) {
+    if (missing.includes('broker')) {
+      diag.hidden = false;
+      diag.innerHTML =
+        `<strong>⚠ Broker column not found on 07_HTML_Export.</strong> ` +
+        `Tried these header names: <code>broker · agent_name · agent · broker_name · signing_broker</code>. ` +
+        `Live sheet headers received: <code>${headers.length ? headers.join(' · ') : '(none — gviz returned no labels)'}</code>. ` +
+        `Share this list with the dev to extend the alias map.`;
+    } else { diag.hidden = true; diag.innerHTML = ''; }
+  }
 }
 
 window.addEventListener('resize', () => {
@@ -3669,6 +3699,13 @@ function processUnitsResponse(resp) {
     };
     const missingOpt = Object.entries(optionalCols).filter(([_, i]) => i < 0).map(([k]) => k);
     if (missingOpt.length) console.warn('[CT1] missing optional columns on 07_HTML_Export:', missingOpt.join(', '));
+    // Stash on window so the league footer banner + console can show the
+    // actual sheet headers without DevTools — useful when a column rename
+    // upstream silently breaks a feature.
+    try {
+      window.__CT1_SHEET_HEADERS = cols.slice();
+      window.__CT1_MISSING_OPTIONAL = missingOpt.slice();
+    } catch (e) {}
     const isYes = v => /^(y|yes|true|1)$/i.test(String(v == null ? '' : v).trim());
     if ([iFloor,iUnit,iBed,iView,iTr,iSt].some(i => i < 0)) {
       throw new Error('Expected column missing in 07_HTML_Export. Got: ' + cols.join(', '));

@@ -4,10 +4,12 @@ const SHEET_ID = "1FOofWcGkSXXnBWZ70dB7tix9T5lHjV3BL8evePp-URk";
 const SHEET_TAB = "07_HTML_Export";
 const BRIDGE_TAB = "unit_level_bridge";
 // `headers=1` tells gviz to treat row 1 as headers explicitly. Needed for
-// tabs that don't have row 1 frozen (otherwise gviz mislabels the columns).
+// tabs that don't have row 1 frozen (otherwise gviz heuristic-detects the
+// header row and silently mis-labels columns when the heuristic misfires,
+// which breaks every ix(name) lookup downstream).
 const DEFAULT_GVIZ_URL =
   `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq` +
-  `?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}`;
+  `?tqx=out:json&headers=1&sheet=${encodeURIComponent(SHEET_TAB)}`;
 const DEFAULT_BRIDGE_URL =
   `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq` +
   `?tqx=out:json&headers=1&sheet=${encodeURIComponent(BRIDGE_TAB)}`;
