@@ -3443,7 +3443,16 @@ function processGvizResponse(resp) {
   try {
     if (!resp || resp.status !== 'ok') throw new Error((resp && resp.errors && resp.errors[0] && resp.errors[0].detailed_message) || 'gviz error');
     const cols = resp.table.cols.map(c => ((c.label || c.id || '') + '').trim().toLowerCase().replace(/\s+/g,'_'));
-    const ix = name => cols.indexOf(name);
+    // Tolerant lookup — pass either a single header name or an array of
+    // aliases (first match wins). Keeps the visualizer working when the
+    // master sheet renames or re-cases columns without a code change.
+    const ix = name => {
+      if (Array.isArray(name)) {
+        for (const n of name) { const i = cols.indexOf(n); if (i >= 0) return i; }
+        return -1;
+      }
+      return cols.indexOf(name);
+    };
     const need = ['unit_id','floor','unit_no','bedroom_type','is_duplex','view_code','total_sqft','asking_rent_aed','current_asking_aed','asking_psf','status','agency_won','tranche'];
     if (need.some(n => ix(n) < 0)) throw new Error('Expected column missing');
     const iBalc = ix('balcony'), iBsq = ix('balcony_sqft');
@@ -3458,7 +3467,19 @@ function processGvizResponse(resp) {
     const iFpUrl = ix('floorplan_url');
     const iNsqm = ix('net_sqm'), iTsqm = ix('total_sqm');
     const iSgnD = ix('signed_date'), iLast = ix('last_activity_date');
-    const iBroker = ix('broker'), iSgnR = ix('signed_rent_aed');
+    const iBroker = ix(['broker', 'agent_name', 'agent', 'broker_name', 'signing_broker']), iSgnR = ix('signed_rent_aed');
+    // One-time dev visibility: surface any optional columns the visualizer
+    // expected to find but didn't. Helps spot silent feature breakage if the
+    // master sheet renames a column. Required columns already throw above.
+    const optionalCols = {
+      balcony: iBalc, balcony_sqft: iBsq, show_flat: iSf, product_type: iPt,
+      architectural_type: iArch, floorplan_url: iFpUrl,
+      net_sqm: iNsqm, total_sqm: iTsqm,
+      signed_date: iSgnD, last_activity_date: iLast,
+      broker: iBroker, signed_rent_aed: iSgnR,
+    };
+    const missingOpt = Object.entries(optionalCols).filter(([_, i]) => i < 0).map(([k]) => k);
+    if (missingOpt.length) console.warn('[CT1] missing optional columns on 07_HTML_Export:', missingOpt.join(', '));
     const isYes = v => /^(y|yes|true|1)$/i.test(String(v == null ? '' : v).trim());
     const get = (row, i) => (i < 0 || !row.c[i]) ? null : row.c[i].v;
     // gviz dates land as 'Date(yyyy,m,d)' (m is 0-indexed). Parse to ISO so
