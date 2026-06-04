@@ -1960,7 +1960,6 @@ const SHEET_TAB = '07_HTML_Export';
 // CORS issues and the silent-JSONP failures we saw on iOS Safari + in-app
 // browsers (WhatsApp, Drive preview, etc.).
 const UNITS_URL = '/api/units';
-const FLOORPLANS_URL = '/api/floorplans';
 const REFRESH_MS = 5 * 60 * 1000;
 
 // ============================================================
@@ -3818,25 +3817,15 @@ async function copyWithFeedback(btn, text) {
 })();
 
 // ============================================================
-// FLOORPLANS — fetched once from /api/floorplans.
-// Two parallel indices:
-//   - FLOORPLAN_BY_ARCH: keyed by the architectural_type column (preferred
-//     when both the unit row and the floorplan row carry the same key).
-//   - FLOORPLAN_INDEX: keyed by `${bedroom_type}::${product_type}::${duplex}`
-//     as the legacy fallback. Duplex Y/N first, blank as a catch-all.
-// floorplanFor() tries arch first, then composite, so the same lookup keeps
-// working whether the sheets are migrated to architectural_type yet or not.
+// FLOORPLANS — single source of truth.
+// A unit's plan resolves solely from its per-unit floorplan_url (authored on
+// 01_Unit_Master, mirrored to 07_HTML_Export via VLOOKUP, parsed into u.fpUrl).
+// The legacy architectural_type -> 08_Floorplans lookup is retired: a blank
+// floorplan_url means "floorplan not available", with no fallback. The
+// /api/floorplans route is kept but dormant. 1:1 with desktop.
 // ============================================================
-let FLOORPLAN_INDEX = {}; // { 'Studio::A::': '<file_id>', '3 Bedroom::A::Y': '<id>' , ... }
-let FLOORPLAN_BY_ARCH = {}; // { 'STUDIO_A': '<file_id>', '3BR_A_DUPLEX': '<id>', ... }
 let lastOpenUnitUid = null;
 
-function fpKey(bed, type, dup) {
-  return (bed || '').trim() + '::' + (type || '').trim().toUpperCase() + '::' + (dup || '').trim().toUpperCase();
-}
-function archKey(s) {
-  return (s || '').trim().toUpperCase().replace(/\s+/g, '_');
-}
 // Extract a Drive file id from a floorplan_url cell. Mirrors the server-side
 // extractFileId in /api/floorplans so a bare id, a /file/d/<id>/ URL, or an
 // ?id=<id> URL all resolve. Returns null when nothing usable is present.
@@ -3850,43 +3839,13 @@ function fileIdFromUrl(raw) {
 }
 function floorplanFor(u) {
   if (!u) return null;
-  // Primary source: the per-unit floorplan_url column on 07_HTML_Export — the
-  // single authoritative column the read-path is migrating to. When it holds a
-  // usable Drive id it wins; a blank (or unparseable) value falls through to the
-  // legacy lookup below, so nothing moves until the sheet column is populated.
+  // Single source of truth: the per-unit floorplan_url column. A usable Drive
+  // id wins; a blank or unparseable value means "floorplan not available".
   if (u.fpUrl) {
     const fid = fileIdFromUrl(u.fpUrl);
     if (fid) return fid;
   }
-  // architectural_type is authoritative when present: resolve strictly by it,
-  // with NO bedroom/product fallback, so an uncatalogued type shows
-  // "floorplan not available" instead of a wrong plan shared across the combo.
-  if (u.archType) {
-    return FLOORPLAN_BY_ARCH[archKey(u.archType)] || null;
-  }
-  return null;  // floorplans keyed only by architectural type
-}
-async function fetchFloorplans() {
-  try {
-    const r = await fetch(FLOORPLANS_URL + '?t=' + Date.now(), { cache: 'no-store' });
-    if (!r.ok) return;
-    const body = await r.json();
-    if (!body || body.status !== 'ok' || !Array.isArray(body.rows)) return;
-    const next = {};
-    const nextArch = {};
-    for (const row of body.rows) {
-      next[fpKey(row.bedroom_type, row.product_type, row.is_duplex)] = row.file_id;
-      if (row.architectural_type) {
-        nextArch[archKey(row.architectural_type)] = row.file_id;
-      }
-    }
-    FLOORPLAN_INDEX = next;
-    FLOORPLAN_BY_ARCH = nextArch;
-    refreshOpenUnitModal();
-  } catch (e) {
-    // Silent — floorplan availability is best-effort. The modal shows a clear
-    // "not available" state when a unit has no matching plan.
-  }
+  return null;
 }
 // Per-unit walkaround videos — keyed by uid (floor-padded · position). Each
 // entry plays in the same fp-modal iframe the floorplans use. Source: the
@@ -4341,7 +4300,6 @@ renderList();
 renderRecent();
 setTimeout(refresh, 200);
 setInterval(refresh, REFRESH_MS);
-setTimeout(fetchFloorplans, 250);
 document.getElementById('fp-close').addEventListener('click', closeFloorplanModal);
 document.getElementById('fp-share').addEventListener('click', shareCurrentDriveFile);
 
