@@ -963,8 +963,12 @@
   /* Move-in & handover — collapsed by default since it's signed-deal info
      a broker doesn't need until they actually close. <details>/<summary>
      gives accessible expand for free; we hide the native disclosure marker
-     and use a CSS-driven + / − glyph instead. */
-  .handover-card { padding: 0; }
+     and use a CSS-driven + / − glyph instead. Lives nested inside the
+     Lobby & access info-block, so we lift it off the siblings above. */
+  .handover-card {
+    padding: 0; margin-top: 14px;
+    padding-top: 14px; border-top: 1px solid var(--rule);
+  }
   .handover-card > summary {
     list-style: none; cursor: pointer;
     display: grid; grid-template-columns: 28px 1fr auto; gap: 12px;
@@ -2071,6 +2075,35 @@
       <p><strong>Amenity deck:</strong> 9th floor of the parking &amp; amenity building. <strong>Skybridge from the tower:</strong> 5th floor.</p>
       <p class="info-pin">Lobby · Mon – Sun · 10:00 – 19:00 · Pre-booked appointments only</p>
       <p class="info-disclaimer"><em>Sea View / Metro / City Tower 2 aspect views available <strong>from 25th floor and above</strong>. Museum of the Future view is the exception.</em></p>
+      <details class="handover-card">
+        <summary>
+          <span class="handover-toggle" aria-hidden="true"></span>
+          <span class="handover-title">Move-in &amp; handover process</span>
+          <span class="handover-sub">~2 h · Mon–Sun · 09:00–16:00</span>
+        </summary>
+        <div class="handover-body">
+          <p><strong>Scheduling.</strong> Monday – Sunday, based on tenant convenience. First slot 09:00, last slot 16:00. Allow approximately <strong>2 hours per appointment</strong>.</p>
+          <div class="handover-step">
+            <span class="hs-num">1</span>
+            <div class="handover-step-body">
+              <strong>Unit handover · ~1 hour</strong> — with <a href="mailto:Sara.D@h-h.ae">Sara</a> and her team.
+            </div>
+          </div>
+          <div class="handover-step">
+            <span class="hs-num">2</span>
+            <div class="handover-step-body">
+              <strong>Onboarding · ~1 hour</strong> — with <a href="mailto:Anitha.jacob@h-h.ae">Anitha</a> or <a href="mailto:Melinda.t@h-h.ae">Melinda</a> (City Tower Property Management). Covers:
+              <ul>
+                <li>Tenant handbook review</li>
+                <li>Building &amp; facility orientation</li>
+                <li>Move-in scheduling &amp; procedures</li>
+              </ul>
+            </div>
+          </div>
+          <p class="handover-warn"><strong>No furniture deliveries or move-ins</strong> are permitted until both stages have been completed.</p>
+          <p class="handover-contact">Questions → <a href="mailto:residenceservices@citytowerdubai.ae">Residence Services</a> or <a href="mailto:Sabine.B@h-h.ae">Sabine Bolanz</a> (Sr. Residence Manager · <a href="tel:+971564119828">+971 56 411 9828</a>).</p>
+        </div>
+      </details>
     </article>
 
     <article class="info-block">
@@ -2124,39 +2157,7 @@
       </ul>
     </article>
 
-    <article class="info-block">
-      <details class="handover-card">
-        <summary>
-          <span class="handover-toggle" aria-hidden="true"></span>
-          <h2 class="handover-title">Move-in &amp; handover process</h2>
-          <span class="handover-sub">~2 h · Mon–Sun · 09:00–16:00</span>
-        </summary>
-        <div class="handover-body">
-          <p><strong>Scheduling.</strong> Monday – Sunday, based on tenant convenience. First slot 09:00, last slot 16:00. Allow approximately <strong>2 hours per appointment</strong>.</p>
-          <div class="handover-step">
-            <span class="hs-num">1</span>
-            <div class="handover-step-body">
-              <strong>Unit handover · ~1 hour</strong> — with <a href="mailto:Sara.D@h-h.ae">Sara</a> and her team.
-            </div>
-          </div>
-          <div class="handover-step">
-            <span class="hs-num">2</span>
-            <div class="handover-step-body">
-              <strong>Onboarding · ~1 hour</strong> — with <a href="mailto:Anitha.jacob@h-h.ae">Anitha</a> or <a href="mailto:Melinda.t@h-h.ae">Melinda</a> (City Tower Property Management). Covers:
-              <ul>
-                <li>Tenant handbook review</li>
-                <li>Building &amp; facility orientation</li>
-                <li>Move-in scheduling &amp; procedures</li>
-              </ul>
-            </div>
-          </div>
-          <p class="handover-warn"><strong>No furniture deliveries or move-ins</strong> are permitted until both stages have been completed.</p>
-          <p class="handover-contact">Questions → <a href="mailto:residenceservices@citytowerdubai.ae">Residence Services</a> or <a href="mailto:Sabine.B@h-h.ae">Sabine Bolanz</a> (Sr. Residence Manager · <a href="tel:+971564119828">+971 56 411 9828</a>).</p>
-        </div>
-      </details>
-    </article>
-
-    <article class="info-block">
+<article class="info-block">
       <h2>Agency fee · payable to betterhomes</h2>
       <p style="font-size:12px;color:var(--denim);margin-bottom:12px;">Agency fee is on the contract value at the stated monthly rate. Rent-free does <strong>not</strong> reduce the fee.</p>
       <div class="ic-inputs">
