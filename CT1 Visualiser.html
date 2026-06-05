@@ -1130,7 +1130,8 @@
     color: var(--denim); line-height: 1.3;
   }
   .info-block .ic-row input[type="number"],
-  .info-block .ic-row input[type="date"] {
+  .info-block .ic-row input[type="date"],
+  .info-block .ic-row input[type="text"] {
     width: 140px; padding: 6px 10px;
     border: 1px solid var(--rule); background: white;
     font-family: Georgia, serif; font-size: 14px; color: var(--slate);
@@ -1138,6 +1139,7 @@
     box-sizing: border-box;
   }
   .info-block .ic-row input:focus { outline: none; border-color: var(--ct-gold-dark); }
+  .info-block .cq-note { font-size: 11px; color: var(--denim); line-height: 1.4; padding: 0 0 6px; }
   .info-block .ic-toggle-row { padding: 10px 0 4px; }
   .info-block .cq-toggle {
     position: relative; display: inline-block; width: 38px; height: 22px;
@@ -2257,11 +2259,12 @@
         <label class="ic-row"><span>Contract start</span><input type="date" id="cq-start"></label>
         <label class="ic-row"><span>Annual rent (AED)</span><input type="number" id="cq-rent" value="250000" step="5000" inputmode="numeric"></label>
         <label class="ic-row"><span>Contract length (months)</span><input type="number" id="cq-term" value="14" min="1" max="120" step="1" inputmode="numeric"></label>
-        <label class="ic-row"><span>Rent-free</span><input type="number" id="cq-free" value="2" min="0" step="1" inputmode="numeric"></label>
+        <label class="ic-row"><span>Rent-free months</span><input type="text" id="cq-free" value="13-14" placeholder="e.g. 13-14" autocomplete="off" spellcheck="false"></label>
+        <div class="cq-note" id="cq-free-note">No rent-free months.</div>
         <label class="ic-row"><span>Number of cheques</span><input type="number" id="cq-n" value="4" min="1" max="24" step="1" inputmode="numeric"></label>
         <label class="ic-row ic-toggle-row">
-          <span>Amortize across full contract</span>
-          <span class="cq-toggle"><input type="checkbox" id="cq-amort"><span class="cq-knob"></span></span>
+          <span>Repeat cheques each year</span>
+          <span class="cq-toggle"><input type="checkbox" id="cq-mode-annual"><span class="cq-knob"></span></span>
         </label>
       </div>
       <div class="cq-summary" id="cq-summary">—</div>
@@ -4262,15 +4265,18 @@ async function copyWithFeedback(btn, text) {
 
 /* ============================================================
  * STANDALONE CHEQUE PLANNING CALCULATOR
- *   Default: full annual rent packed into the paid period
- *   Amortized: same total spread across the FULL contract,
- *              dates rounded to the 1st of the nearest month
- *   Cheque 1 = Bank transfer; subsequent = Post-dated cheque
+ *   Rent-free months are given by position (e.g. "13-14"); cheques are
+ *   only ever dated on paying months. Two modes:
+ *     • Total cheques    — one annual rent split into N cheques, spread
+ *                          across the paying months.
+ *     • Cheques per year — N cheques per 12 paying months; a trailing
+ *                          partial year gets one pro-rated stub cheque.
+ *   Cheque 1 = Bank transfer; subsequent = Post-dated cheque. 1:1 with mobile.
  * ========================================================== */
 (function () {
   const $ = id => document.getElementById(id);
   if (!$('cq-start')) return;
-  const ids = ['cq-start', 'cq-rent', 'cq-term', 'cq-free', 'cq-n', 'cq-amort'];
+  const ids = ['cq-start', 'cq-rent', 'cq-term', 'cq-free', 'cq-n', 'cq-mode-annual'];
 
   // Default contract start = 1st of next month
   (function defaultStart() {
@@ -4282,18 +4288,59 @@ async function copyWithFeedback(btn, text) {
 
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-  function chequeDate(start, n, monthOffsetExact) {
-    if (n === 1) return new Date(start.getTime());
-    const rounded = Math.round(monthOffsetExact);
-    // Subsequent cheques fall on the same day-of-month as the first. Build
-    // via Y/M/D so JS doesn't roll forward when the source day overflows the
-    // target month (e.g. start = Jan 31 → Feb has no 31, clamp to Feb 28/29).
+  // Add an integer number of months to a date, preserving day-of-month and
+  // clamping to the end of shorter months (e.g. Jan 31 + 1 → Feb 28/29).
+  function addMonths(start, k) {
     const day = start.getDate();
-    const newMonth = start.getMonth() + rounded;
-    const probe = new Date(start.getFullYear(), newMonth, 1);
-    const daysInMonth = new Date(probe.getFullYear(), probe.getMonth() + 1, 0).getDate();
-    probe.setDate(Math.min(day, daysInMonth));
+    const probe = new Date(start.getFullYear(), start.getMonth() + k, 1);
+    const dim = new Date(probe.getFullYear(), probe.getMonth() + 1, 0).getDate();
+    probe.setDate(Math.min(day, dim));
     return probe;
+  }
+  // 1-based contract month index → calendar date (month 1 = contract start).
+  const monthDate = (start, m) => addMonths(start, m - 1);
+
+  // Parse a lenient rent-free spec ("13-14", "1,2", "1-2, 7", "13 to 14") into
+  // a sorted list of unique 1-based month indices within [1, term].
+  function parseFreeMonths(str, term) {
+    const set = new Set();
+    if (str) {
+      String(str).toLowerCase()
+        .replace(/[–—]/g, '-')   // en/em dash → hyphen
+        .replace(/\bto\b/g, '-')           // "13 to 14" → "13-14"
+        .replace(/\s*-\s*/g, '-')          // tighten "13 - 14" → "13-14"
+        .replace(/&|\band\b|\+/g, ',')     // separators → comma
+        .split(/[,\s]+/).filter(Boolean)
+        .forEach(tok => {
+          const range = tok.match(/^(\d+)-(\d+)$/);
+          if (range) {
+            let a = +range[1], b = +range[2];
+            if (a > b) { const t = a; a = b; b = t; }
+            for (let k = a; k <= b; k++) set.add(k);
+          } else if (/^\d+$/.test(tok)) {
+            set.add(+tok);
+          }
+        });
+    }
+    return [...set].filter(m => m >= 1 && m <= term).sort((a, b) => a - b);
+  }
+  // Compress a sorted month list into ranges: [1,2,13,14] → "1–2, 13–14".
+  function fmtMonthList(arr) {
+    const parts = [];
+    for (let i = 0; i < arr.length; i++) {
+      let j = i;
+      while (j + 1 < arr.length && arr[j + 1] === arr[j] + 1) j++;
+      parts.push(i === j ? `${arr[i]}` : `${arr[i]}–${arr[j]}`);
+      i = j;
+    }
+    return parts.join(', ');
+  }
+  // nCh evenly-spread slot indices within a run of `count` months, anchored on
+  // the first (slot 0) — mirrors the legacy span/nCh cheque cadence.
+  function spreadSlots(count, nCh) {
+    const slots = [];
+    for (let i = 0; i < nCh; i++) slots.push(Math.min(count - 1, Math.round(i * count / nCh)));
+    return slots;
   }
   function fmtDate(d) {
     return `${String(d.getDate()).padStart(2, '0')} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
@@ -4306,11 +4353,24 @@ async function copyWithFeedback(btn, text) {
     const start = startStr ? new Date(startStr + 'T00:00:00') : null;
     const rent = parseFloat($('cq-rent').value) || 0;
     const term = parseInt($('cq-term').value, 10) || 0;
-    const free = Math.max(0, parseInt($('cq-free').value, 10) || 0);
     const nCh  = Math.max(1, parseInt($('cq-n').value, 10) || 0);
-    const amortize = $('cq-amort').checked;
+    const perYear = $('cq-mode-annual').checked;
     const tbody = $('cq-table').querySelector('tbody');
     const summary = $('cq-summary');
+    const note = $('cq-free-note');
+
+    // Parse rent-free months by position and echo back what was understood.
+    const freeRaw = $('cq-free').value;
+    const free = parseFreeMonths(freeRaw, term || 120);
+    if (note) {
+      if (!freeRaw || !freeRaw.trim()) {
+        note.textContent = 'No rent-free months.';
+      } else if (!free.length) {
+        note.textContent = 'Couldn’t read that — try e.g. 13-14 or 1,2.';
+      } else {
+        note.textContent = `Rent-free: month${free.length === 1 ? '' : 's'} ${fmtMonthList(free)} (${free.length} free).`;
+      }
+    }
 
     if (!start || !rent || !term || !nCh) {
       tbody.innerHTML = '<tr><td colspan="4" class="cq-empty">Enter contract details to see the schedule.</td></tr>';
@@ -4318,34 +4378,78 @@ async function copyWithFeedback(btn, text) {
       return;
     }
 
-    const paid = Math.max(0, term - free);
-    const span = amortize ? term : paid;
-    const spacing = nCh > 1 ? span / nCh : 0;
-    const amount = rent / nCh;
+    // Paying months = 1..term with the rent-free months removed, kept in order.
+    const freeSet = new Set(free);
+    const paying = [];
+    for (let m = 1; m <= term; m++) if (!freeSet.has(m)) paying.push(m);
+    const payCount = paying.length;
 
-    summary.innerHTML =
-      `<b>${nCh}</b> cheque${nCh === 1 ? '' : 's'} · `
-      + `<b>${fmtAmt(amount)}</b> each · `
-      + `<b>${fmtAmt(rent)}</b> total`
-      + (amortize
-          ? ` · spread across <b>${term}</b> months`
-          : ` · packed into <b>${paid}</b> paid month${paid === 1 ? '' : 's'}`);
-
-    const rows = [];
-    for (let i = 1; i <= nCh; i++) {
-      const offsetExact = (i - 1) * spacing;
-      const d = chequeDate(start, i, offsetExact);
-      const method = i === 1 ? 'Bank transfer' : 'Post-dated cheque';
-      rows.push(`
-        <tr>
-          <td>${i}</td>
-          <td>${fmtDate(d)}</td>
-          <td class="amount">${fmtAmt(amount)}</td>
-          <td>${method}</td>
-        </tr>
-      `);
+    if (payCount === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="cq-empty">Every month is rent-free — no cheques due.</td></tr>';
+      summary.innerHTML = `<b>0</b> cheques · all <b>${term}</b> months rent-free`;
+      return;
     }
-    tbody.innerHTML = rows.join('');
+
+    // Build the cheque list: each { month (1-based), amount }.
+    const cheques = [];
+    if (perYear) {
+      // Group paying months into 12-month years; each full year is one annual
+      // rent split into nCh cheques. A trailing partial year (the stub) gets a
+      // single pro-rated cheque dated at its first month.
+      const fullYears = Math.floor(payCount / 12);
+      const stub = payCount % 12;
+      const per = rent / nCh;
+      for (let y = 0; y < fullYears; y++) {
+        const yearMonths = paying.slice(y * 12, y * 12 + 12);
+        spreadSlots(12, nCh).forEach(s => cheques.push({ month: yearMonths[s], amount: per }));
+      }
+      if (stub > 0) {
+        const stubMonths = paying.slice(fullYears * 12);
+        cheques.push({ month: stubMonths[0], amount: rent * stub / 12 });
+      }
+      cheques.sort((a, b) => a.month - b.month);
+    } else {
+      // One annual rent split into nCh cheques, spread across the paying months.
+      const per = rent / nCh;
+      spreadSlots(payCount, nCh).forEach(s => cheques.push({ month: paying[s], amount: per }));
+    }
+
+    const total = cheques.reduce((t, c) => t + c.amount, 0);
+
+    // Summary line.
+    const freeTag = free.length ? ` · <b>${free.length}</b> rent-free` : '';
+    if (perYear) {
+      const fullYears = Math.floor(payCount / 12);
+      const stub = payCount % 12;
+      const head = fullYears > 0
+        ? `<b>${nCh}</b>/year × <b>${fullYears}</b> year${fullYears === 1 ? '' : 's'}`
+            + (stub > 0 ? ` + <b>1</b> stub (<b>${stub}</b> mo)` : '')
+        : `<b>1</b> stub cheque (<b>${stub}</b> mo)`;
+      summary.innerHTML = head
+        + ` · <b>${cheques.length}</b> cheque${cheques.length === 1 ? '' : 's'}`
+        + ` · <b>${fmtAmt(total)}</b> total`
+        + freeTag;
+    } else {
+      summary.innerHTML =
+        `<b>${nCh}</b> cheque${nCh === 1 ? '' : 's'} · `
+        + `<b>${fmtAmt(rent / nCh)}</b> each · `
+        + `<b>${fmtAmt(total)}</b> total`
+        + ` · over <b>${payCount}</b> paying month${payCount === 1 ? '' : 's'}`
+        + freeTag;
+    }
+
+    // Rows — first instalment by bank transfer, the rest post-dated cheques.
+    tbody.innerHTML = cheques.map((c, idx) => {
+      const d = monthDate(start, c.month);
+      const method = idx === 0 ? 'Bank transfer' : 'Post-dated cheque';
+      return `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${fmtDate(d)}</td>
+          <td class="amount">${fmtAmt(c.amount)}</td>
+          <td>${method}</td>
+        </tr>`;
+    }).join('');
   }
   ids.forEach(id => {
     const el = $(id);
