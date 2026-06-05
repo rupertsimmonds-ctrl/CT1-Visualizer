@@ -67,9 +67,11 @@
      two highest-leverage actions on the page (search and booking) are the
      first thing the broker sees, big enough to be obvious. */
   .search-cta-row {
-    display: grid; grid-template-columns: 1fr auto;
+    display: grid; grid-template-columns: 1fr auto auto;
     gap: 14px; margin: 0 0 28px;
   }
+  .search-cta-row .unit-toggle { margin: 0; align-self: stretch; }
+  .search-cta-row .unit-toggle-btn { padding: 0 14px; height: auto; min-width: 42px; font-size: 12px; }
   .search-bar {
     appearance: none; cursor: pointer; font-family: inherit; width: 100%;
     display: flex; align-items: center; gap: 14px;
@@ -160,11 +162,15 @@
   /* Size-unit toggle — two-button segmented control. Both states always
      visible at the top so brokers can spot the toggle without hunting. */
   .unit-toggle {
-    display: inline-flex; align-items: stretch;
-    margin-top: 10px;
+    display: inline-flex; align-items: center;
     background: var(--mist);
     border: 1px solid var(--rule);
     padding: 2px; flex-shrink: 0;
+  }
+  .unit-toggle-label {
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--denim); font-weight: 600;
+    padding: 0 8px 0 10px;
   }
   .unit-toggle-btn {
     border: 0; background: transparent;
@@ -273,22 +279,21 @@
     color: var(--ct-sun); opacity: 0.7; margin-top: 4px;
   }
 
-  /* Agency league — two-column stack. Each column = the old bh / H&H KPI
-     half (kept the class hooks so the existing mirrorKpis writes still
-     hit the same IDs) followed by that agency's ranked broker board. */
+  /* Agency league — two-column header (bh / H&H KPI summaries) over a
+     single full-width bh broker board. H&H don't share their broker
+     names so showing an empty H&H list wasn't useful; the bh board now
+     spans both columns underneath. */
   .agency-league {
     display: grid; grid-template-columns: 1fr 1fr;
-    gap: 14px; margin-bottom: 28px;
-  }
-  .agency-col {
+    gap: 0;
     background: var(--ct-afterlight2);
     border: 1px solid rgba(215, 168, 111, 0.32);
     overflow: hidden;
-    display: flex; flex-direction: column;
+    margin-bottom: 28px;
   }
-  /* Column head — visually identical to the old .kpi-half so the bh / H&H
-     summary keeps the same weight. Inherits .kpi-tally / .kpi-agency /
-     .kpi-half-sub child styles for free via the existing rules. */
+  /* Column heads — bh on the left, H&H on the right. Same content as the
+     old .kpi-half: Reserved / Let counts + % of stock + click to open
+     the bh_let / hh_let drawer. */
   .agency-col-head {
     display: flex; flex-direction: column; gap: 8px;
     padding: 22px 28px;
@@ -297,10 +302,10 @@
     transition: background 0.18s ease;
     position: relative;
     border-left: 4px solid var(--ct-sun);
-    border-bottom: 1px solid rgba(215, 168, 111, 0.18);
   }
   .agency-col-head:hover { background: rgba(244, 242, 238, 0.04); }
-  .agency-col.hh .agency-col-head { border-left-color: var(--powder); }
+  .agency-col-head + .agency-col-head { border-left: 1px solid rgba(215, 168, 111, 0.18); }
+  .agency-col-head.hh { border-left: 4px solid var(--powder); }
   .agency-col-head .click-hint { position: absolute; top: 14px; right: 18px; font-size: 9px; letter-spacing: 0.2em; color: var(--ct-gold); opacity: 0.55; text-transform: uppercase; }
   .agency-col-head:hover .click-hint { opacity: 1; }
   .agency-col-head .kpi-agency {
@@ -324,18 +329,20 @@
     color: var(--ct-sun); opacity: 0.7; margin-top: 4px;
   }
 
-  /* Per-agency ranked broker board */
-  .agency-col-board {
-    padding: 10px 14px 14px;
-    display: flex; flex-direction: column; gap: 4px;
+  /* Full-width bh broker board sitting under both heads */
+  .agency-broker-board {
+    grid-column: 1 / -1;
+    padding: 14px 18px 16px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    border-top: 1px solid rgba(215, 168, 111, 0.18);
   }
+  .agency-broker-board.empty { grid-template-columns: 1fr; }
   .agency-row {
     display: grid; grid-template-columns: 24px 1fr auto auto;
     gap: 12px; align-items: center;
-    padding: 8px 10px;
+    padding: 8px 12px;
     background: rgba(244, 242, 238, 0.04);
     border-left: 3px solid transparent;
-    transition: background 0.15s ease;
   }
   .agency-row.rank-1 { border-left-color: var(--ct-gold); }
   .agency-row.rank-2 { border-left-color: var(--ct-sun); }
@@ -358,6 +365,7 @@
     font-variant-numeric: tabular-nums; text-align: right; min-width: 70px;
   }
   .agency-col-empty {
+    grid-column: 1 / -1;
     padding: 18px 12px; text-align: center;
     color: var(--ct-sun); opacity: 0.7; font-style: italic; font-size: 12px;
   }
@@ -375,11 +383,11 @@
   }
   .agency-league-foot {
     grid-column: 1 / -1;
-    margin-top: 2px; padding: 6px 4px 0; font-size: 11px; line-height: 1.5;
-    color: var(--denim);
+    padding: 8px 14px 12px; font-size: 11px; line-height: 1.5;
+    color: var(--ct-sun); opacity: 0.7;
   }
   .agency-league-foot code {
-    background: rgba(31, 52, 63, 0.08); padding: 1px 5px; font-size: 11px;
+    background: rgba(244, 242, 238, 0.08); padding: 1px 5px; font-size: 11px;
   }
   .headline {
     background: rgba(244,242,238,0.04);
@@ -1689,10 +1697,6 @@
       <svg viewBox="490 340 930 400" xmlns="http://www.w3.org/2000/svg" aria-label="City Tower" role="img"><path fill="currentColor" d="M843,347.8l-4.5,12.1s-7.2-5.5-19.7-5.5h-27.9v148.6s-.5,6.9,4.4,10.5v.2h-21.8v-.2c4.9-3.6,4.4-10.5,4.4-10.5v-148.6h-28c-12.5,0-19.7,5.5-19.7,5.5l-4.5-12.1h117.1ZM725.9,566.3l4.5,12.1s7.2-5.5,19.7-5.5h28v148.6s.5,6.9-4.4,10.5v.2h21.8v-.2c-4.9-3.6-4.4-10.5-4.4-10.5v-148.6h27.9c12.5,0,19.7,5.5,19.7,5.5l4.5-12.1h-117.1ZM1144.7,566.3c2.3,5.7.5,12.2.5,12.2l-50.2,138.5c0-.2-25.7-70.2-25.7-70.2,10.9-31.4,21-60.5,22.3-64.5,3.2-9.4,10.3-15.9,10.3-15.9h-18c2.3,5.7.5,12.2.5,12.2l-19.9,55.3-17.2-47s-.7-1.8-1.8-6.2c-1.6-6.3.2-14.2.2-14.2h-25.2c5.4,2.7,9.6,12,9.6,12l27.2,75.5-22.6,63.2c0-.2-16.2-43.4-21.9-58.6-7-18.7-12.8-38.2-23.6-55.2-7.7-12-17.6-22.1-29.7-29.7-12.7-8-28.4-10.7-43.2-10.7-48.7,0-88.2,38.8-88.2,86.6s39.5,86.6,88.2,86.6,63.4-18.8,78.2-46.4l-7.5-17.8c-8.7,33.8-37,58.6-70.7,58.6s-73.4-36-73.4-80.4,32.9-80.3,73.4-80.3,43.3,11.6,56.5,29.3c9.1,12.3,13.5,26.7,18.4,40.9,3.6,10.3,7.1,20.7,10.5,31.1l21.7,61.3h15.8s13.3-37.6,22.8-65l23.1,65h14.4s49.9-141.6,52.7-150c3.2-9.5,10.3-15.9,10.3-15.9h-18,0ZM1233.6,723.7h-40.6v-75c7.4.3,20,1,31.9,2.9,14,2.2,27.4,5.7,27.4,5.7l5.7-13.6h-65v-69.6h51.1c14.2,0,25.7,4.9,25.7,4.9v-12.6h-94.2v.2c4.9,3.6,4.4,10.5,4.4,10.5v144.4s.5,6.9-4.4,10.5v.2h94.8l10.9-20.2s-15.5,11.7-47.8,11.7h0ZM1410,732v.2h-27c-3.5-8.4-11.9-24.6-11.9-24.6l-22.1-42.8c-19.1.9-35-4.6-40.5-6.8v63.5s-.6,6.9,4.3,10.5v.2h-21.7v-.2c4.9-3.6,4.4-10.5,4.4-10.5v-144.4s.5-6.9-4.4-10.5v-.2h42.6c8.4,0,17.5,0,25.8,1.3,17.8,2.8,33.8,13,39.6,30.5,1.8,5.5,2.6,11.3,2.6,17.1,0,16.2-13.1,41.4-40.5,48,2.6,5.3,7.4,15.4,16.4,32.1,13.8,25.4,29.7,35.3,32.3,36.8h0ZM1357.6,656.2c10.4-3,18.8-10,23.8-19.6,5.8-11.2,7.4-28.3,1.9-40-4.2-8.8-12.6-15.3-21.7-18.7-10.6-4-21.7-3.9-32.8-3.9,0,0-18.4,0-20.2,0v77c15.4,5.7,32.9,9.8,49,5.2h0ZM710,348v-.2h-21.8v.2c3.7,2.7,4.4,7.4,4.4,9.5,0,.7,0,1.1,0,1.1v144.4s0,.4,0,1.1c0,2.1-.7,6.7-4.4,9.5v.2h21.8v-.2c-3.7-2.7-4.3-7.4-4.4-9.5v-145.5s0-.4,0-1.1c0-2.1.7-6.7,4.4-9.5ZM962.2,364.2c4.9-8.7,13.1-16.4,13.1-16.4h-20.8c3.1,5.7.5,12.1.5,12.1l-35.9,66.1c-10.1-18.1-34.8-59-36.5-63.8-2.9-7.7,0-14.5,0-14.5h-23.7c5.5,3.3,9.6,12,9.6,12l42.5,74.9v68.3s0,.4,0,1.1c0,2.1-.7,6.7-4.4,9.5v.2h21.8v-.2c-3.7-2.7-4.3-7.4-4.4-9.5v-69.4c20.3-39.9,35.4-65.5,38.2-70.5h0ZM663,481.9c-18,21.4-38.8,29.8-64.8,29.8-40.5,0-73.4-36-73.4-80.4s32.9-80.4,73.4-80.4,36.5,11.6,49.8,26.4l10.5-10c-15.8-14.5-37-23.4-60.3-23.4-48.7,0-88.2,38.8-88.2,86.6s39.5,86.6,88.2,86.6,52.3-12.5,68.5-32l-3.8-3.4h0Z"/></svg>
     </div>
     <div class="meta">
-      <div class="unit-toggle" id="unit-toggle" role="group" aria-label="Size unit">
-        <button class="unit-toggle-btn" data-unit="sqft" type="button">ft</button>
-        <button class="unit-toggle-btn" data-unit="sqm"  type="button">m²</button>
-      </div>
       <div class="live-pill loading" id="live-pill">
         <span class="live-dot"></span>
         <span id="live-status">Connecting…</span>
@@ -1709,47 +1713,43 @@
         <div class="headline-sub" id="kpi-avail-sub">—</div>
       </button>
     </div>
-    <!-- Agency stack: each column header = the old bh / H&H KPI half,
-         with that agency's ranked broker list directly underneath. The
-         standalone broker league section is folded into this layout. -->
+    <!-- Two-column KPI header (bh / H&H) over a single full-width bh
+         broker board. H&H don't share broker names so we don't pretend
+         to rank theirs — their column is just the agency KPI summary. -->
     <div class="agency-league" id="agency-league">
-      <div class="agency-col">
-        <button class="agency-col-head" id="card-bh" type="button" data-view="bh_let">
-          <span class="click-hint">Click for list</span>
-          <div class="kpi-agency">bh</div>
-          <div class="kpi-tally">
-            <span class="lbl">Reserved</span>
-            <span class="val" id="kpi-bh-reserved">0</span>
-          </div>
-          <div class="kpi-tally">
-            <span class="lbl">Let</span>
-            <span class="val" id="kpi-bh">0</span>
-          </div>
-          <div class="kpi-half-sub" id="kpi-bh-sub">— of stock</div>
-        </button>
-        <div class="agency-col-board" id="agency-board-bh"></div>
-      </div>
-      <div class="agency-col hh">
-        <button class="agency-col-head" id="card-hh" type="button" data-view="hh_let">
-          <span class="click-hint">Click for list</span>
-          <div class="kpi-agency">H&amp;H</div>
-          <div class="kpi-tally">
-            <span class="lbl">Reserved</span>
-            <span class="val" id="kpi-hh-reserved">0</span>
-          </div>
-          <div class="kpi-tally">
-            <span class="lbl">Let</span>
-            <span class="val" id="kpi-hh">0</span>
-          </div>
-          <div class="kpi-half-sub" id="kpi-hh-sub">— of stock</div>
-        </button>
-        <div class="agency-col-board" id="agency-board-hh"></div>
-      </div>
+      <button class="agency-col-head" id="card-bh" type="button" data-view="bh_let">
+        <span class="click-hint">Click for list</span>
+        <div class="kpi-agency">bh</div>
+        <div class="kpi-tally">
+          <span class="lbl">Reserved</span>
+          <span class="val" id="kpi-bh-reserved">0</span>
+        </div>
+        <div class="kpi-tally">
+          <span class="lbl">Let</span>
+          <span class="val" id="kpi-bh">0</span>
+        </div>
+        <div class="kpi-half-sub" id="kpi-bh-sub">— of stock</div>
+      </button>
+      <button class="agency-col-head hh" id="card-hh" type="button" data-view="hh_let">
+        <span class="click-hint">Click for list</span>
+        <div class="kpi-agency">H&amp;H</div>
+        <div class="kpi-tally">
+          <span class="lbl">Reserved</span>
+          <span class="val" id="kpi-hh-reserved">0</span>
+        </div>
+        <div class="kpi-tally">
+          <span class="lbl">Let</span>
+          <span class="val" id="kpi-hh">0</span>
+        </div>
+        <div class="kpi-half-sub" id="kpi-hh-sub">— of stock</div>
+      </button>
+      <div class="agency-broker-board" id="agency-board-bh"></div>
       <div class="agency-league-diag" id="league-diag" hidden></div>
       <div class="agency-league-foot">
-        A broker only appears if they're recorded on at least one Reserved or
-        signed/occupied row. If a name's missing, check the <code>broker</code>
-        column on the master sheet.
+        Only bh brokers appear in the board — H&amp;H don't share their broker
+        names. A bh name appears once they're recorded on at least one
+        Reserved or signed/occupied row; if a name's missing, check the
+        <code>broker</code> column on the master sheet.
       </div>
     </div>
   </section>
@@ -1760,6 +1760,11 @@
       <span class="sb-text">Search · unit, floor, view, type, rent (e.g. "5 bed sea 230k")</span>
       <span class="sb-keys"><kbd>⌘</kbd><kbd>K</kbd></span>
     </button>
+    <div class="unit-toggle" role="group" aria-label="Size unit">
+      <span class="unit-toggle-label">Size</span>
+      <button class="unit-toggle-btn" data-unit="sqft" type="button">ft</button>
+      <button class="unit-toggle-btn" data-unit="sqm"  type="button">m²</button>
+    </div>
     <button class="book-cta-btn" id="overview-book-btn" type="button">Book viewing</button>
   </div>
 
@@ -3105,6 +3110,13 @@ function renderListFilters(view) {
       <button class="mini-chip ${lf.duplex?'active':''}" data-fkind="duplex" data-v="1">Duplex only</button>
       <button class="mini-chip ${lf.floorplan?'active':''}" data-fkind="floorplan" data-v="1">Floorplan only</button>
     </div>
+    <div class="mini-group">
+      <div class="unit-toggle" role="group" aria-label="Size unit">
+        <span class="unit-toggle-label">Size</span>
+        <button class="unit-toggle-btn ${sizeUnit==='sqft'?'active':''}" data-unit="sqft" type="button">ft</button>
+        <button class="unit-toggle-btn ${sizeUnit==='sqm'?'active':''}" data-unit="sqm"  type="button">m²</button>
+      </div>
+    </div>
     <span class="clear-all" id="drawer-clear">Clear</span>
     <span class="kb-hint" tabindex="0">⌨︎ Shortcuts
       <span class="kb-pop">
@@ -3702,42 +3714,37 @@ function rebuildAll() {
  * ========================================================== */
 // All-time only for now — month-mode toggle removed by request.
 function renderLeague() {
-  // Renders the two per-agency broker boards inside .agency-league. Each
-  // broker's deals are attributed to the agency implied by the unit's
-  // status code (*_bh vs *_hh); the rare 'same name on both' edge case
-  // appears once per agency rather than being merged.
-  const boardBh = document.getElementById('agency-board-bh');
-  const boardHh = document.getElementById('agency-board-hh');
-  if (!boardBh || !boardHh) return;
-  const agencyForStatus = s =>
-    (s === 'reserved_bh' || s === 'signed_bh' || s === 'occupied_bh') ? 'bh'
-    : (s === 'reserved_hh' || s === 'signed_hh' || s === 'occupied_hh') ? 'hh'
-    : null;
+  // Renders the bh broker board inside .agency-league. H&H don't share
+  // broker names so we don't rank theirs — only bh deals (*_bh status
+  // codes) get attributed; the H&H column header still shows agency-wide
+  // counts via the unchanged mirrorKpis writes.
+  const board = document.getElementById('agency-board-bh');
+  if (!board) return;
+  const isBh = s =>
+    s === 'reserved_bh' || s === 'signed_bh' || s === 'occupied_bh';
   const byKey = new Map();
   for (const u of UNITS) {
     if (!u.br) continue;
-    const key = u.br.trim();
-    if (!key) continue;
-    const agency = agencyForStatus(u.s);
-    if (!agency) continue;
-    const isReserved = u.s === 'reserved_bh' || u.s === 'reserved_hh';
-    const k = `${key}::${agency}`;
-    const row = byKey.get(k)
-      || { name: key, agency, deals: 0, reserved: 0, let: 0, revenue: 0 };
+    if (!isBh(u.s)) continue;
+    const name = u.br.trim();
+    if (!name) continue;
+    const isReserved = u.s === 'reserved_bh';
+    const row = byKey.get(name)
+      || { name, deals: 0, reserved: 0, let: 0, revenue: 0 };
     row.deals += 1;
     if (isReserved) row.reserved += 1; else row.let += 1;
     row.revenue += (u.sgnR || u.pr || 0);
-    byKey.set(k, row);
+    byKey.set(name, row);
   }
-  const sortFn = (a, b) => b.deals - a.deals || b.let - a.let || b.revenue - a.revenue;
-  const bh = [...byKey.values()].filter(r => r.agency === 'bh').sort(sortFn);
-  const hh = [...byKey.values()].filter(r => r.agency === 'hh').sort(sortFn);
-
-  const renderCol = (board, ranked) => {
-    if (!ranked.length) {
-      board.innerHTML = `<div class="agency-col-empty">No reservations or signed deals yet.</div>`;
-      return;
-    }
+  const ranked = [...byKey.values()].sort(
+    (a, b) => b.deals - a.deals || b.let - a.let || b.revenue - a.revenue,
+  );
+  if (!ranked.length) {
+    board.classList.add('empty');
+    board.innerHTML =
+      `<div class="agency-col-empty">No bh reservations or signed deals on record yet.</div>`;
+  } else {
+    board.classList.remove('empty');
     board.innerHTML = ranked.map((r, i) => {
       const rankClass = i < 3 ? `rank-${i + 1}` : '';
       const title = `${r.let} let · ${r.reserved} reserved`;
@@ -3749,9 +3756,7 @@ function renderLeague() {
           <div class="agency-revenue">${fmtAED(r.revenue)}</div>
         </div>`;
     }).join('');
-  };
-  renderCol(boardBh, bh);
-  renderCol(boardHh, hh);
+  }
 
   // Diagnostic banner — surfaces a column mismatch on the sheet without
   // needing DevTools. Only shows when the broker column couldn't be found.
@@ -3945,7 +3950,9 @@ function refreshFromSheet() {
  * SIZE-UNIT TOGGLE WIRING
  * ========================================================== */
 function applySizeUnit() {
-  document.querySelectorAll('#unit-toggle .unit-toggle-btn').forEach(b =>
+  // Sync every .unit-toggle instance on the page (masthead → search row,
+  // drawer filter row, anywhere a future copy lives) by class selector.
+  document.querySelectorAll('.unit-toggle .unit-toggle-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.unit === sizeUnit),
   );
   // Re-render anything that shows a size — tower tooltip rebuilds on hover
@@ -3953,13 +3960,16 @@ function applySizeUnit() {
   if (typeof rebuildAll === 'function') rebuildAll();
   if (typeof renderDrawer === 'function' && state && state.drawer) renderDrawer();
 }
-document.querySelectorAll('#unit-toggle .unit-toggle-btn').forEach(b => {
-  b.addEventListener('click', () => {
-    if (b.dataset.unit === sizeUnit) return;
-    sizeUnit = b.dataset.unit;
-    try { localStorage.setItem('ct1.sizeUnit', sizeUnit); } catch (e) {}
-    applySizeUnit();
-  });
+// Delegated click — picks up toggles in the drawer filter row even though
+// it's re-rendered each refresh and freshly added buttons would miss a
+// statically-attached listener.
+document.addEventListener('click', (e) => {
+  const btn = e.target && e.target.closest && e.target.closest('.unit-toggle .unit-toggle-btn');
+  if (!btn) return;
+  if (btn.dataset.unit === sizeUnit) return;
+  sizeUnit = btn.dataset.unit;
+  try { localStorage.setItem('ct1.sizeUnit', sizeUnit); } catch (e) {}
+  applySizeUnit();
 });
 
 /* ============================================================
