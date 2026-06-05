@@ -655,6 +655,85 @@
     margin-top: 10px; padding: 10px 12px; background: var(--mist); border-left: 3px solid var(--ct-gold);
     font-size: 12px; line-height: 1.5; color: var(--slate);
   }
+
+  /* Move-in & handover — collapsed details card, signed-deal info only.
+     Lives nested inside the Opening & viewing info-card, so we lift it
+     off the disclaimer sibling above. */
+  .handover-card {
+    padding: 0; margin-top: 12px;
+    padding-top: 12px; border-top: 1px solid var(--rule);
+  }
+  .handover-card > summary {
+    list-style: none; cursor: pointer;
+    display: grid; grid-template-columns: 28px 1fr; gap: 12px;
+    align-items: center; padding: 2px 0;
+  }
+  .handover-card > summary::-webkit-details-marker { display: none; }
+  .handover-card > summary::marker { content: ''; }
+  .handover-card .handover-toggle {
+    width: 28px; height: 28px;
+    border: 1.5px solid var(--ct-gold); color: var(--ct-gold-dark);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: Georgia, serif; font-size: 22px; line-height: 1;
+    transition: all 0.15s ease;
+  }
+  .handover-card .handover-toggle::before { content: '+'; }
+  .handover-card[open] .handover-toggle::before { content: '−'; }
+  .handover-card[open] .handover-toggle {
+    background: var(--ct-gold); color: var(--ct-afterlight);
+  }
+  .handover-card .handover-title {
+    font-family: Georgia, serif; font-size: 17px; color: var(--slate);
+    margin: 0; padding: 0;
+  }
+  .handover-card .handover-sub {
+    grid-column: 2; font-size: 10px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--denim); margin-top: 2px;
+  }
+  .handover-card .handover-body {
+    margin-top: 12px; padding-top: 10px;
+    border-top: 1px solid var(--rule);
+  }
+  .handover-card .handover-body p {
+    font-size: 13px; line-height: 1.5; color: var(--slate);
+    margin: 0 0 10px;
+  }
+  .handover-card .handover-step {
+    display: grid; grid-template-columns: 26px 1fr; gap: 10px;
+    padding: 10px 0; border-top: 1px dashed var(--rule);
+  }
+  .handover-card .handover-step .hs-num {
+    width: 22px; height: 22px;
+    background: var(--ct-gold); color: var(--ct-afterlight);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: Georgia, serif; font-size: 13px; line-height: 1;
+  }
+  .handover-card .handover-step-body {
+    font-size: 13px; line-height: 1.55; color: var(--slate);
+  }
+  .handover-card .handover-step-body strong { color: var(--denim); }
+  .handover-card .handover-step-body ul {
+    margin: 6px 0 0; padding: 0; list-style: none;
+  }
+  .handover-card .handover-step-body li {
+    padding: 4px 0 4px 14px; position: relative;
+    font-size: 12.5px; color: var(--slate);
+  }
+  .handover-card .handover-step-body li::before {
+    content: '·'; position: absolute; left: 4px; color: var(--ct-gold-dark);
+  }
+  .handover-card .handover-warn {
+    margin-top: 12px; padding: 10px 12px;
+    background: rgba(215, 168, 111, 0.12);
+    border-left: 3px solid var(--ct-gold-dark);
+    font-size: 12.5px; line-height: 1.45; color: var(--slate);
+  }
+  .handover-card .handover-warn strong { color: var(--ct-afterlight); }
+  .handover-card .handover-contact {
+    margin-top: 12px; font-size: 12px; color: var(--denim); line-height: 1.5;
+  }
+  .handover-card .handover-contact a { color: var(--ct-gold-dark); text-decoration: none; }
+  .handover-card .handover-contact a:active { text-decoration: underline; }
   .info-disclaimer {
     margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--rule);
     font-size: 11.5px; line-height: 1.5; color: var(--denim);
@@ -1736,6 +1815,35 @@
       <div class="info-note">Guest valet on arrival. Register at concierge — guests are ushered to the bh section of the lobby on the left. No sub-agents to show units; they must wait at the lobby.</div>
       <div class="info-note"><strong>Amenity deck:</strong> 9th floor of the parking &amp; amenity building. <strong>Skybridge from the tower:</strong> 5th floor.</div>
       <div class="info-disclaimer"><em>Sea View / Metro / City Tower 2 aspect views available <strong>from 25th floor and above</strong>. Museum of the Future view is the exception.</em></div>
+      <details class="handover-card">
+        <summary>
+          <span class="handover-toggle" aria-hidden="true"></span>
+          <span class="handover-title">Move-in &amp; handover process</span>
+          <span class="handover-sub">~2 h · Mon–Sun · 09:00–16:00</span>
+        </summary>
+        <div class="handover-body">
+          <p><strong>Scheduling.</strong> Monday – Sunday, based on tenant convenience. First slot 09:00, last slot 16:00. Allow approximately <strong>2 hours per appointment</strong>.</p>
+          <div class="handover-step">
+            <span class="hs-num">1</span>
+            <div class="handover-step-body">
+              <strong>Unit handover · ~1 hour</strong> — with <a href="mailto:Sara.D@h-h.ae">Sara</a> and her team.
+            </div>
+          </div>
+          <div class="handover-step">
+            <span class="hs-num">2</span>
+            <div class="handover-step-body">
+              <strong>Onboarding · ~1 hour</strong> — with <a href="mailto:Anitha.jacob@h-h.ae">Anitha</a> or <a href="mailto:Melinda.t@h-h.ae">Melinda</a> (City Tower Property Management). Covers:
+              <ul>
+                <li>Tenant handbook review</li>
+                <li>Building &amp; facility orientation</li>
+                <li>Move-in scheduling &amp; procedures</li>
+              </ul>
+            </div>
+          </div>
+          <p class="handover-warn"><strong>No furniture deliveries or move-ins</strong> are permitted until both stages have been completed.</p>
+          <p class="handover-contact">Questions → <a href="mailto:residenceservices@citytowerdubai.ae">Residence Services</a> or <a href="mailto:Sabine.B@h-h.ae">Sabine Bolanz</a> (Sr. Residence Manager · <a href="tel:+971564119828">+971 56 411 9828</a>).</p>
+        </div>
+      </details>
     </div>
 
     <div class="info-card">
@@ -1822,7 +1930,7 @@
       </ul>
     </div>
 
-    <a class="info-card info-doc-card"
+<a class="info-card info-doc-card"
        href="https://etihadbureau.ae"
        target="_blank" rel="noopener noreferrer">
       <div class="info-doc-icon" aria-hidden="true">▤</div>
