@@ -1048,6 +1048,43 @@
   }
   .handover-card .handover-contact a { color: var(--ct-gold-dark); text-decoration: none; }
   .handover-card .handover-contact a:hover { text-decoration: underline; }
+  /* Inline email + phone chips. Native mailto/tel still fires on click so
+     a configured mail app opens; the global .contact-link click handler
+     ALSO copies the value to clipboard with a brief 'Copied' chip — that
+     covers the (very common) case of a desktop browser with no mail
+     handler set up, which otherwise looks like the link did nothing. */
+  .handover-card .handover-person-contacts {
+    display: flex; flex-wrap: wrap; gap: 6px 8px;
+    margin-top: 6px;
+  }
+  .handover-card .contact-link {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 8px;
+    background: rgba(215, 168, 111, 0.10);
+    border: 1px solid rgba(215, 168, 111, 0.32);
+    color: var(--ct-gold-dark);
+    font-size: 12.5px; font-variant-numeric: tabular-nums;
+    text-decoration: none; cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .handover-card .contact-link:hover {
+    background: rgba(215, 168, 111, 0.20);
+    border-color: var(--ct-gold-dark);
+  }
+  .handover-card .contact-link.copied {
+    background: var(--ct-gold); color: var(--ct-afterlight); border-color: var(--ct-gold);
+  }
+  .handover-card .handover-questions {
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px dashed var(--rule);
+  }
+  .handover-card .handover-questions .hq-label {
+    font-size: 12px; color: var(--denim); font-weight: 600;
+    margin-right: 6px;
+  }
+  .handover-card .handover-questions .hq-name {
+    font-size: 12.5px; color: var(--slate);
+  }
   .info-block ul { list-style: none; padding: 0; margin: 0; }
   .info-block li {
     padding: 8px 0; border-bottom: 1px solid var(--rule);
@@ -2087,26 +2124,36 @@
           <span class="handover-sub">~2 h · Mon–Sun · 09:00–16:00</span>
         </summary>
         <div class="handover-body">
-          <p><strong>Scheduling.</strong> Monday – Sunday, based on tenant convenience. First slot 09:00, last slot 16:00. Allow approximately <strong>2 hours per appointment</strong>.</p>
+          <p>Run by the <strong>H&amp;H Property Management team</strong>. Leasing only confirms the contract date; H&amp;H then contacts the tenant once payments clear and schedules the handover per their calendar — Mon–Sun, 09:00–16:00, ~2 hours total per appointment.</p>
           <div class="handover-step">
             <span class="hs-num">1</span>
             <div class="handover-step-body">
-              <strong>Unit handover · ~1 hour</strong> — with <a href="mailto:Sara.D@h-h.ae">Sara</a> and her team.
+              <strong>Unit handover · ~1 hour</strong> — Sara Duran, Property Handover Manager (H&amp;H).
+              <div class="handover-person-contacts">
+                <a class="contact-link" data-copy="Sara.D@h-h.ae" href="mailto:Sara.D@h-h.ae">Sara.D@h-h.ae</a>
+                <a class="contact-link" data-copy="+971 56 802 8288" href="tel:+971568028288">+971 56 802 8288</a>
+              </div>
             </div>
           </div>
           <div class="handover-step">
             <span class="hs-num">2</span>
             <div class="handover-step-body">
-              <strong>Onboarding · ~1 hour</strong> — with <a href="mailto:Anitha.jacob@h-h.ae">Anitha</a> or <a href="mailto:Melinda.t@h-h.ae">Melinda</a> (City Tower Property Management). Covers:
-              <ul>
-                <li>Tenant handbook review</li>
-                <li>Building &amp; facility orientation</li>
-                <li>Move-in scheduling &amp; procedures</li>
-              </ul>
+              <strong>Onboarding · ~1 hour</strong> — Anitha or Melinda (H&amp;H Property Management). Covers tenant handbook, building &amp; facility orientation, move-in scheduling.
+              <div class="handover-person-contacts">
+                <a class="contact-link" data-copy="anitha.jacob@h-h.ae" href="mailto:anitha.jacob@h-h.ae">anitha.jacob@h-h.ae</a>
+                <a class="contact-link" data-copy="Melinda.t@h-h.ae" href="mailto:Melinda.t@h-h.ae">Melinda.t@h-h.ae</a>
+              </div>
             </div>
           </div>
           <p class="handover-warn"><strong>No furniture deliveries or move-ins</strong> are permitted until both stages have been completed.</p>
-          <p class="handover-contact">Questions → <a href="mailto:residenceservices@citytowerdubai.ae">Residence Services</a> or <a href="mailto:Sabine.B@h-h.ae">Sabine Bolanz</a> (Sr. Residence Manager · <a href="tel:+971564119828">+971 56 411 9828</a>).</p>
+          <div class="handover-questions">
+            <span class="hq-label">Questions →</span>
+            <span class="hq-name">Sabine Bolanz · Sr. Residence Manager (H&amp;H)</span>
+            <div class="handover-person-contacts">
+              <a class="contact-link" data-copy="Sabine.B@h-h.ae" href="mailto:Sabine.B@h-h.ae">Sabine.B@h-h.ae</a>
+              <a class="contact-link" data-copy="+971 56 411 9828" href="tel:+971564119828">+971 56 411 9828</a>
+            </div>
+          </div>
         </div>
       </details>
     </article>
@@ -4673,6 +4720,27 @@ rebuildAll();
 setupFilters();
 applySizeUnit();
 setTimeout(refreshFromSheet, 100);
-setInterval(refreshFromSheet, REFRESH_MS);</script>
+setInterval(refreshFromSheet, REFRESH_MS);
+
+// Contact-link click-to-copy. mailto: / tel: still fires natively, so a
+// configured mail / phone app opens as normal. The extra clipboard copy
+// is a fallback for users whose desktop browser has no mail handler set
+// up — the link looks like 'nothing happens' to them otherwise.
+document.addEventListener('click', (e) => {
+  const link = e.target && e.target.closest && e.target.closest('a.contact-link');
+  if (!link) return;
+  const text = link.dataset.copy || link.textContent.trim();
+  if (!navigator.clipboard || !navigator.clipboard.writeText) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = link.textContent;
+    link.classList.add('copied');
+    link.textContent = '✓ Copied · ' + text;
+    setTimeout(() => {
+      link.classList.remove('copied');
+      link.textContent = orig;
+    }, 1400);
+  }).catch(() => {});
+});
+</script>
 </body>
 </html>
