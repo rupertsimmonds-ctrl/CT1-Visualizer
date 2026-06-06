@@ -1,116 +1,63 @@
-# Viewings calendar — Apps Script hold
+# Viewings → shared calendar + sheet (wiring)
 
-When a broker books a viewing, the app POSTs the booking to `/api/booking`,
-which forwards it to the Google Apps Script web app (`CT1_BOOKING_URL`). That
-script writes the viewings sheet row **and** should drop a **30-minute hold**
-on the shared City Tower viewings calendar:
+When a broker books a viewing, this app POSTs to `/api/booking`, which forwards
+the JSON to a Google Apps Script web app (URL in the `CT1_BOOKING_URL` env var).
+That script does two best-effort things:
 
-```
-c_a17ebcd799c894eb25ad44fc2916ce387d58fe8d9f97610660d772cfadfa8ac4@group.calendar.google.com
-```
+1. appends a row to the **Viewings** sheet, and
+2. creates a **30-minute** event on the shared **City Tower** calendar (the
+   calendar id is held server-side in the script — never in this repo),
+   inviting the broker when an email is supplied.
 
-The app side is already wired. Paste the snippet below into the same Apps
-Script project so the event actually gets created. Until then nothing breaks —
-the booking still logs to the sheet and opens WhatsApp; the app simply omits
-the "slot added" confirmation.
+## One script, two front-ends
 
-## Payload the app sends
+The Apps Script ("Calendar Booking via visualizer", owned in Google Drive) is
+**shared** with the external brokers hub. Both apps post to the **same**
+`/exec` deployment, so bookings land on the same calendar + sheet:
 
-The booking JSON now includes everything the script needs to build the event:
+| Front-end | Repo | Vercel project(s) | Booking env |
+| --- | --- | --- | --- |
+| Broker visualiser (this repo) | `rupertsimmonds-ctrl/CT1-Visualizer` | `ct-1-visualizer` **and** `ct-1-visualizer-d27g` | `CT1_BOOKING_URL` |
+| External brokers hub | `rupertsimmonds-ctrl/City-Tower-Broker-Hub` | `city-tower-broker-hub-ext` | (its own booking env) |
 
-| field           | example          | use                                  |
-| --------------- | ---------------- | ------------------------------------ |
-| `viewing_date`  | `2026-06-10`     | event start date (`YYYY-MM-DD`)      |
-| `viewing_time`  | `11:00`          | event start time (`HH:MM`, 24h)      |
-| `duration_min`  | `30`             | event length in minutes              |
-| `unit_label`    | `07-01 · 1 Bed`  | event title                          |
-| `applicant_name`| `Sarah`          | event title + description            |
-| `mobile_last4`  | `0000`           | description                          |
-| `engage_ref`    | `123456`         | description                          |
-| `bedroom_type`  | `1 Bed`          | description                          |
-| `broker`        | `Rupert`         | description                          |
+The script tells them apart via a **`source`** column — this app sends
+`source: 'CT1 Visualiser'`.
 
-## What the app expects back
+> ⚠️ **This repo is imported as TWO Vercel projects** (`ct-1-visualizer` and
+> `ct-1-visualizer-d27g`), both auto-deploying this repo's branch. They share
+> code, but **env vars are per-project** — so `CT1_BOOKING_URL` must be set to
+> the same `/exec` URL on **both**, or delete the spare project to avoid drift.
 
-Merge these keys into the JSON your `doPost` already returns. The app shows
-`· 30-min slot on City Tower calendar` only when it sees `calendar: 'created'`
-(or an `event_id`):
+## Wiring checklist
+
+1. Get the shared web-app `…/exec` URL (from the external hub's booking env, or
+   the Apps Script → Deploy → Manage deployments).
+2. Set `CT1_BOOKING_URL` to that URL on **both** visualiser Vercel projects
+   (Production + Preview), then redeploy.
+3. Make sure the **Viewings** sheet header row has columns for everything both
+   apps send (the script maps by header, with aliases): at least `source`,
+   `engage_ref`, `broker_email`, plus the shared unit/date/time/applicant fields.
+4. The script's Google account needs **"Make changes to events"** on the shared
+   calendar; the script project timezone should be **Asia/Dubai**.
+
+## Payload this app sends
+
+`unit_id · unit_label · bedroom_type · viewing_date (YYYY-MM-DD) ·
+viewing_time (HH:MM) · engage_ref · applicant_name · mobile_last4 · broker ·
+broker_email (optional) · source: 'CT1 Visualiser' · duration_min: 30`
+
+(The script uses its own 30-minute constant, so `duration_min` is informational.)
+
+## Response the app reads
+
+The booking status chip is tolerant of both the shared script's shape and the
+older logger's flat shape:
 
 ```json
-{ "status": "ok", "sheet": "…", "row": 42, "calendar": "created", "event_id": "…" }
+{ "status": "ok",
+  "sheet":    { "ok": true, "appended": 13 },
+  "calendar": { "ok": true, "event_id": "…", "invited": "broker@…" } }
 ```
 
-## Snippet (V8 runtime)
-
-> **Set the project timezone to `Asia/Dubai`** (Project Settings → Time zone)
-> so the slot lands at the local time the broker entered.
-
-```javascript
-var CT1_VIEWINGS_CALENDAR_ID =
-  'c_a17ebcd799c894eb25ad44fc2916ce387d58fe8d9f97610660d772cfadfa8ac4@group.calendar.google.com';
-
-// Creates a 30-min hold on the shared viewings calendar. Returns the keys the
-// CT1 Visualiser app surfaces. Never throws — failures degrade to the sheet log.
-function addViewingToCalendar(data) {
-  try {
-    var cal = CalendarApp.getCalendarById(CT1_VIEWINGS_CALENDAR_ID);
-    if (!cal) return { calendar: 'no-access' };
-
-    var dp = String(data.viewing_date).split('-');   // YYYY-MM-DD
-    var tp = String(data.viewing_time).split(':');    // HH:MM
-    var start = new Date(+dp[0], +dp[1] - 1, +dp[2], +tp[0], +tp[1], 0);
-    var mins = Number(data.duration_min) || 30;
-    var end = new Date(start.getTime() + mins * 60000);
-
-    var unit = data.unit_label || data.unit_id || 'unit';
-    var who = data.applicant_name || 'applicant';
-    var title = 'City Tower 1 viewing — ' + unit + ' · ' + who;
-
-    var desc = [
-      'Unit: ' + unit,
-      'Applicant: ' + who + (data.mobile_last4 ? ' (mobile ends ' + data.mobile_last4 + ')' : ''),
-      data.bedroom_type ? 'Bedroom: ' + data.bedroom_type : '',
-      data.engage_ref ? 'Engage ref: ' + data.engage_ref : '',
-      data.broker ? 'Broker: ' + data.broker : '',
-      'Logged via CT1 Visualiser',
-    ].filter(String).join('\n');
-
-    var ev = cal.createEvent(title, start, end, {
-      description: desc,
-      location: 'City Tower 1, Business Bay, Dubai',
-    });
-
-    return { calendar: 'created', event_id: ev.getId() };
-  } catch (err) {
-    return { calendar: 'error', calendar_error: String(err) };
-  }
-}
-```
-
-## Wiring it into `doPost`
-
-After you append the sheet row, call the helper and fold its result into the
-response you already return — for example:
-
-```javascript
-function doPost(e) {
-  var data = JSON.parse(e.postData.contents);
-
-  // … your existing code that appends the row to the viewings sheet …
-  // (keep returning whatever sheet/row keys you already return)
-
-  var cal = addViewingToCalendar(data);
-
-  var out = { status: 'ok', sheet: SHEET_NAME, row: rowNumber };
-  for (var k in cal) out[k] = cal[k];   // merge calendar keys
-
-  return ContentService
-    .createTextOutput(JSON.stringify(out))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-```
-
-After pasting: **deploy a new version** of the web app (Deploy → Manage
-deployments → edit → new version) so the live `CT1_BOOKING_URL` runs the
-updated code. The Apps Script account must have **edit access** to the shared
-calendar (add it under the calendar's *Share with specific people* settings).
+It shows `✓ Logged to viewings sheet · 30-min slot on City Tower calendar
+(invite sent)` — each clause appearing only when that part reports success.
