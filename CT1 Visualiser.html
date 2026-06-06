@@ -2350,7 +2350,7 @@
 </div>
 
 <!-- Book viewing modal — overlays the drawer when 'Book viewing' is clicked.
-     Builds a WhatsApp message for the bh brokers group. -->
+     Logs the viewing to the shared sheet + books a 30-min calendar slot. -->
 <div class="bk-modal" id="bk-modal" aria-hidden="true">
   <div class="bk-modal-card">
     <div class="bk-modal-head">
@@ -2358,7 +2358,7 @@
       <div class="fp-title" id="bk-title">Book viewing</div>
     </div>
     <div class="bk-modal-body">
-      <p class="bk-intro">Sends a viewing request to the bh brokers group, logs it, and books a 30-min slot on the City Tower viewings calendar. We'll format the message — you tap to send.</p>
+      <p class="bk-intro">Logs the viewing to the shared sheet and books a 30-min slot on the City Tower viewings calendar.</p>
       <form id="bk-form" class="bk-form" autocomplete="off">
         <label class="bk-row"><span>Unit</span><input type="text" id="bk-unit" placeholder="e.g. 07-01" required></label>
         <label class="bk-row"><span>Day</span><input type="date" id="bk-date" required></label>
@@ -2370,13 +2370,8 @@
         <label class="bk-row"><span>Your email (optional)</span><input type="email" id="bk-email" placeholder="you@bhomes.com" autocomplete="email" spellcheck="false"></label>
         <div class="bk-error" id="bk-error" hidden></div>
         <div class="bk-status" id="bk-status" hidden></div>
-        <button type="submit" class="bk-submit" id="bk-submit">Log viewing + open WhatsApp</button>
-        <button type="button" class="bk-copy" id="bk-copy">Copy message instead</button>
+        <button type="submit" class="bk-submit" id="bk-submit">Log viewing + add to calendar</button>
       </form>
-      <div class="bk-preview-wrap" hidden>
-        <div class="bk-preview-head">Message preview</div>
-        <pre class="bk-preview" id="bk-preview"></pre>
-      </div>
     </div>
   </div>
 </div>
@@ -4653,9 +4648,9 @@ document.addEventListener('keydown', (e) => {
 });
 
 /* ============================================================
- * BOOK VIEWING — centred dialog over the drawer. Builds a WhatsApp
- * message for the bh brokers group. Same logic as mobile so brokers
- * see identical behaviour on either device.
+ * BOOK VIEWING — centred dialog over the drawer. Logs the viewing to the
+ * shared sheet and books a 30-min slot on the City Tower calendar (via the
+ * shared Apps Script behind /api/booking). Same logic as mobile.
  * ========================================================== */
 function openBookingModal(u) {
   const modal = document.getElementById('bk-modal');
@@ -4679,7 +4674,6 @@ function openBookingModal(u) {
   status.hidden = true; status.className = 'bk-status';
   try { document.getElementById('bk-broker').value = localStorage.getItem('ct1_broker_name') || ''; } catch (e) {}
   try { document.getElementById('bk-email').value = localStorage.getItem('ct1_broker_email') || ''; } catch (e) {}
-  document.querySelector('#bk-modal .bk-preview-wrap').hidden = true;
   modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
@@ -4719,24 +4713,10 @@ function readBookingForm() {
   }
   try { localStorage.setItem('ct1_broker_name', broker); } catch (e) {}
   try { localStorage.setItem('ct1_broker_email', email); } catch (e) {}
-  const d = new Date(date + 'T00:00:00');
-  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const mons = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const dayLine = `${days[d.getDay()]} ${d.getDate()} ${mons[d.getMonth()]} ${d.getFullYear()}`;
   const uid = document.getElementById('bk-modal').dataset.uid || '';
   const u = (typeof state !== 'undefined' && state.units)
     ? state.units.find(x => x.uid === uid)
     : ((typeof UNITS !== 'undefined' && Array.isArray(UNITS)) ? UNITS.find(x => x.uid === uid) : null);
-  const text = [
-    '*Viewing request — City Tower 1*',
-    '',
-    `Unit: ${unit}`,
-    `Day: ${dayLine}`,
-    `Time: ${time}`,
-    `Engage ref: ${ref}`,
-    `Applicant: ${name} · mobile ends ${mob}`,
-    `Broker: ${broker}`,
-  ].join('\n');
   const payload = {
     // Overview-level launches have no in-memory unit so dataset.uid is empty.
     // The broker types the unit number into bk-unit directly — use that as
@@ -4757,12 +4737,7 @@ function readBookingForm() {
     // The Apps Script builds the 30-min hold from viewing_date + viewing_time.
     duration_min: 30,
   };
-  return { text, payload };
-}
-
-function buildBookingMessage() {
-  const r = readBookingForm();
-  return r ? r.text : null;
+  return { payload };
 }
 
 async function logBookingToSheet(payload, statusEl) {
@@ -4791,11 +4766,11 @@ async function logBookingToSheet(payload, statusEl) {
       statusEl.textContent = done.length ? '✓ Logged to ' + done.join(' · ') : '✓ Sent — sheet/calendar sync pending';
     } else {
       statusEl.className = 'bk-status fail';
-      statusEl.textContent = '⚠ Sheet sync failed (' + (body.message || r.status) + ') — message still sent on WhatsApp';
+      statusEl.textContent = '⚠ Could not save the booking (' + (body.message || r.status) + ') — please try again';
     }
   } catch (e) {
     statusEl.className = 'bk-status fail';
-    statusEl.textContent = '⚠ Sheet sync offline — message still sent on WhatsApp';
+    statusEl.textContent = '⚠ Could not reach the booking service — please try again';
   }
 }
 document.getElementById('bk-close').addEventListener('click', closeBookingModal);
@@ -4812,32 +4787,9 @@ document.getElementById('bk-form').addEventListener('submit', (e) => {
   e.preventDefault();
   const r = readBookingForm();
   if (!r) return;
-  // wa.me with no number opens the WhatsApp share sheet — broker picks
-  // the bh brokers group from the list. text= pre-fills the message.
-  window.open('https://wa.me/?text=' + encodeURIComponent(r.text), '_blank');
-  document.getElementById('bk-preview').textContent = r.text;
-  document.querySelector('#bk-modal .bk-preview-wrap').hidden = false;
-  // Fire the sheet log in parallel; status chip reports outcome.
+  // Log the viewing to the shared sheet + drop the 30-min calendar hold;
+  // the status chip reports the outcome of each.
   logBookingToSheet(r.payload, document.getElementById('bk-status'));
-});
-document.getElementById('bk-copy').addEventListener('click', async () => {
-  const txt = buildBookingMessage();
-  if (!txt) return;
-  const copyBtn = document.getElementById('bk-copy');
-  try {
-    await navigator.clipboard.writeText(txt);
-    copyBtn.classList.add('copied');
-    const orig = copyBtn.textContent;
-    copyBtn.textContent = 'Copied — paste into WhatsApp';
-    setTimeout(() => {
-      copyBtn.classList.remove('copied');
-      copyBtn.textContent = orig;
-    }, 1800);
-  } catch (e) {
-    copyBtn.textContent = 'Copy failed — long-press the preview to select';
-  }
-  document.getElementById('bk-preview').textContent = txt;
-  document.querySelector('#bk-modal .bk-preview-wrap').hidden = false;
 });
 
 /* ============================================================
