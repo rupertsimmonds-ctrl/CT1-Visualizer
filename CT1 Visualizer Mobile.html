@@ -2127,7 +2127,7 @@
     <div class="um-title" id="bk-title">Book viewing</div>
   </div>
   <div class="bk-body">
-    <p class="bk-intro">Send a viewing request to the bh brokers group. We'll format the message — you tap to send.</p>
+    <p class="bk-intro">Sends a viewing request to the bh brokers group, logs it, and books a 30-min slot on the City Tower viewings calendar. We'll format the message — you tap to send.</p>
     <form id="bk-form" class="bk-form" autocomplete="off">
       <label class="bk-row"><span>Unit</span><input type="text" id="bk-unit" placeholder="e.g. 07-01" required></label>
       <label class="bk-row"><span>Day</span><input type="date" id="bk-date" required></label>
@@ -4400,6 +4400,9 @@ function readBookingForm() {
     applicant_name: name,
     mobile_last4: mob,
     broker: broker,
+    // Sent so the upstream Apps Script can drop a 30-min hold on the shared
+    // City Tower viewings calendar (start = viewing_date + viewing_time).
+    duration_min: 30,
   };
   return { text, payload };
 }
@@ -4430,7 +4433,10 @@ async function logBookingToSheet(payload, statusEl) {
       // obvious where the row landed when debugging cross-sheet wiring.
       const up = body.upstream || {};
       const where = up.sheet ? ` (sheet '${up.sheet}', row ${up.appended_at || up.inserted_at || '?'})` : '';
-      statusEl.textContent = '✓ Logged to viewings sheet' + where;
+      // Shown only once the Apps Script reports a created event, so the app is
+      // safe to ship before the CalendarApp snippet is pasted (no over-promise).
+      const cal = (up.event_id || up.calendar === 'created') ? ' · 30-min slot on City Tower calendar' : '';
+      statusEl.textContent = '✓ Logged to viewings sheet' + where + cal;
     } else {
       statusEl.className = 'bk-status fail';
       statusEl.textContent = '⚠ Sheet sync failed (' + (body.message || r.status) + ') — message still sent on WhatsApp';

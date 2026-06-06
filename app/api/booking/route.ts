@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 // Posts each viewing booking to a Google Apps Script web-app endpoint.
 // The endpoint URL lives in env (CT1_BOOKING_URL) so the static HTML never
 // sees it directly — keeps things gated behind the PIN-protected proxy.
+// That Apps Script writes the viewings sheet row AND drops a 30-min hold on
+// the shared City Tower viewings calendar; if it returns calendar/event_id
+// keys we surface them in the UI. See docs/viewings-calendar.md for the
+// CalendarApp snippet. This route just forwards the payload via { ...body }.
 const APPS_SCRIPT_URL = process.env.CT1_BOOKING_URL || "";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +21,8 @@ type BookingPayload = {
   applicant_name?: string;
   mobile_last4?: string;
   broker?: string;
+  // Length of the calendar hold the upstream Apps Script creates (minutes).
+  duration_min?: number;
 };
 
 export async function POST(req: Request) {
