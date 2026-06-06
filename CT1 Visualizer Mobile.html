@@ -2127,7 +2127,7 @@
     <div class="um-title" id="bk-title">Book viewing</div>
   </div>
   <div class="bk-body">
-    <p class="bk-intro">Send a viewing request to the bh brokers group. We'll format the message — you tap to send.</p>
+    <p class="bk-intro">Sends a viewing request to the bh brokers group, logs it, and books a 30-min slot on the City Tower viewings calendar. We'll format the message — you tap to send.</p>
     <form id="bk-form" class="bk-form" autocomplete="off">
       <label class="bk-row"><span>Unit</span><input type="text" id="bk-unit" placeholder="e.g. 07-01" required></label>
       <label class="bk-row"><span>Day</span><input type="date" id="bk-date" required></label>
@@ -2136,6 +2136,7 @@
       <label class="bk-row"><span>Applicant first name</span><input type="text" id="bk-name" required placeholder="e.g. Sarah"></label>
       <label class="bk-row"><span>Mobile last 4 digits</span><input type="text" id="bk-mob" required pattern="[0-9]{4}" maxlength="4" inputmode="numeric" placeholder="0000"></label>
       <label class="bk-row"><span>Your name (broker)</span><input type="text" id="bk-broker" required placeholder="e.g. Rupert"></label>
+      <label class="bk-row"><span>Your email (optional)</span><input type="email" id="bk-email" placeholder="you@bhomes.com" autocomplete="email" spellcheck="false"></label>
       <div class="bk-error" id="bk-error" hidden></div>
       <div class="bk-status" id="bk-status" hidden></div>
       <button type="submit" class="bk-submit" id="bk-submit">Log viewing + open WhatsApp</button>
@@ -4332,6 +4333,7 @@ function openBookingModal(u) {
   status.hidden = true; status.className = 'bk-status';
   // Broker name persists across sessions so the form only asks once.
   try { document.getElementById('bk-broker').value = localStorage.getItem('ct1_broker_name') || ''; } catch (e) {}
+  try { document.getElementById('bk-email').value = localStorage.getItem('ct1_broker_email') || ''; } catch (e) {}
   document.querySelector('.bk-preview-wrap').hidden = true;
   modal.classList.add('open');
   modal.setAttribute('aria-hidden', 'false');
@@ -4357,6 +4359,7 @@ function readBookingForm() {
   const name = $('bk-name').value.trim();
   const mob  = $('bk-mob').value.trim();
   const broker = $('bk-broker').value.trim();
+  const email = $('bk-email').value.trim();
   const errEl = $('bk-error');
   errEl.hidden = true;
   // Validation
@@ -4369,7 +4372,13 @@ function readBookingForm() {
         : 'Please fill all fields (including your name).';
     return null;
   }
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    errEl.hidden = false;
+    errEl.textContent = 'That email looks off — fix it or leave it blank.';
+    return null;
+  }
   try { localStorage.setItem('ct1_broker_name', broker); } catch (e) {}
+  try { localStorage.setItem('ct1_broker_email', email); } catch (e) {}
   const d = new Date(date + 'T00:00:00');
   const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const mons = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -4400,6 +4409,12 @@ function readBookingForm() {
     applicant_name: name,
     mobile_last4: mob,
     broker: broker,
+    broker_email: email,
+    // source tags this app's bookings so they're distinct from the external
+    // brokers hub, which posts to the SAME Apps Script (shared calendar + sheet).
+    source: 'CT1 Visualiser',
+    // The Apps Script builds the 30-min hold from viewing_date + viewing_time.
+    duration_min: 30,
   };
   return { text, payload };
 }
@@ -4426,11 +4441,17 @@ async function logBookingToSheet(payload, statusEl) {
     const body = await r.json().catch(() => ({}));
     if (r.ok && body && body.status === 'ok') {
       statusEl.className = 'bk-status ok';
-      // Surface the sheet name + row from the upstream Apps Script so it's
-      // obvious where the row landed when debugging cross-sheet wiring.
       const up = body.upstream || {};
-      const where = up.sheet ? ` (sheet '${up.sheet}', row ${up.appended_at || up.inserted_at || '?'})` : '';
-      statusEl.textContent = '✓ Logged to viewings sheet' + where;
+      // The shared Apps Script returns sheet/calendar as { ok, … } objects; the
+      // older logger returned a sheet-name string. Handle both so the status
+      // reads cleanly whichever endpoint CT1_BOOKING_URL points at.
+      const sh = up.sheet, ev = up.calendar;
+      const sheetOk = (sh && typeof sh === 'object') ? !!sh.ok : !!sh;
+      const calOk = (ev && typeof ev === 'object') ? !!ev.ok : (ev === 'created' || !!up.event_id);
+      const done = [];
+      if (sheetOk) done.push('viewings sheet');
+      if (calOk) done.push('30-min slot on City Tower calendar' + (ev && ev.invited ? ' (invite sent)' : ''));
+      statusEl.textContent = done.length ? '✓ Logged to ' + done.join(' · ') : '✓ Sent — sheet/calendar sync pending';
     } else {
       statusEl.className = 'bk-status fail';
       statusEl.textContent = '⚠ Sheet sync failed (' + (body.message || r.status) + ') — message still sent on WhatsApp';
