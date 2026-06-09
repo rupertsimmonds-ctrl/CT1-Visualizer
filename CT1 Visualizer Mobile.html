@@ -1055,6 +1055,8 @@
     font-weight: 600; cursor: pointer;
   }
   .bk-submit:active { opacity: 0.85; }
+  .bk-submit:disabled { opacity: 0.6; cursor: default; }
+  .bk-submit.booked { background: #1ea952; opacity: 1; }
   .bk-copy {
     padding: 12px 16px;
     background: transparent; color: var(--ct-gold-dark);
@@ -4321,6 +4323,8 @@ function openBookingModal(u) {
   document.getElementById('bk-error').hidden = true;
   const status = document.getElementById('bk-status');
   status.hidden = true; status.className = 'bk-status';
+  const submitBtn = document.getElementById('bk-submit');
+  if (submitBtn) { submitBtn.disabled = false; submitBtn.classList.remove('booked'); if (submitBtn.dataset.origLabel) submitBtn.textContent = submitBtn.dataset.origLabel; }
   // Broker name persists across sessions so the form only asks once.
   try { document.getElementById('bk-broker').value = localStorage.getItem('ct1_broker_name') || ''; } catch (e) {}
   try { document.getElementById('bk-email').value = localStorage.getItem('ct1_broker_email') || ''; } catch (e) {}
@@ -4421,13 +4425,16 @@ async function logBookingToSheet(payload, statusEl) {
       if (sheetOk) done.push('viewings sheet');
       if (calOk) done.push('30-min slot on City Tower calendar' + (ev && ev.invited ? ' (invite sent)' : ''));
       statusEl.textContent = done.length ? '✓ Logged to ' + done.join(' · ') : '✓ Sent — sheet/calendar sync pending';
+      return true;
     } else {
       statusEl.className = 'bk-status fail';
       statusEl.textContent = '⚠ Could not save the booking (' + (body.message || r.status) + ') — please try again';
+      return false;
     }
   } catch (e) {
     statusEl.className = 'bk-status fail';
     statusEl.textContent = '⚠ Could not reach the booking service — please try again';
+    return false;
   }
 }
 
@@ -4438,13 +4445,24 @@ async function logBookingToSheet(payload, statusEl) {
 
   const form = document.getElementById('bk-form');
   if (form) {
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const r = readBookingForm();
       if (!r) return;
-      // Log the viewing to the shared sheet + drop the 30-min calendar hold;
-      // the status chip reports the outcome of each.
-      logBookingToSheet(r.payload, document.getElementById('bk-status'));
+      // Lock the button so repeat taps do nothing, then reflect the outcome on it.
+      const btn = document.getElementById('bk-submit');
+      if (!btn.dataset.origLabel) btn.dataset.origLabel = btn.textContent;
+      btn.disabled = true;
+      btn.classList.remove('booked');
+      btn.textContent = 'Booking…';
+      const ok = await logBookingToSheet(r.payload, document.getElementById('bk-status'));
+      if (ok) {
+        btn.classList.add('booked');
+        btn.textContent = '✓ Booked!';
+      } else {
+        btn.disabled = false;
+        btn.textContent = btn.dataset.origLabel;
+      }
     });
   }
 })();
