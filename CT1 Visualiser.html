@@ -2732,12 +2732,15 @@ function buildHeadlines() {
   const get = k => counts[k] || 0;
   const total = UNITS.length;
 
-  // Let = Signed + Occupied (locked-in revenue). Reserved is split out
-  // separately because it's still floating and could fall through.
+  // Let = Signed + Occupied (locked-in revenue).
   const bhLet      = get('signed_bh') + get('occupied_bh');
   const hhLet      = get('signed_hh') + get('occupied_hh');
-  const bhReserved = get('reserved_bh');
-  const hhReserved = get('reserved_hh');
+  // Reserved is CUMULATIVE: once a unit is reserved it keeps counting even after
+  // it signs/occupies (it was reserved on the way there). It only drops if it
+  // falls through — back to available/listed/lost. So Reserved = reserved +
+  // signed + occupied (always ≥ Let, which is the signed/occupied subset).
+  const bhReserved = get('reserved_bh') + bhLet;
+  const hhReserved = get('reserved_hh') + hhLet;
   const lost = get('lost');
   // Big KPI counts the full available pool: rentable in-house (Available)
   // PLUS on-portals (Listed). Both are bookable; Listed is the sub-segment
@@ -2759,7 +2762,7 @@ function buildHeadlines() {
 
   const avParts = [];
   if (onPortals)           avParts.push(`${onPortals} listed on portals`);
-  if (get('reserved_bh') + get('reserved_hh')) avParts.push(`${get('reserved_bh') + get('reserved_hh')} reserved`);
+  if (bhReserved + hhReserved) avParts.push(`${bhReserved + hhReserved} reserved`);
   const showFlatTotal = UNITS.filter(u => u.showFlat || u.s === 'show_flat').length;
   if (showFlatTotal)       avParts.push(`${showFlatTotal} show flat${showFlatTotal === 1 ? '' : 's'}`);
   document.getElementById('kpi-avail-sub').textContent = avParts.join(' · ') || 'Tap to browse';
