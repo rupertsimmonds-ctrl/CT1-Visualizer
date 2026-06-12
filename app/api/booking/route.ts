@@ -71,13 +71,21 @@ export async function POST(req: Request) {
         timestamp: new Date().toISOString(),
       }),
     });
+    const text = await upstream.text();
+    // Temporary diagnostic for the Sheet1 routing bug: surface the Apps
+    // Script's exact reply (which tab/row it claims to have written) in the
+    // Vercel runtime logs, since the script's own execution log isn't
+    // reachable from here. Remove once tracker routing is confirmed.
+    console.log(
+      `[booking] source=${body.source || "(none)"} unit=${body.unit_id} ` +
+        `upstream=${upstream.status} body=${text}`,
+    );
     if (!upstream.ok) {
       return NextResponse.json(
         { status: "error", message: `upstream ${upstream.status}` },
         { status: 502 },
       );
     }
-    const text = await upstream.text();
     let parsed: unknown = null;
     try {
       parsed = JSON.parse(text);
