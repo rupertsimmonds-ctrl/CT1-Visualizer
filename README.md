@@ -29,3 +29,37 @@ copy them manually with `cp "CT1 Visualizer Mobile.html" public/mobile.html`).
 ## Deploy on Vercel
 
 Already wired. Pushes to `main` auto-deploy.
+
+## Floorplan data — record of the 12 Jun 2026 Control Centre cleanup
+
+How floorplans resolve today: the `Floorplan_Catalog` tab of the CT1 Leasing
+Control Centre maps `architectural_type` → `floorplan_url`; ~695 formulas on
+`01_Unit_Master` look it up per unit, the result is mirrored to
+`07_HTML_Export`, and both HTMLs read it from there. **Never delete
+`Floorplan_Catalog`** — it is the live source of every plan link.
+
+What the 12 Jun 2026 slim-down changed in the Control Centre:
+
+- **Deleted**: `Backup of 01_Unit_Master`, `08_Floorplans_OLD` and
+  `CT1_Unit_Level_Bridge_OLD`. The two `_OLD` tabs were the retired legacy
+  path (`architectural_type` → `08_Floorplans` drive links). At deletion time
+  they had zero formula references, and the mapping repo
+  (`rupertsimmonds-ctrl/CT1-floorplan-mapping`, which historically WROTE
+  them) had been dormant since 3 Jun — but its private code was not
+  re-inspected first, hence this note.
+- **Hidden, not deleted**: `Floorplan mapping rule` and the pin-instructions
+  tab (doc tabs), plus an empty `Viewings` shim tab on the shared viewing
+  sheet (kept so the H&H dashboard's two-tab reader can't break).
+
+If floorplans break, check in this order:
+
+1. `Floorplan_Catalog` still exists and `01_Unit_Master`'s `floorplan_url`
+   column still holds formulas (not `#REF!`).
+2. The mapping repo's README / OUTSTANDING_STATUS — if its pipeline ran again
+   expecting the deleted tabs, it will have errored or recreated them empty.
+3. To recover the deleted tabs: Control Centre → File → Version history →
+   pick a version **before 21:31 Dubai time, 12 Jun 2026** → ⋮ → **Make a
+   copy** → in the copy, right-click each tab → Copy to → Existing
+   spreadsheet → the live Control Centre. Do **not** use "Restore this
+   version" — that rolls back the entire sheet, including the `Viewings Log`
+   master tab added the same day.
