@@ -8,9 +8,10 @@ the architect drawings and WRITES the `01_Unit_Master`, `07_HTML_Export`, and
 that sheet. The read-path now resolves a unit's plan SOLELY from a single per-unit `floorplan_url`
 column (authored on `01_Unit_Master`, mirrored to `07_HTML_Export` via VLOOKUP, which the
 app reads). `floorplanFor()` reads it directly; a blank cell means "floorplan not available"
-with NO fallback. The legacy `architectural_type` -> `08_Floorplans` path is retired: the tab
-is relabeled `08_Floorplans_OLD`, and the `/api/floorplans` route is kept but dormant in case
-we ever rewire it. Product type A/B/C/D is not used here. For any floorplan/unit-data question,
+with NO fallback. The legacy `architectural_type` -> `08_Floorplans` path is retired: the
+`08_Floorplans_OLD` tab was deleted in the 12 Jun 2026 Control Centre cleanup (recoverable via
+sheet version history — see README "Floorplan data"), and the `/api/floorplans` route is kept
+but dormant in case we ever rewire it. Product type A/B/C/D is not used here. For any floorplan/unit-data question,
 start in the mapping repo (its README + OUTSTANDING_STATUS).
 
 ## Brand naming conventions
