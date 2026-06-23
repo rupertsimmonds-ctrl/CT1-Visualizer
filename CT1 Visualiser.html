@@ -3662,9 +3662,10 @@ function renderDetailSigned(u) {
   const lines = [];
   if (u.ag) lines.push(`<div class="label-row"><span>Agency won</span><span>${u.ag}</span></div>`);
   if (u.br) lines.push(`<div class="label-row"><span>Broker</span><span>${u.br}</span></div>`);
-  if (u.sgnR) lines.push(`<div class="label-row"><span>Signed rent</span><span>${fmtAED(u.sgnR)}</span></div>`);
+  // Signed rent + asking-vs-achieved are deliberately NOT shown on the unit
+  // card: brokers shouldn't see the achieved/signed figure for a let unit.
+  // Those stay in the bh / H&H "Let" league views and revenue totals only.
   if (u.sgnD) lines.push(`<div class="label-row"><span>Signed date</span><span>${fmtDate(u.sgnD)}</span></div>`);
-  if (u.aVa != null) lines.push(`<div class="label-row"><span>Asking vs achieved</span><span>${(u.aVa*100).toFixed(1)}%</span></div>`);
   if (!lines.length) return '';
   return `<div class="detail-section"><h3>Signed deal</h3>${lines.join('')}</div>`;
 }
