@@ -2545,7 +2545,7 @@ function sizeView(u) {
 
 /* ============================================================
  * PARKING — derived from the published allocation matrix.
- *   Studio                       limited (~22/64 → 'subject to availability')
+ *   Studio                       no parking (studios are not allocated a bay)
  *   1 Bedroom                    1 bay
  *   2 Bedroom · net_sqm < 180    1 bay   (interior only — balcony excluded)
  *   2 Bedroom · net_sqm ≥ 180    2 bays
@@ -2560,7 +2560,7 @@ function topFloor() {
 }
 function parkingForUnit(u) {
   if (!u || !u.t) return '—';
-  if (u.t === 'studio') return 'Subject to availability — confirm with the team';
+  if (u.t === 'studio') return 'No parking';
   if (u.t === '1br') return '1 bay';
   if (u.t === '2br') {
     const netSqm = u.nsqm || (u.sq ? unitSqft(u) / SQFT_PER_SQM : 0);
