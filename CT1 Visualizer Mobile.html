@@ -1920,7 +1920,7 @@
             <tr><td>2 Bedroom · net ≥ 180 m²</td><td class="num">8</td><td class="num">2</td><td class="num">16</td></tr>
             <tr><td>3 Bedroom</td><td class="num">296</td><td class="num">2</td><td class="num">592</td></tr>
             <tr><td>4 Bedroom</td><td class="num">34</td><td class="num">2</td><td class="num">68</td></tr>
-            <tr><td>4 Bedroom · top floor</td><td class="num">12</td><td class="num">3</td><td class="num">36</td></tr>
+            <tr><td>4 Bedroom · penthouses</td><td class="num">12</td><td class="num">3</td><td class="num">36</td></tr>
             <tr class="parking-total"><td>Total allocated</td><td class="num">695</td><td></td><td class="num">993</td></tr>
           </tbody>
         </table>
@@ -2205,7 +2205,7 @@ function sizeView(u) {
 // 2 Bedroom · net_sqm < 180  1 bay   (interior only, balcony not included)
 // 2 Bedroom · net_sqm ≥ 180  2 bays
 // 3 Bedroom                  2 bays
-// 4 Bedroom · top floor      3 bays (penthouse)
+// 4 Bedroom · penthouse (top 4 floors)  3 bays
 // 4 Bedroom · other floors   2 bays
 function topFloor() {
   let max = 0;
@@ -2224,7 +2224,8 @@ function parkingForUnit(u) {
   }
   if (u.t === '3br') return '2 bays';
   if (u.t === '4br') {
-    const isPenthouse = u.f && u.f === topFloor();
+    // Penthouse = the top 4 floors (the penthouse band). 4-beds there get 3 bays.
+    const isPenthouse = u.f && u.f >= topFloor() - 3;
     return isPenthouse ? '3 bays · penthouse' : '2 bays';
   }
   return '—';
