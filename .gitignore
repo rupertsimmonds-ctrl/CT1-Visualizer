@@ -11,3 +11,10 @@ next-env.d.ts
 # do not commit, the source HTMLs at the repo root are the canonical copies.
 public/desktop.html
 public/mobile.html
+
+# Google OAuth secrets — NEVER commit (repo is public). The token helper reads
+# these from env vars or an out-of-tree file; this is belt-and-braces in case a
+# creds file ever lands in the tree. See scripts/google-oauth/README.md.
+*google-oauth-creds.json
+**/*oauth*creds*.json
+*.tok
