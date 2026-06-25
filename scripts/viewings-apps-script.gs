@@ -6,6 +6,9 @@
  * To deploy a change: paste into the Apps Script editor, fill the two redacted
  * IDs, then bump BOTH /exec deployments (see docs/viewings-calendar.md).
  * (Last synced from deployment on 2026-06-24.)
+ * NOTE: VIEWING_DURATION_MIN was bumped 30 -> 45 on 2026-06-25 in this mirror;
+ * the live event length only changes once the deployed project's constant is
+ * set to 45 and BOTH /exec deployments are re-published.
  */
 
 /**
@@ -22,7 +25,7 @@
  *        • external broker hub, or anything untagged → SLIM row: broker
  *          name only — no email, no company. External brokers' contact
  *          details never reach the shared sheet.
- *   3. creates a 30-minute event on the shared "City Tower" calendar and
+ *   3. creates a 45-minute event on the shared "City Tower" calendar and
  *      invites the requesting broker (so it lands on their diary too).
  * All three steps are best-effort and independent — each failure is reported
  * in the response without blocking the others.
@@ -42,7 +45,7 @@ const SPREADSHEET_ID = 'REDACTED_SHARED_VIEWINGS_SHEET_ID'; // real value in the
 
 // The shared "City Tower" calendar ID (…@group.calendar.google.com).
 const CALENDAR_ID = 'REDACTED_SHARED_CALENDAR_ID'; // held server-side only — never commit (see docs/viewings-calendar.md)
-const VIEWING_DURATION_MIN = 30;
+const VIEWING_DURATION_MIN = 45;
 
 function doPost(e) {
   try {

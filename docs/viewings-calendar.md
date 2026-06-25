@@ -9,7 +9,7 @@ That script does three best-effort, independent things:
    Leasing Control Centre (internal eyes only);
 2. appends a **human row to `Sheet1`** of the shared viewings sheet (the
    tracker H&H can see) — see the slim rule below;
-3. creates a **30-minute** event on the shared **City Tower** calendar (the
+3. creates a **45-minute** event on the shared **City Tower** calendar (the
    calendar id is held server-side in the script — never in this repo),
    inviting the broker when an email is supplied.
 
@@ -77,9 +77,9 @@ Apps Script API. Both were pinned to the same version (v9) on 12 June 2026.
 
 `unit_id · unit_label · bedroom_type · viewing_date (YYYY-MM-DD) ·
 viewing_time (HH:MM) · engage_ref · applicant_name · mobile_last4 · broker ·
-broker_email (optional) · source: 'CT1 Visualiser' · duration_min: 30`
+broker_email (optional) · source: 'CT1 Visualiser' · duration_min: 45`
 
-(The script uses its own 30-minute constant, so `duration_min` is
+(The script uses its own 45-minute constant, so `duration_min` is
 informational. The hub additionally sends `company`, which only ever lands in
 the master log.)
 
@@ -95,5 +95,5 @@ the proxy's diagnostic log:
   "calendar": { "ok": true, "event_id": "…", "invited": "broker@…" } }
 ```
 
-It shows `✓ Logged to viewings sheet · 30-min slot on City Tower calendar
+It shows `✓ Logged to viewings sheet · 45-min slot on City Tower calendar
 (invite sent)` — each clause appearing only when that part reports success.

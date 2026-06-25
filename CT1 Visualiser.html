@@ -2389,7 +2389,7 @@
 </div>
 
 <!-- Book viewing modal — overlays the drawer when 'Book viewing' is clicked.
-     Logs the viewing to the shared sheet + books a 30-min calendar slot. -->
+     Logs the viewing to the shared sheet + books a 45-min calendar slot. -->
 <div class="bk-modal" id="bk-modal" aria-hidden="true">
   <div class="bk-modal-card">
     <div class="bk-modal-head">
@@ -2397,7 +2397,7 @@
       <div class="fp-title" id="bk-title">Book viewing</div>
     </div>
     <div class="bk-modal-body">
-      <p class="bk-intro">Logs the viewing to the shared sheet and sends a 30-min calendar request to the Portfolio Leasing team.</p>
+      <p class="bk-intro">Logs the viewing to the shared sheet and sends a 45-min calendar request to the Portfolio Leasing team.</p>
       <form id="bk-form" class="bk-form" autocomplete="off">
         <label class="bk-row"><span>Unit</span><input type="text" id="bk-unit" placeholder="e.g. 07-01" required></label>
         <label class="bk-row"><span>Day</span><input type="date" id="bk-date" required></label>
@@ -4693,7 +4693,7 @@ document.addEventListener('keydown', (e) => {
 
 /* ============================================================
  * BOOK VIEWING — centred dialog over the drawer. Logs the viewing to the
- * shared sheet and books a 30-min slot on the City Tower calendar (via the
+ * shared sheet and books a 45-min slot on the City Tower calendar (via the
  * shared Apps Script behind /api/booking). Same logic as mobile.
  * ========================================================== */
 function openBookingModal(u) {
@@ -4780,8 +4780,8 @@ function readBookingForm() {
     // source tags this app's bookings so they're distinct from the external
     // brokers hub, which posts to the SAME Apps Script (shared calendar + sheet).
     source: 'CT1 Visualiser',
-    // The Apps Script builds the 30-min hold from viewing_date + viewing_time.
-    duration_min: 30,
+    // The Apps Script builds the 45-min hold from viewing_date + viewing_time.
+    duration_min: 45,
   };
   return { payload };
 }
@@ -4808,7 +4808,7 @@ async function logBookingToSheet(payload, statusEl) {
       const calOk = (ev && typeof ev === 'object') ? !!ev.ok : (ev === 'created' || !!up.event_id);
       const done = [];
       if (sheetOk) done.push('viewings sheet');
-      if (calOk) done.push('30-min slot on City Tower calendar' + (ev && ev.invited ? ' (invite sent)' : ''));
+      if (calOk) done.push('45-min slot on City Tower calendar' + (ev && ev.invited ? ' (invite sent)' : ''));
       statusEl.textContent = done.length ? '✓ Logged to ' + done.join(' · ') : '✓ Sent — sheet/calendar sync pending';
       return true;
     } else {
