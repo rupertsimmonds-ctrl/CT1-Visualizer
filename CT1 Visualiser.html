@@ -2605,7 +2605,22 @@ function topFloor() {
   for (const u of UNITS) if (u.f > max) max = u.f;
   return max;
 }
+// Authoritative parking comes from the 08_Parking_Allocation tab, injected by
+// /api/units as a per-unit `parking` column ("6/02,6/03", or "" when the unit
+// is in the allocation but has no bays, e.g. a studio). When that column is
+// present we show the real count + bay refs ("2 (6/02, 6/03)"), or "none" when
+// there are no bays. When it is absent (offline snapshot, or the parking tab
+// failed to load) we fall back to the derived estimate so it never goes blank.
 function parkingForUnit(u) {
+  if (u && typeof u.parking === 'string') {
+    const bays = u.parking.split(',').map(s => s.trim()).filter(Boolean);
+    return bays.length ? `${bays.length} (${bays.join(', ')})` : 'none';
+  }
+  return parkingEstimate(u);
+}
+// Legacy heuristic — derives a bay count from bedroom type / area / floor band.
+// Only used as the offline fallback when the live parking allocation is absent.
+function parkingEstimate(u) {
   if (!u || !u.t) return '—';
   if (u.t === 'studio') return 'No parking';
   if (u.t === '1br') return '1 bay';
@@ -2738,6 +2753,7 @@ function attachUnitInteractions() {
         <div class="tt-row"><span>View</span><span>${VIEW_NAMES[c.dataset.view] || c.dataset.view}</span></div>
         ${sizeRows}
         <div class="tt-row"><span>Rent p.a.</span><span>${fmtAED(parseFloat(c.dataset.price))}</span></div>
+        ${u ? `<div class="tt-row"><span>Parking</span><span>${parkingForUnit(u)}</span></div>` : ''}
         <div class="tt-hint">Click for detail</div>
       `;
       tip.classList.add('visible');
@@ -4018,6 +4034,11 @@ function processUnitsResponse(resp) {
     // architectural_type -> 08_Floorplans lookup (see floorplanFor).
     const iFpUrl = ix('floorplan_url');
     const iNsqm = ix('net_sqm'), iTsqm = ix('total_sqm');
+    // Per-unit parking allocation, injected server-side by /api/units from the
+    // 08_Parking_Allocation tab ("6/02,6/03", or "" for an allocated unit with
+    // no bays). Absent when the parking tab failed to load — parkingForUnit then
+    // falls back to its derived estimate.
+    const iPark = ix('parking');
     // One-time dev visibility: surface any optional columns the visualizer
     // expected to find but didn't. Helps spot silent feature breakage if the
     // master sheet renames a column. Required columns already throw above.
@@ -4027,6 +4048,7 @@ function processUnitsResponse(resp) {
       balcony: iBalc, balcony_sqft: iBsq, show_flat: iSf, product_type: iPt,
       architectural_type: iArch, floorplan_url: iFpUrl,
       net_sqm: iNsqm, total_sqm: iTsqm, floor_band: iFb,
+      parking: iPark,
     };
     const missingOpt = Object.entries(optionalCols).filter(([_, i]) => i < 0).map(([k]) => k);
     if (missingOpt.length) console.warn('[CT1] missing optional columns on 07_HTML_Export:', missingOpt.join(', '));
@@ -4077,6 +4099,10 @@ function processUnitsResponse(resp) {
         pt: String(parseCell(row, iPt)||'').trim().toUpperCase() || null,
         archType: String(parseCell(row, iArch)||'').trim() || null,
         fpUrl: String(parseCell(row, iFpUrl)||'').trim() || null, // per-unit floorplan_url (new read-path)
+        // Parking bays from 08_Parking_Allocation (server-injected). Keep it a
+        // string when the column is present (even '' = allocated, no bays) so
+        // parkingForUnit can tell "none" from "no data"; undefined => estimate.
+        parking: iPark >= 0 ? String(parseCell(row, iPark) ?? '').trim() : undefined,
         d: String(parseCell(row, iDup)||'').toUpperCase() === 'Y',
         v: String(parseCell(row, iView)||'').trim(),
         fb: parseCell(row, iFb) ? String(parseCell(row, iFb)).trim() : null,

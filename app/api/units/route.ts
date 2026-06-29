@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 const SHEET_ID = "1FOofWcGkSXXnBWZ70dB7tix9T5lHjV3BL8evePp-URk";
 const SHEET_TAB = "07_HTML_Export";
 const BRIDGE_TAB = "unit_level_bridge";
+// Kaye's parking allocation, copied verbatim into the Control Centre as a tab.
+// One row per unit; the join key is its "Unit #" column (col D = floor*100 +
+// position). Bay refs live in "Parking 1/2/3" (cols I/J/K). See buildParkingMap.
+const PARKING_TAB = "08_Parking_Allocation";
 // `headers=1` tells gviz to treat row 1 as headers explicitly. Needed for
 // tabs that don't have row 1 frozen (otherwise gviz heuristic-detects the
 // header row and silently mis-labels columns when the heuristic misfires,
@@ -13,8 +17,12 @@ const DEFAULT_GVIZ_URL =
 const DEFAULT_BRIDGE_URL =
   `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq` +
   `?tqx=out:json&headers=1&sheet=${encodeURIComponent(BRIDGE_TAB)}`;
+const DEFAULT_PARKING_URL =
+  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq` +
+  `?tqx=out:json&headers=1&sheet=${encodeURIComponent(PARKING_TAB)}`;
 const GVIZ_URL = process.env.CT1_GVIZ_URL || DEFAULT_GVIZ_URL;
 const BRIDGE_URL = process.env.CT1_BRIDGE_URL || DEFAULT_BRIDGE_URL;
+const PARKING_URL = process.env.CT1_PARKING_URL || DEFAULT_PARKING_URL;
 
 export const dynamic = "force-dynamic";
 
@@ -113,13 +121,84 @@ function injectArchColumn(units: GvizResponse, archByUid: Map<string, string>) {
   }
 }
 
+// Normalise a single bay reference. gviz returns the evaluated value of the
+// sheet's force-quoted text (e.g. `="6/02"` -> "6/02"), but strip a stray
+// `="..."` wrapper defensively in case a cell comes through unevaluated.
+function cleanBay(v: unknown): string {
+  let s = String(v ?? "").trim();
+  const m = s.match(/^="?(.*?)"?$/);
+  if (m) s = m[1].trim();
+  return s.replace(/^"|"$/g, "").trim();
+}
+
+// Build `unitNumber -> "bay,bay"` from the parking tab. The key is the numeric
+// "Unit #" (col D), which equals floor*100 + position. The COUNT is derived
+// from the non-empty bay cells (Parking 1/2/3, cols I/J/K), NOT the "Parking
+// spots" column — that column disagrees with the bay list on a couple of rows
+// (e.g. unit 2007 lists 2 bays but says 1). Studios have no bays and map to "".
+function buildParkingMap(parking: GvizResponse | null): Map<number, string> {
+  const out = new Map<number, string>();
+  if (!parking || !parking.table) return out;
+  const cols = parking.table.cols.map(colName);
+  const ix = (n: string) => cols.indexOf(n);
+  // "Unit #" normalises to "unit_#" (the # is not stripped, only spaces). Fall
+  // back to column D (index 3) if the header ever changes.
+  let iUnitNo = ix("unit_#");
+  if (iUnitNo < 0) iUnitNo = ix("unit_number");
+  if (iUnitNo < 0) iUnitNo = 3;
+  // "Parking 1/2/3" -> parking_1/2/3; fall back to cols I/J/K (8/9/10).
+  const bayIdx = [
+    ix("parking_1") >= 0 ? ix("parking_1") : 8,
+    ix("parking_2") >= 0 ? ix("parking_2") : 9,
+    ix("parking_3") >= 0 ? ix("parking_3") : 10,
+  ];
+  for (const row of parking.table.rows ?? []) {
+    const cell = (i: number): unknown =>
+      i < 0 || !row.c || !row.c[i] ? null : row.c[i]!.v;
+    const key = parseInt(String(cell(iUnitNo) ?? "").trim(), 10);
+    if (!key) continue;
+    const bays = bayIdx.map((i) => cleanBay(cell(i))).filter(Boolean);
+    out.set(key, bays.join(","));
+  }
+  return out;
+}
+
+// Inject a `parking` column into the 07_HTML_Export response, joined on
+// floor*100 + unit_no. Value is the comma-joined bay list, or "" for an
+// allocated-but-no-bays unit (studios). Best-effort: if the parking tab gave
+// us nothing the map is empty and we no-op (the client then keeps showing its
+// legacy derived estimate). Idempotent if a `parking` column ever exists on 07.
+function injectParkingColumn(units: GvizResponse, bayByUnitNo: Map<number, string>) {
+  if (!units.table) return;
+  const cols = units.table.cols.map(colName);
+  if (cols.includes("parking")) return;
+  if (bayByUnitNo.size === 0) return;
+  const iFloor = cols.indexOf("floor");
+  const iPos =
+    cols.indexOf("unit_no") >= 0 ? cols.indexOf("unit_no") : cols.indexOf("position");
+  units.table.cols.push({ label: "parking" });
+  for (const row of units.table.rows ?? []) {
+    const cell = (i: number): unknown =>
+      i < 0 || !row.c || !row.c[i] ? null : row.c[i]!.v;
+    const f = parseInt(String(cell(iFloor) ?? ""), 10);
+    const p = parseInt(String(cell(iPos) ?? ""), 10);
+    const bays = f && p ? bayByUnitNo.get(f * 100 + p) : undefined;
+    row.c = row.c || [];
+    // Push a cell whenever we have a parking row for this unit (even ""), so the
+    // client can tell "allocated, no bays -> none" from "no data -> estimate".
+    row.c.push(bays === undefined ? null : { v: bays });
+  }
+}
+
 export async function GET() {
   try {
-    // Fetch both tabs in parallel. The bridge is best-effort — if it fails
-    // we still return the units, the client just won't have arch keys.
-    const [units, bridge] = await Promise.all([
+    // Fetch all tabs in parallel. The bridge and parking tabs are best-effort —
+    // if either fails we still return the units, the client just won't have
+    // arch keys / parking bays (it falls back to its derived estimate).
+    const [units, bridge, parking] = await Promise.all([
       fetchGviz(GVIZ_URL),
       fetchGviz(BRIDGE_URL),
+      fetchGviz(PARKING_URL),
     ]);
     if (!units) {
       return NextResponse.json(
@@ -129,6 +208,7 @@ export async function GET() {
     }
     const archByUid = buildArchMap(bridge);
     injectArchColumn(units, archByUid);
+    injectParkingColumn(units, buildParkingMap(parking));
     return new NextResponse(JSON.stringify(units), {
       status: 200,
       headers: {

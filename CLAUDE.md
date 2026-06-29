@@ -40,10 +40,18 @@ This applies to:
 - Both HTMLs self-fetch live data from Google Sheet `07_HTML_Export` tab via gviz JSONP
 
 ## Sheet contract
-Reads only the `07_HTML_Export` tab. Required columns:
+The client reads the `07_HTML_Export` tab (via the `/api/units` proxy). Required columns:
 `unit_id`, `floor`, `unit_no`, `bedroom_type`, `is_duplex`, `view_code`, `total_sqft`, `asking_rent_aed`, `current_asking_aed`, `asking_psf`, `status`, `agency_won`, `tranche`
 
 Optional: `balcony`, `balcony_sqft`, `show_flat`, `floorplan_url`
+
+Server-injected (not real `07_HTML_Export` columns — added by `app/api/units/route.ts`):
+- `architectural_type` — joined from the `unit_level_bridge` tab.
+- `parking` — joined from the `08_Parking_Allocation` tab on `Unit #` = `floor*100 + unit_no`. Value is the
+  comma-joined bay list (e.g. `6/02,6/03`), or `""` for an allocated unit with no bays (studios). Both joins are
+  best-effort: if a source tab fails to load the proxy still returns the units and the client falls back
+  (parking falls back to `parkingForUnit`'s legacy derived estimate). The bay COUNT is derived from the non-empty
+  bay cells (`Parking 1/2/3`), NOT the tab's `Parking spots` column, which is wrong on a couple of rows.
 
 Status column values map to internal codes via `classifyJS` (mobile + desktop both use the same logic).
 

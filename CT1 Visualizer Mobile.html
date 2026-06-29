@@ -2259,7 +2259,22 @@ function topFloor() {
   for (const u of UNITS) if (u.f > max) max = u.f;
   return max;
 }
+// Authoritative parking comes from the 08_Parking_Allocation tab, injected by
+// /api/units as a per-unit `parking` column ("6/02,6/03", or "" when the unit
+// is in the allocation but has no bays, e.g. a studio). When that column is
+// present we show the real count + bay refs ("2 (6/02, 6/03)"), or "none" when
+// there are no bays. When it is absent (offline snapshot, or the parking tab
+// failed to load) we fall back to the derived estimate so it never goes blank.
 function parkingForUnit(u) {
+  if (u && typeof u.parking === 'string') {
+    const bays = u.parking.split(',').map(s => s.trim()).filter(Boolean);
+    return bays.length ? `${bays.length} (${bays.join(', ')})` : 'none';
+  }
+  return parkingEstimate(u);
+}
+// Legacy heuristic — derives a bay count from bedroom type / area / floor band.
+// Only used as the offline fallback when the live parking allocation is absent.
+function parkingEstimate(u) {
   if (!u || !u.t) return '—';
   if (u.t === 'studio') return 'No parking';
   if (u.t === '1br') return '1 bay';
@@ -3264,6 +3279,7 @@ function setupTowerTouchPreview() {
             <div class="tt-meta">${m.label}${u.d ? ' Duplex' : ''} · Floor ${u.f} · ${view}</div>
             <div class="tt-meta">${u.archType ? 'Type ' + u.archType + ' · ' : ''}${sizeView(u).oneLine}</div>
             <div class="tt-rent">${fmtAED(u.pr)} p.a.</div>
+            <div class="tt-meta">Parking · ${parkingForUnit(u)}</div>
             <div class="tt-status">${STATUS_LABEL[u.s] || u.s}${(showFlat && u.s !== 'show_flat') ? ' · Show flat' : ''}</div>
             <div class="tt-hint">Release to open</div>
           `;
@@ -3690,6 +3706,11 @@ function processGvizResponse(resp) {
     const iNsqm = ix('net_sqm'), iTsqm = ix('total_sqm');
     const iSgnD = ix('signed_date'), iLast = ix('last_activity_date');
     const iBroker = ix(['broker', 'agent_name', 'agent', 'broker_name', 'signing_broker']), iSgnR = ix('signed_rent_aed');
+    // Per-unit parking allocation, injected server-side by /api/units from the
+    // 08_Parking_Allocation tab ("6/02,6/03", or "" for an allocated unit with
+    // no bays). Absent when the parking tab failed to load — parkingForUnit then
+    // falls back to its derived estimate.
+    const iPark = ix('parking');
     // One-time dev visibility: surface any optional columns the visualizer
     // expected to find but didn't. Helps spot silent feature breakage if the
     // master sheet renames a column. Required columns already throw above.
@@ -3699,6 +3720,7 @@ function processGvizResponse(resp) {
       net_sqm: iNsqm, total_sqm: iTsqm,
       signed_date: iSgnD, last_activity_date: iLast,
       broker: iBroker, signed_rent_aed: iSgnR,
+      parking: iPark,
     };
     const missingOpt = Object.entries(optionalCols).filter(([_, i]) => i < 0).map(([k]) => k);
     if (missingOpt.length) console.warn('[CT1] missing optional columns on 07_HTML_Export:', missingOpt.join(', '));
@@ -3740,6 +3762,10 @@ function processGvizResponse(resp) {
         pt: String(get(row, iPt)||'').trim().toUpperCase() || null,
         archType: String(get(row, iArch)||'').trim() || null,
         fpUrl: String(get(row, iFpUrl)||'').trim() || null, // per-unit floorplan_url (new read-path)
+        // Parking bays from 08_Parking_Allocation (server-injected). Keep it a
+        // string when the column is present (even '' = allocated, no bays) so
+        // parkingForUnit can tell "none" from "no data"; undefined => estimate.
+        parking: iPark >= 0 ? String(get(row, iPark) ?? '').trim() : undefined,
         d: String(get(row, ix('is_duplex'))||'').toUpperCase() === 'Y',
         v: String(get(row, ix('view_code'))||'').trim(),
         sq: parseFloat(get(row, ix('total_sqft'))) || 0,
