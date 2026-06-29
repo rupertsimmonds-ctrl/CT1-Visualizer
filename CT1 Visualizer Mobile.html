@@ -3762,10 +3762,13 @@ function processGvizResponse(resp) {
         pt: String(get(row, iPt)||'').trim().toUpperCase() || null,
         archType: String(get(row, iArch)||'').trim() || null,
         fpUrl: String(get(row, iFpUrl)||'').trim() || null, // per-unit floorplan_url (new read-path)
-        // Parking bays from 08_Parking_Allocation (server-injected). Keep it a
-        // string when the column is present (even '' = allocated, no bays) so
-        // parkingForUnit can tell "none" from "no data"; undefined => estimate.
-        parking: iPark >= 0 ? String(get(row, iPark) ?? '').trim() : undefined,
+        // Parking bays from 08_Parking_Allocation (server-injected). A PRESENT
+        // cell (even '' = allocated, no bays) is authoritative; an ABSENT cell
+        // (no parking row for this unit, or the whole column missing) stays
+        // undefined so parkingForUnit falls back to the estimate. Read the raw
+        // cell rather than get(), which collapses a server-pushed null to ''
+        // and would mislabel an un-mapped unit as "none".
+        parking: (iPark < 0 || !row.c[iPark]) ? undefined : String(row.c[iPark].v ?? '').trim(),
         d: String(get(row, ix('is_duplex'))||'').toUpperCase() === 'Y',
         v: String(get(row, ix('view_code'))||'').trim(),
         sq: parseFloat(get(row, ix('total_sqft'))) || 0,
