@@ -2213,7 +2213,7 @@
       <h2>Fees &amp; deposits</h2>
       <ul>
         <li><strong>Agency fee:</strong> 5% of contract value, or AED 5,000, whichever is higher, + 5% VAT — payable to betterhomes</li>
-        <li><strong>Security deposit:</strong> 5% of the current asking price (the base rent, not the discounted offer), or AED 10,000, whichever is higher</li>
+        <li><strong>Security deposit:</strong> 5% of base rent, or AED 10,000, whichever is higher</li>
         <li><strong>Ejari fee:</strong> AED 315 (AED 300 + VAT) — payable to H&amp;H Development LLC</li>
         <li><strong>DEWA deposit:</strong> paid by tenant directly to DEWA. Receipt required before check-in.</li>
         <li><strong>District cooling (Tasleem) deposit:</strong> paid by tenant. Receipt required before check-in.</li>
@@ -2285,12 +2285,12 @@
 
     <article class="info-block">
       <h2>Security deposit · payable to landlord</h2>
-      <p style="font-size:12px;color:var(--denim);margin-bottom:12px;">Initial amount due on agreeing an offer — reserves the unit. 5% of the <strong>current asking price</strong> (the base rent on the contract, not the discounted offer), or AED 10,000, whichever is higher. Refundable on move-out.</p>
+      <p style="font-size:12px;color:var(--denim);margin-bottom:12px;">Initial amount due on agreeing an offer — reserves the unit. 5% of <strong>base rent</strong> (the current asking price on the contract, not the discounted offer), or AED 10,000, whichever is higher. Refundable on move-out.</p>
       <div class="ic-inputs">
-        <label class="ic-row"><span>Current asking rent (AED)</span><input type="number" id="dp-rent" value="250000" step="5000" inputmode="numeric"></label>
+        <label class="ic-row"><span>Base rent (AED)</span><input type="number" id="dp-rent" value="250000" step="5000" inputmode="numeric"></label>
       </div>
       <div class="ic-out">
-        <div class="ic-out-row"><span>5% of asking rent</span><strong id="dp-pct">—</strong></div>
+        <div class="ic-out-row"><span>5% of base rent</span><strong id="dp-pct">—</strong></div>
         <div class="ic-out-row"><span>Floor</span><strong>AED 10,000.00</strong></div>
         <div class="ic-out-row head"><span>Deposit due</span><strong id="dp-due">—</strong></div>
       </div>
@@ -3706,7 +3706,7 @@ function copyUnitToClipboard(u) {
     `${m.label}${u.archType ? ' · Type ' + u.archType : ''}${u.d ? ' · Duplex' : ''} · Floor ${u.f} · ${viewLabel} facing`,
     `Size: ${sv.oneLine}`,
     `Parking: ${parkingForUnit(u)}`,
-    `Rent: ${fmtAED(u.pr)} p.a.${priceCut ? ` (reduced from ${fmtAED(u.orig)})` : ''}`,
+    `Rent: ${fmtAED(u.pr)} p.a.`,
     u.psf ? `PSF: AED ${u.psf.toFixed(0)}` : null,
     '',
     `Status: ${STATUS_LABEL[u.s] || u.s}`,
@@ -4253,7 +4253,7 @@ async function copyWithFeedback(btn, text) {
     $('fc-fee').textContent = fmt2(fee);
     $('fc-vat').textContent = fmt2(vat);
     $('fc-tot').textContent = fmt2(tot);
-    // Deposit is calculated on the current asking price (base rent), not the offer/contract
+    // Deposit is calculated on base rent (the current asking price), not the offer/contract
     // rent, so dp-rent is intentionally NOT mirrored from fc-rent.
   }
   ids.forEach(id => {
@@ -4286,8 +4286,8 @@ async function copyWithFeedback(btn, text) {
 
 /* ============================================================
  * STANDALONE DEPOSIT CALCULATOR
- *   Security deposit = max(5% of current asking price, AED 10,000).
- *   Calculated on the current asking price (base rent), NOT the negotiated offer.
+ *   Security deposit = max(5% of base rent, AED 10,000).
+ *   Calculated on base rent (the current asking price), NOT the negotiated offer.
  *   Paid to landlord on agreeing offer. Refundable on move-out.
  * ========================================================== */
 (function () {
@@ -4317,7 +4317,7 @@ async function copyWithFeedback(btn, text) {
         '*Security deposit — City Tower 1*',
         '',
         `Deposit due: ${fmt2(lastDue)}`,
-        '(5% of current asking price, minimum AED 10,000)',
+        '(5% of base rent, minimum AED 10,000)',
         '',
         'Pay to landlord: THE GALLERIA INVESTMENTS LLC - CITY TOWER',
         'Bank: Emirates NBD',
